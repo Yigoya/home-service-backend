@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the Spring Boot JAR file to the container
 COPY target/service-0.0.1-SNAPSHOT.jar app.jar
+COPY .env .env
 
 # Expose the port your application will run on
 EXPOSE 8080

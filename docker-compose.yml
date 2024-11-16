@@ -1,17 +1,5 @@
 version: '3.8'
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      DB_URL: jdbc:postgresql://localhost:5432/service
-      DB_USERNAME: root
-      DB_PASSWORD: Ya+371240
-    depends_on:
-      - db
   db:
     image: postgres:15
     container_name: postgres-container
@@ -23,6 +11,18 @@ services:
       POSTGRES_DB: service
     volumes:
       - db_data:/var/lib/postgresql/data
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/service
+      DB_USERNAME: root
+      DB_PASSWORD: Ya+371240
+    depends_on:
+      - db
 
 volumes:
   db_data:
