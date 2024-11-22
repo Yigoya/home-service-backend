@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianWeeklySchedule;
+
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,7 +26,8 @@ public class TechnicianProfileDTO {
     private Set<String> services;
     private Double rating;
     private Integer completedJobs;
-    private TechnicianWeeklySchedule weeklySchedule;
+    private TechnicianWeeklyScheduleDTO weeklySchedule;
+    private List<Map<String, Object>> calender;
 
     public TechnicianProfileDTO(Long id, String name, String email, String bio, Double rating, Integer completedJobs,
             TechnicianWeeklySchedule weeklySchedule) {
@@ -40,7 +44,7 @@ public class TechnicianProfileDTO {
 
         this.completedJobs = completedJobs;
 
-        this.weeklySchedule = weeklySchedule;
+        this.weeklySchedule = new TechnicianWeeklyScheduleDTO(weeklySchedule);
 
     }
 

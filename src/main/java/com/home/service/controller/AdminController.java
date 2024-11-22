@@ -141,7 +141,7 @@ public class AdminController {
         }
 
         // Update the status of a specific dispute
-        @PutMapping("/dispute/{disputeId}/status")
+        @PutMapping("/disputes/{disputeId}")
         public ResponseEntity<String> updateDisputeStatus(
                         @PathVariable Long disputeId,
                         @RequestParam DisputeStatus status) {

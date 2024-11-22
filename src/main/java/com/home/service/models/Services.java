@@ -2,6 +2,8 @@ package com.home.service.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalTime;
 import java.util.Set;
 
 @Entity
@@ -15,7 +17,7 @@ public class Services extends BaseEntity {
 
     private String name;
     private String description;
-    private String estimatedDuration;
+    private LocalTime estimatedDuration;
     private Double serviceFee;
 
     @ManyToMany(mappedBy = "services")

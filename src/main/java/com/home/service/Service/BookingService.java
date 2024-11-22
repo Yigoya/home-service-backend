@@ -15,17 +15,21 @@ import com.home.service.dto.QuestionWithAnswerDTO;
 import com.home.service.models.Address;
 import com.home.service.models.Answer;
 import com.home.service.models.Booking;
+import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
+import com.home.service.models.Operator;
 import com.home.service.models.Question;
 import com.home.service.models.Review;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
 import com.home.service.models.User;
 import com.home.service.models.enums.BookingStatus;
+import com.home.service.models.enums.NotificationType;
 import com.home.service.repositories.AddressRepository;
 import com.home.service.repositories.AnswerRepository;
 import com.home.service.repositories.BookingRepository;
 import com.home.service.repositories.CustomerRepository;
+import com.home.service.repositories.OperatorRepository;
 import com.home.service.repositories.QuestionRepository;
 import com.home.service.repositories.ReviewRepository;
 import com.home.service.repositories.ServiceRepository;
@@ -43,7 +47,12 @@ import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -72,6 +81,15 @@ public class BookingService {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private OperatorRepository operatorRepository;
 
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
@@ -132,10 +150,16 @@ public class BookingService {
         booking.setService(service);
         booking.setScheduledDate(request.getScheduledDate());
         booking.setServiceLocation(address);
+        booking.setDescription(request.getDescription());
         booking.setTimeSchedule(request.getTimeSchedule());
         booking.setStatus(BookingStatus.PENDING);
 
-        return bookingRepository.save(booking);
+        Booking newBooking = bookingRepository.save(booking);
+
+        notificationService.sendNotification(technician.getUser().getId(), "New booking request",
+                customer.getUser().getName() + "Requested a booking for " + service.getName(),
+                NotificationType.BOOKING_REQUEST, newBooking.getId());
+        return newBooking;
     }
 
     @Transactional
@@ -180,15 +204,39 @@ public class BookingService {
         // Update the status
         booking.setStatus(newStatus);
 
+        if (newStatus == BookingStatus.ACCEPTED) {
+            notificationService.sendNotification(booking.getCustomer().getUser().getId(), "Booking accepted",
+                    booking.getTechnician().getUser().getName() + " has accepted your booking",
+                    NotificationType.BOOKING_ACCEPTANCE, booking.getId());
+        } else if (newStatus == BookingStatus.DENIED) {
+            notificationService.sendNotification(booking.getCustomer().getUser().getId(), "Booking denied",
+                    booking.getTechnician().getUser().getName() + " has denied your booking",
+                    NotificationType.BOOKING_DENIAL, booking.getId());
+        } else if (newStatus == BookingStatus.COMPLETED) {
+            notificationService.sendNotification(booking.getCustomer().getUser().getId(), "Booking completed",
+                    booking.getTechnician().getUser().getName() + " has completed your booking",
+                    NotificationType.BOOKING_COMPLETE, booking.getId());
+        } else if (newStatus == BookingStatus.CANCELED) {
+            notificationService.sendNotification(booking.getTechnician().getUser().getId(), "Booking canceled",
+                    booking.getCustomer().getUser().getName() + " has canceled the booking",
+                    NotificationType.BOOKING_CANCELLATION, booking.getId());
+        } else if (newStatus == BookingStatus.CONFIRMED) {
+            notificationService.sendNotification(booking.getCustomer().getUser().getId(), "Booking confirmed",
+                    booking.getTechnician().getUser().getName() + " has confirmed the booking",
+                    NotificationType.BOOKING_CONFIRMATION, booking.getId());
+        }
+
         // Save and return the updated booking
         return bookingRepository.save(booking);
     }
 
+    @Transactional
     public Page<BookingResponseDTO> getBookingsForCustomer(Long customerId, Pageable pageable) {
         Page<Booking> bookings = bookingRepository.findByCustomerIdOrderByStatusPriority(customerId, pageable);
         return bookings.map(this::convertToDTO);
     }
 
+    @Transactional
     public Page<BookingResponseDTO> getBookingsForTechnician(Long technicianId, Pageable pageable) {
         Page<Booking> bookings = bookingRepository.findByTechnicianIdOrderByStatusPriority(technicianId, pageable);
         return bookings.map(this::convertToDTO);
@@ -208,6 +256,7 @@ public class BookingService {
                 booking.getService().getName(),
                 booking.getScheduledDate(),
                 booking.getStatus(),
+                booking.getDescription(),
                 booking.getServiceLocation() != null ? new AddressDTO(booking.getServiceLocation()) : null,
                 review);
 
@@ -360,11 +409,18 @@ public class BookingService {
         return dto;
     }
 
+    @Transactional
     public Page<BookingDetailDTO> getFilteredBookings(String name, String service, BookingStatus status,
             Pageable pageable) {
+        // CustomDetails User = userService.getCurrentUser();
+        // Operator operator = operatorRepository.findByUser_Id(User.getId())
+        // .orElseThrow(() -> new EntityNotFoundException("Operator not found"));
+
         Specification<Booking> spec = Specification.where(BookingSpecification.hasCustomerName(name))
                 .and(BookingSpecification.hasService(service))
-                .and(BookingSpecification.hasStatus(status));
+                .and(BookingSpecification.hasStatus(status))
+                .and(BookingSpecification.orderByCreatedAtDesc());
+        // .and(BookingSpecification.hasSubcity(operator.getAssignedRegion()));
 
         return bookingRepository.findAll(spec, pageable).map(this::convertToBookingDetailDTO);
     }
@@ -423,5 +479,37 @@ public class BookingService {
         dto.setLatitude(address.getLatitude());
         dto.setLongitude(address.getLongitude());
         return dto;
+    }
+
+    @Transactional
+    public List<Map<String, Object>> getTechnicianSchedule(Long technicianId) {
+        List<Booking> bookings = bookingRepository.findAllByTechnician_Id(technicianId);
+
+        return bookings.stream()
+                .filter(booking -> booking.getScheduledDate() != null)
+                .map(booking -> {
+                    Map<String, Object> schedule = new HashMap<>();
+                    schedule.put("id", booking.getId());
+                    schedule.put("title", booking.getService().getName()); // Use service name as the title
+                    schedule.put("start", booking.getScheduledDate());
+                    schedule.put("description", booking.getDescription());
+                    schedule.put("location", booking.getServiceLocation().getSubcity());
+
+                    // Calculate end time based on estimatedDuration or default to 2 hours
+                    LocalDateTime end = booking.getScheduledDate();
+                    try {
+                        LocalTime estimatedDuration = booking.getService().getEstimatedDuration();
+                        if (estimatedDuration != null) {
+                            end = end.plusHours(estimatedDuration.getHour()).plusMinutes(estimatedDuration.getMinute());
+                        } else {
+                            end = end.plusHours(2); // Default duration
+                        }
+                    } catch (Exception e) {
+                        end = end.plusHours(2); // Fallback in case of parsing error
+                    }
+                    schedule.put("end", end);
+
+                    return schedule;
+                }).collect(Collectors.toList());
     }
 }

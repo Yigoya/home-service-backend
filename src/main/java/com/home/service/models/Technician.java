@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -35,4 +36,6 @@ public class Technician extends BaseEntity {
 
     private Boolean verified = false;
 
+    @OneToMany(mappedBy = "technician", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TechnicianAddress> technicianAddresses = new ArrayList<>();
 }

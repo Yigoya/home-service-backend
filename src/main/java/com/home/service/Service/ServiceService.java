@@ -14,6 +14,7 @@ import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.TechnicianRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 import com.home.service.models.Technician;
 
@@ -40,6 +41,7 @@ public class ServiceService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Map<String, Object> getServiceById(Long id) {
         Services service = serviceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service not found"));
@@ -115,4 +117,5 @@ public class ServiceService {
         dto.setBookingCount(serviceRepository.countBookingsByServiceId(service.getId()));
         return dto;
     }
+
 }

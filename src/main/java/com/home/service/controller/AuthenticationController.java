@@ -94,6 +94,7 @@ public class AuthenticationController {
             final String jwtToken = jwtUtil.generateToken("admin");
             final UserResponse user = new UserResponse();
             user.setName("admin");
+            user.setRole("ADMIN");
             return ResponseEntity.ok(new AuthenticationResponse(jwtToken, user));
         } else {
             throw new BadCredentialsException("Invalid admin credentials.");

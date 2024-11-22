@@ -13,7 +13,7 @@ public class Notification extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
-
+    private String title;
     private String message;
 
     @Enumerated(EnumType.STRING)

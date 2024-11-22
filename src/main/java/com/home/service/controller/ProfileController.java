@@ -2,6 +2,7 @@ package com.home.service.controller;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.home.service.Service.BookingService;
 import com.home.service.Service.CustomerService;
 import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
@@ -34,6 +36,9 @@ public class ProfileController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BookingService bookingService;
 
     @GetMapping("/technician/{id}")
     public ResponseEntity<TechnicianProfileDTO> getTechnicianProfile(@PathVariable Long id) {
@@ -107,5 +112,13 @@ public class ProfileController {
         boolean updatedStatus = technicianService.toggleAvailability(id);
         return ResponseEntity
                 .ok("Technician availability updated to: " + (updatedStatus ? "Available" : "Unavailable"));
+    }
+
+    @GetMapping("/technician/schedule/{technicianId}")
+    public ResponseEntity<List<Map<String, Object>>> getTechnicianSchedule(
+            @PathVariable Long technicianId) {
+
+        List<Map<String, Object>> schedule = bookingService.getTechnicianSchedule(technicianId);
+        return ResponseEntity.ok(schedule);
     }
 }

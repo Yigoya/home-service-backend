@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.home.service.Service.QuestionService;
 import com.home.service.Service.TechnicianService;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.home.service.models.Technician;
+import com.home.service.dto.QuestionDTO;
 import com.home.service.dto.TechnicianDTO;
 
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,9 +29,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SearchController {
 
         private final TechnicianService technicianService;
+        private final QuestionService questionService;
 
-        public SearchController(TechnicianService technicianService) {
+        public SearchController(TechnicianService technicianService, QuestionService questionService) {
                 this.technicianService = technicianService;
+                this.questionService = questionService;
         }
 
         @GetMapping("/service/{serviceId}")
@@ -83,8 +87,8 @@ public class SearchController {
                         @PathVariable Long serviceId,
                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime time,
-                        @RequestParam int page,
-                        @RequestParam int size) {
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size) {
 
                 Pageable pageable = PageRequest.of(page, size);
                 Page<Technician> technicians = technicianService.findAvailableTechniciansByServiceAndSchedule(serviceId,
@@ -119,6 +123,12 @@ public class SearchController {
 
                 Page<TechnicianDTO> technicianDTOs = technicians.map(TechnicianDTO::new);
                 return ResponseEntity.ok(technicianDTOs);
+        }
+
+        @GetMapping("/question/{serviceId}")
+        public ResponseEntity<List<QuestionDTO>> getQuestionsByService(@PathVariable Long serviceId) {
+                List<QuestionDTO> questions = questionService.getQuestionsByServiceId(serviceId);
+                return ResponseEntity.ok(questions);
         }
 
 }

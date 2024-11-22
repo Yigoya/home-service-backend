@@ -6,10 +6,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.home.service.config.exceptions.UserNotFoundException;
+import com.home.service.models.CustomDetails;
 import com.home.service.models.User;
 import com.home.service.repositories.UserRepository;
 
-import java.util.ArrayList;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
@@ -18,14 +20,12 @@ public class MyUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public CustomDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        System.out.println("User loadUser: " + user.toString());
         // Return User with authorities if necessary, using hashed password
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(), // This should be the hashed password
-                new ArrayList<>());
+        return new CustomDetails(user);
     }
 }

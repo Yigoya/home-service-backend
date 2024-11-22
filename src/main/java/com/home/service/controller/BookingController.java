@@ -1,6 +1,8 @@
 package com.home.service.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -16,7 +18,6 @@ import com.home.service.dto.AnswerRequest;
 import com.home.service.dto.BookingRequest;
 import com.home.service.dto.BookingResponseDTO;
 import com.home.service.dto.BookingUpdateRequest;
-import com.home.service.dto.QuestionDTO;
 import com.home.service.dto.UpdateBookingStatusDTO;
 import com.home.service.models.Booking;
 import com.home.service.models.Question;
@@ -39,9 +40,11 @@ public class BookingController {
     private AnswerService answerService;
 
     @PostMapping("/request")
-    public ResponseEntity<String> requestBooking(@RequestBody BookingRequest bookingRequest) {
+    public ResponseEntity<Map<String, Long>> requestBooking(@RequestBody BookingRequest bookingRequest) {
         Booking booking = bookingService.createBooking(bookingRequest);
-        return new ResponseEntity<>("Booking created with ID: " + booking.getId(), HttpStatus.CREATED);
+        Map<String, Long> response = new HashMap<>();
+        response.put("bookingId", booking.getId());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{bookingId}")
@@ -90,12 +93,6 @@ public class BookingController {
     @PostMapping("/question")
     public ResponseEntity<String> createQuestion(@RequestBody QuestionRequest request) {
         return ResponseEntity.status(201).body(questionService.createQuestion(request));
-    }
-
-    @GetMapping("/question/{serviceId}")
-    public ResponseEntity<List<QuestionDTO>> getQuestionsByService(@PathVariable Long serviceId) {
-        List<QuestionDTO> questions = questionService.getQuestionsByServiceId(serviceId);
-        return ResponseEntity.ok(questions);
     }
 
     @GetMapping("/questions")

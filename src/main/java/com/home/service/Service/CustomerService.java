@@ -132,6 +132,7 @@ public class CustomerService {
         return new PageImpl<>(customerProfiles, pageable, customers.getTotalElements());
     }
 
+    @Transactional
     public Page<CustomerDetailDTO> getFilteredCustomers(String name, Pageable pageable) {
         Specification<Customer> spec = Specification.where(CustomerSpecification.hasName(name));
         return customerRepository.findAll(spec, pageable).map(this::convertToCustomerDetailDTO);

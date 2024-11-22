@@ -5,19 +5,30 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.home.service.config.exceptions.GeneralException;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.DisputeRequest;
+import com.home.service.dto.admin.AddressDTO;
 import com.home.service.dto.admin.BookingDetailDTO;
 import com.home.service.dto.admin.CustomerDTO;
 import com.home.service.dto.admin.DisputeDetailDTO;
 import com.home.service.dto.admin.TechnicianDTO;
 import com.home.service.models.Dispute;
+import com.home.service.models.Operator;
 import com.home.service.models.Technician;
 import com.home.service.repositories.BookingRepository;
 import com.home.service.repositories.DisputeRepository;
+import com.home.service.repositories.OperatorRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+
+import com.home.service.models.Address;
 import com.home.service.models.Booking;
+import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
 import com.home.service.models.enums.DisputeStatus;
+import com.home.service.models.enums.UserRole;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,10 +38,15 @@ public class DisputeService {
 
     private final DisputeRepository disputeRepository;
     private final BookingRepository bookingRepository;
+    private final UserService userService;
+    private final OperatorRepository operatorRepository;
 
-    public DisputeService(DisputeRepository disputeRepository, BookingRepository bookingRepository) {
+    public DisputeService(DisputeRepository disputeRepository, BookingRepository bookingRepository,
+            UserService userService, OperatorRepository operatorRepository) {
         this.disputeRepository = disputeRepository;
         this.bookingRepository = bookingRepository;
+        this.userService = userService;
+        this.operatorRepository = operatorRepository;
     }
 
     public void submitDispute(DisputeRequest disputeRequest) {
@@ -51,6 +67,7 @@ public class DisputeService {
         return disputeRepository.findAll();
     }
 
+    @Transactional
     public List<DisputeDTO> getDisputesByCustomerId(Long customerId) {
         List<Dispute> disputes = disputeRepository.findByCustomerId(customerId);
         return disputes.stream()
@@ -62,6 +79,29 @@ public class DisputeService {
 
     public Page<DisputeDetailDTO> getFilteredDisputes(String customerName, String technicianName, DisputeStatus status,
             Pageable pageable) {
+
+        // CustomDetails User = userService.getCurrentUser();
+        // if (User.getRole() == UserRole.ADMIN) {
+        // Specification<Dispute> spec =
+        // Specification.where(DisputeSpecification.hasCustomerName(customerName))
+        // .and(DisputeSpecification.hasTechnicianName(technicianName))
+        // .and(DisputeSpecification.hasStatus(status));
+
+        // return disputeRepository.findAll(spec,
+        // pageable).map(this::convertToDisputeDetailDTO);
+        // } else if (User.getRole() == UserRole.OPERATOR) {
+        // Operator operator = operatorRepository.findByUser_Id(User.getId())
+        // .orElseThrow(() -> new EntityNotFoundException("Operator not found"));
+        // Specification<Dispute> spec =
+        // Specification.where(DisputeSpecification.hasCustomerName(customerName))
+        // .and(DisputeSpecification.hasTechnicianName(technicianName))
+        // .and(DisputeSpecification.hasStatus(status))
+        // .and(DisputeSpecification.hasSubcity(operator.getAssignedRegion()));
+
+        // return disputeRepository.findAll(spec,
+        // pageable).map(this::convertToDisputeDetailDTO);
+        // }
+        // throw new GeneralException("Your Are Not Authorized");
         Specification<Dispute> spec = Specification.where(DisputeSpecification.hasCustomerName(customerName))
                 .and(DisputeSpecification.hasTechnicianName(technicianName))
                 .and(DisputeSpecification.hasStatus(status));
@@ -90,6 +130,22 @@ public class DisputeService {
         dto.setCreatedAt(booking.getCreatedAt());
         dto.setTimeSchedule(booking.getTimeSchedule());
         dto.setStatus(booking.getStatus());
+        dto.setDescription(booking.getDescription());
+        dto.setServiceLocation(convertToAddressDTO(booking.getServiceLocation()));
+        return dto;
+    }
+
+    private AddressDTO convertToAddressDTO(Address address) {
+        AddressDTO dto = new AddressDTO();
+        dto.setStreet(address.getStreet());
+        dto.setCity(address.getCity());
+        dto.setSubcity(address.getSubcity());
+        dto.setWereda(address.getWereda());
+        dto.setCountry(address.getCountry());
+        dto.setLatitude(address.getLatitude());
+        dto.setLongitude(address.getLongitude());
+        dto.setState(address.getState());
+        dto.setZipCode(address.getZipCode());
         return dto;
     }
 

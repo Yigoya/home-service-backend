@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.home.service.Service.NotificationService;
+import com.home.service.dto.NotificationDTO;
 import com.home.service.models.Notification;
 import com.home.service.models.enums.NotificationType;
 
@@ -26,24 +27,26 @@ public class NotificationController {
 
     @PostMapping("/send")
     public ResponseEntity<Notification> sendNotification(@RequestParam Long recipientId,
+            @RequestParam String title,
             @RequestParam String message,
             @RequestParam NotificationType type,
             @RequestParam(required = false) Long relatedEntityId) {
-        Notification notification = notificationService.sendNotification(recipientId, message, type, relatedEntityId);
+        Notification notification = notificationService.sendNotification(recipientId, title, message, type,
+                relatedEntityId);
         return ResponseEntity.ok(notification);
     }
 
-    @GetMapping("/unread")
-    public ResponseEntity<List<Notification>> getUnreadNotifications(@RequestParam Long userId) {
-        List<Notification> notifications = notificationService.getUnreadNotifications(userId);
+    @GetMapping("/unread/{userId}")
+    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(@PathVariable Long userId) {
+        List<NotificationDTO> notifications = notificationService.getUnreadNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<Notification>> getNotificationsByType(@RequestParam Long userId,
+    public ResponseEntity<List<NotificationDTO>> getNotificationsByType(@RequestParam Long userId,
             @RequestParam NotificationType type,
             @RequestParam(required = false, defaultValue = "false") Boolean readStatus) {
-        List<Notification> notifications = notificationService.getNotificationsByType(userId, type, readStatus);
+        List<NotificationDTO> notifications = notificationService.getNotificationsByType(userId, type, readStatus);
         return ResponseEntity.ok(notifications);
     }
 

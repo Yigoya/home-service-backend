@@ -14,8 +14,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
         @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId ORDER BY " +
                         "CASE b.status " +
                         "WHEN 'PENDING' THEN 1 " +
-                        "WHEN 'CONFIRMED' THEN 2 " +
-                        "WHEN 'ACCEPTED' THEN 3 " +
+                        "WHEN 'ACCEPTED' THEN 2 " +
+                        "WHEN 'STARTED' THEN 3 " +
                         "WHEN 'DENIED' THEN 4 " +
                         "WHEN 'COMPLETED' THEN 5 " +
                         "WHEN 'CANCELED' THEN 6 " +
@@ -25,8 +25,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
         @Query("SELECT b FROM Booking b WHERE b.technician.id = :technicianId ORDER BY " +
                         "CASE b.status " +
                         "WHEN 'PENDING' THEN 1 " +
-                        "WHEN 'CONFIRMED' THEN 2 " +
-                        "WHEN 'ACCEPTED' THEN 3 " +
+                        "WHEN 'ACCEPTED' THEN 2 " +
+                        "WHEN 'STARTED' THEN 3 " +
                         "WHEN 'DENIED' THEN 4 " +
                         "WHEN 'COMPLETED' THEN 5 " +
                         "WHEN 'CANCELED' THEN 6 " +

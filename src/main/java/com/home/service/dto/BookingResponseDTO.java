@@ -20,6 +20,7 @@ public class BookingResponseDTO {
     private String serviceName;
     private LocalDateTime scheduledDate;
     private BookingStatus status;
+    private String description;
     private AddressDTO address;
     private ReviewDTO review;
     // Constructors, Getters, and Setters

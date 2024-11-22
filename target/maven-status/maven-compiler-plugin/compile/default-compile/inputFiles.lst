@@ -22,6 +22,8 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/Service/UserService.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/Service/WebSocketNotificationService.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/ServiceApplication.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/config/CORSFilter.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/config/CorsFilter.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/config/ErrorResponse.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/config/GlobalExceptionHandler.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/config/JwtRequestFilter.java
@@ -61,6 +63,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeResponse.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/LoginRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/NewPasswordRequest.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/NotificationDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorProfileDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorResponse.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorSignupRequest.java
@@ -103,6 +106,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/BaseEntity.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/Booking.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/ContactUs.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/CustomDetails.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/Customer.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/CustomerAddress.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/Dispute.java

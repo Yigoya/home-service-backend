@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import com.home.service.dto.UserResponse;
 import com.home.service.config.JwtUtil;
 import com.home.service.config.MyUserDetailsService;
 import com.home.service.config.exceptions.UserNotFoundException;
+import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
 import com.home.service.models.PasswordResetToken;
 import com.home.service.models.Technician;
@@ -135,6 +138,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public AuthenticationResponse authenticate(LoginRequest loginRequest) {
         System.out.println("loginRequest = " + loginRequest.getEmail());
         System.out.println("loginRequest = " + loginRequest.getPassword());
@@ -145,8 +149,8 @@ public class UserService {
                         loginRequest.getPassword()));
 
         System.out.println("loginRequest.getEmail() = " + loginRequest.getEmail());
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
-        final String jwtToken = jwtUtil.generateToken(userDetails.getUsername());
+        final CustomDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        final String jwtToken = jwtUtil.generateToken(userDetails.getEmail());
         final User user = userRepository.findByEmail(loginRequest.getEmail()).get();
         UserResponse userResponse = new UserResponse(user.getId(), user.getName(), user.getEmail(),
                 user.getPhoneNumber(), user.getRole().name(), user.getStatus().name(), user.getProfileImage());
@@ -202,6 +206,14 @@ public class UserService {
 
         // Save the updated user
         userRepository.save(user);
+    }
+
+    public CustomDetails getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return (CustomDetails) authentication.getPrincipal();
+        }
+        throw new IllegalStateException("User not authenticated");
     }
 
 }

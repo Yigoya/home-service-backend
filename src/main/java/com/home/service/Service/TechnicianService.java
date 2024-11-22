@@ -24,6 +24,7 @@ import com.home.service.dto.TechnicianWeeklyScheduleDTO;
 import com.home.service.dto.records.SingleTechnician;
 import com.home.service.config.JwtUtil;
 import com.home.service.config.exceptions.EmailException;
+import com.home.service.config.exceptions.GeneralException;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianAddress;
@@ -33,12 +34,15 @@ import com.home.service.models.User;
 import com.home.service.repositories.ReviewRepository;
 import com.home.service.models.Address;
 import com.home.service.models.Booking;
+import com.home.service.models.CustomDetails;
+import com.home.service.models.Operator;
 import com.home.service.models.Review;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.TechnicianAddressRepository;
 import com.home.service.repositories.BookingRepository;
+import com.home.service.repositories.OperatorRepository;
 import com.home.service.repositories.TechnicianRepository;
 import com.home.service.repositories.TechnicianServicePriceRepository;
 import com.home.service.repositories.TechnicianWeeklyScheduleRepository;
@@ -50,6 +54,7 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import java.time.LocalDate;
@@ -73,6 +78,8 @@ public class TechnicianService {
         private TechnicianServicePriceRepository technicianServicePriceRepository;
         private ReviewRepository reviewRepository;
         private BookingRepository bookingRepository;
+        private OperatorRepository operatorRepository;
+        private final BookingService bookingService;
 
         public TechnicianService(UserService userService, FileStorageService fileStorageService,
                         TechnicianRepository technicianRepository, UserRepository userRepository,
@@ -80,7 +87,8 @@ public class TechnicianService {
                         ServiceRepository serviceRepository,
                         TechnicianWeeklyScheduleRepository technicianWeeklyScheduleRepository,
                         TechnicianServicePriceRepository technicianServicePriceRepository,
-                        ReviewRepository reviewRepository, BookingRepository bookingRepository) {
+                        ReviewRepository reviewRepository, BookingRepository bookingRepository,
+                        OperatorRepository operatorRepository, BookingService bookingService) {
                 this.userService = userService;
                 this.fileStorageService = fileStorageService;
                 this.technicianRepository = technicianRepository;
@@ -92,6 +100,8 @@ public class TechnicianService {
                 this.technicianServicePriceRepository = technicianServicePriceRepository;
                 this.reviewRepository = reviewRepository;
                 this.bookingRepository = bookingRepository;
+                this.operatorRepository = operatorRepository;
+                this.bookingService = bookingService;
 
         }
 
@@ -199,11 +209,11 @@ public class TechnicianService {
                 technician.setDocuments(documentPaths);
 
                 // Save the Technician entity
-                technicianRepository.save(technician);
+                Technician newTechnician = technicianRepository.save(technician);
                 System.out.println("technician = " + technician.toString());
                 // Create and save TechnicianAddress
                 TechnicianAddress technicianAddress = new TechnicianAddress();
-                technicianAddress.setTechnician(technician);
+                technicianAddress.setTechnician(newTechnician);
                 technicianAddress.setStreet(signupRequest.getStreet());
                 technicianAddress.setCity(signupRequest.getCity());
                 technicianAddress.setSubcity(signupRequest.getSubcity());
@@ -213,11 +223,11 @@ public class TechnicianService {
                 technicianAddress.setLatitude(signupRequest.getLatitude());
                 technicianAddress.setLongitude(signupRequest.getLongitude());
 
-                technicianAddressRepository.save(technicianAddress);
-
+                newTechnician.getTechnicianAddresses().add(technicianAddressRepository.save(technicianAddress));
                 return "Technician created successfully";
         }
 
+        @Transactional
         public List<Technician> findTechniciansByService(Long serviceId) {
 
                 return technicianRepository.findByServices(serviceRepository.findById(serviceId)
@@ -284,6 +294,7 @@ public class TechnicianService {
                 return technicianWeeklyScheduleRepository.findByTechnicianId(technicianId);
         }
 
+        @Transactional
         public List<Technician> filterTechnicians(
                         String name, Double minPrice, Double maxPrice, String city,
                         String subcity, String wereda, Double minLatitude, Double maxLatitude,
@@ -321,6 +332,7 @@ public class TechnicianService {
                 Technician technician = technicianRepository.findById(technicianId)
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
                 TechnicianWeeklySchedule schedule = technicianWeeklyScheduleRepository.findByTechnicianId(technicianId);
+                List<Map<String, Object>> calender = bookingService.getTechnicianSchedule(technicianId);
                 TechnicianProfileDTO dto = new TechnicianProfileDTO();
                 dto.setId(technician.getId());
                 dto.setName(technician.getUser().getName());
@@ -331,7 +343,8 @@ public class TechnicianService {
                 dto.setServices(technician.getServices().stream().map(Services::getName).collect(Collectors.toSet()));
                 dto.setRating(technician.getRating());
                 dto.setCompletedJobs(technician.getCompletedJobs());
-                dto.setWeeklySchedule(schedule);
+                dto.setWeeklySchedule(schedule != null ? new TechnicianWeeklyScheduleDTO(schedule) : null);
+                dto.setCalender(calender);
                 return dto;
         }
 
@@ -387,9 +400,11 @@ public class TechnicianService {
                 return newAvailability.equals("Available");
         }
 
+        @Transactional
         public Page<Technician> findAvailableTechniciansByServiceAndSchedule(Long serviceId, LocalDate date,
                         LocalTime time, Pageable pageable) {
                 String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
+                System.out.println("dayOfWeek = " + dayOfWeek);
                 return technicianRepository.findAvailableTechniciansByServiceAndSchedule(serviceId, dayOfWeek, time,
                                 pageable);
         }
@@ -420,8 +435,28 @@ public class TechnicianService {
         }
 
         public Page<TechnicianDetailDTO> getFilteredTechnicians(String name, Pageable pageable) {
-                Specification<Technician> spec = Specification.where(TechnicianAdminSpecification.hasName(name));
+                // CustomDetails User = userService.getCurrentUser();
+                // if (User.getRole() == UserRole.ADMIN) {
+                // Specification<Technician> spec = Specification
+                // .where(TechnicianAdminSpecification.hasName(name));
+                // return technicianRepository.findAll(spec,
+                // pageable).map(this::convertToTechnicianDetailDTO);
+                // } else if (User.getRole() == UserRole.OPERATOR) {
+                // Operator operator = operatorRepository.findByUser_Id(User.getId())
+                // .orElseThrow(() -> new EntityNotFoundException("Operator not found"));
+
+                // Specification<Technician> spec =
+                // Specification.where(TechnicianAdminSpecification.hasName(name))
+
+                // .and(TechnicianAdminSpecification.hasSubcity(operator.getAssignedRegion()));
+                // return technicianRepository.findAll(spec,
+                // pageable).map(this::convertToTechnicianDetailDTO);
+                // }
+                // throw new GeneralException("Your Are Not Authorized");
+                Specification<Technician> spec = Specification
+                                .where(TechnicianAdminSpecification.hasName(name));
                 return technicianRepository.findAll(spec, pageable).map(this::convertToTechnicianDetailDTO);
+
         }
 
         private TechnicianDetailDTO convertToTechnicianDetailDTO(Technician technician) {

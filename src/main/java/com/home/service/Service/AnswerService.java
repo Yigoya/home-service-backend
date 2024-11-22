@@ -10,11 +10,14 @@ import com.home.service.dto.AnswerDTO;
 import com.home.service.models.Answer;
 import com.home.service.repositories.AnswerRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class AnswerService {
     @Autowired
     private AnswerRepository answerRepository;
 
+    @Transactional
     public List<AnswerDTO> getNecessaryAnswerData(Long bookingId, Long customerId) {
         List<Answer> answers = answerRepository.findByBookingIdAndCustomerId(bookingId, customerId);
         return answers.stream().map(this::convertToDto).collect(Collectors.toList());

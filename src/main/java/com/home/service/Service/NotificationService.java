@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.home.service.dto.NotificationDTO;
 import com.home.service.models.Notification;
 import com.home.service.models.User;
 import com.home.service.models.enums.NotificationType;
@@ -24,13 +25,14 @@ public class NotificationService {
     }
 
     // Send notification to a user
-    public Notification sendNotification(Long recipientId, String message, NotificationType type,
+    public Notification sendNotification(Long recipientId, String title, String message, NotificationType type,
             Long relatedEntityId) {
         User recipient = userRepository.findById(recipientId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
+        System.out.println("relatedEntityId: " + relatedEntityId);
         Notification notification = new Notification();
         notification.setRecipient(recipient);
+        notification.setTitle(title);
         notification.setMessage(message);
         notification.setType(type);
         notification.setReadStatus(false);
@@ -40,17 +42,24 @@ public class NotificationService {
     }
 
     // Get unread notifications for a user
-    public List<Notification> getUnreadNotifications(Long userId) {
+    public List<NotificationDTO> getUnreadNotifications(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return notificationRepository.findByRecipientAndReadStatus(user, false);
+        List<Notification> notifications = notificationRepository.findByRecipientAndReadStatus(user, false);
+        return notifications.stream()
+                .map(notification -> new NotificationDTO(notification))
+                .toList();
     }
 
     // Filter notifications by type and read status
-    public List<Notification> getNotificationsByType(Long userId, NotificationType type, Boolean readStatus) {
+    public List<NotificationDTO> getNotificationsByType(Long userId, NotificationType type, Boolean readStatus) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return notificationRepository.findByRecipientAndTypeAndReadStatus(user, type, readStatus);
+        List<Notification> notifications = notificationRepository.findByRecipientAndTypeAndReadStatus(user, type,
+                readStatus);
+        return notifications.stream()
+                .map(notification -> new NotificationDTO(notification))
+                .toList();
     }
 
     // Mark a notification as read

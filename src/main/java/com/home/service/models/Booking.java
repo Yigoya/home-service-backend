@@ -24,6 +24,7 @@ public class Booking extends BaseEntity {
     private Services service;
 
     private LocalDateTime scheduledDate;
+    private String description;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
