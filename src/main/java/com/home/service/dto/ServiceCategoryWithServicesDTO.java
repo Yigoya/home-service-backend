@@ -20,8 +20,8 @@ public class ServiceCategoryWithServicesDTO {
 
         // Initialize fields using the serviceCategory object
         this.id = serviceCategory.getId();
-        this.name = serviceCategory.getCategoryName();
-        this.description = serviceCategory.getDescription();
+        this.name = serviceCategory.getTranslations().iterator().next().getName();
+        this.description = serviceCategory.getTranslations().iterator().next().getDescription();
         this.services = services;
 
     }

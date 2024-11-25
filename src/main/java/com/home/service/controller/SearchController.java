@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.home.service.models.Technician;
+import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.dto.QuestionDTO;
 import com.home.service.dto.TechnicianDTO;
 
@@ -37,16 +38,18 @@ public class SearchController {
         }
 
         @GetMapping("/service/{serviceId}")
-        public ResponseEntity<List<TechnicianDTO>> searchForService(@PathVariable Long serviceId) {
+        public ResponseEntity<List<TechnicianDTO>> searchForService(@PathVariable Long serviceId,
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
                 List<Technician> technicians = technicianService.findTechniciansByService(serviceId);
                 List<TechnicianDTO> technicianDTOs = technicians.stream()
-                                .map(technician -> new TechnicianDTO(technician))
+                                .map(technician -> new TechnicianDTO(technician, lang))
                                 .collect(Collectors.toList());
                 return ResponseEntity.ok(technicianDTOs);
         }
 
         @GetMapping("/tech")
         public ResponseEntity<List<TechnicianDTO>> searchForTechnician(
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
                         @RequestParam(required = false) String query,
                         @RequestParam(required = false) Double minPrice,
                         @RequestParam(required = false) Double maxPrice,
@@ -55,13 +58,14 @@ public class SearchController {
                 List<Technician> technicians = technicianService.searchTechnicians(query, minPrice, maxPrice, minRating,
                                 location);
                 List<TechnicianDTO> technicianDTOs = technicians.stream()
-                                .map(technician -> new TechnicianDTO(technician))
+                                .map(technician -> new TechnicianDTO(technician, lang))
                                 .collect(Collectors.toList());
                 return ResponseEntity.ok(technicianDTOs);
         }
 
         @GetMapping("/technicians")
         public List<TechnicianDTO> getTechnicians(
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
                         @RequestParam(required = false) String name,
                         @RequestParam(required = false) Double minPrice,
                         @RequestParam(required = false) Double maxPrice,
@@ -78,13 +82,14 @@ public class SearchController {
                                 minLatitude, maxLatitude, minLongitude, maxLongitude);
 
                 return technicians.stream()
-                                .map(technician -> new TechnicianDTO(technician))
+                                .map(technician -> new TechnicianDTO(technician, lang))
                                 .collect(Collectors.toList());
         }
 
         @GetMapping("/service-schedule/{serviceId}")
         public ResponseEntity<Page<TechnicianDTO>> searchTechniciansByService(
                         @PathVariable Long serviceId,
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime time,
                         @RequestParam(defaultValue = "0") int page,
@@ -94,12 +99,13 @@ public class SearchController {
                 Page<Technician> technicians = technicianService.findAvailableTechniciansByServiceAndSchedule(serviceId,
                                 date, time, pageable);
 
-                Page<TechnicianDTO> technicianDTOs = technicians.map(TechnicianDTO::new);
+                Page<TechnicianDTO> technicianDTOs = technicians.map(technician -> new TechnicianDTO(technician, lang));
                 return ResponseEntity.ok(technicianDTOs);
         }
 
         @GetMapping("/technicians-schedule")
         public ResponseEntity<Page<TechnicianDTO>> filterTechnicians(
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
                         @RequestParam(required = false) String name,
                         @RequestParam(required = false) Double minPrice,
                         @RequestParam(required = false) Double maxPrice,
@@ -121,7 +127,7 @@ public class SearchController {
                                 maxLongitude,
                                 availability, time, dayOfWeek, serviceId, pageable);
 
-                Page<TechnicianDTO> technicianDTOs = technicians.map(TechnicianDTO::new);
+                Page<TechnicianDTO> technicianDTOs = technicians.map(technician -> new TechnicianDTO(technician, lang));
                 return ResponseEntity.ok(technicianDTOs);
         }
 

@@ -25,6 +25,8 @@ import com.home.service.Service.TechnicianService;
 import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.OperatorProfileDTO;
+import com.home.service.dto.ServiceCatagoryRequest;
+import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.admin.BookingDetailDTO;
 import com.home.service.dto.admin.CustomerDetailDTO;
@@ -38,10 +40,13 @@ import com.home.service.models.TechnicianWeeklySchedule;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.DisputeStatus;
 import com.home.service.Service.OperatorService;
+import com.home.service.Service.ServiceCategoryService;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 
 import com.home.service.models.Dispute;
+import com.home.service.models.ServiceCategory;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
 
@@ -75,6 +80,9 @@ public class AdminController {
 
         @Autowired
         private DisputeService disputeService;
+
+        @Autowired
+        private ServiceCategoryService serviceCategoryService;
 
         @GetMapping("technicians/unverified")
         public ResponseEntity<List<TechnicianProfileDTO>> listUnverifiedTechnicians() {
@@ -154,15 +162,40 @@ public class AdminController {
                 return ResponseEntity.ok("Dispute status updated to " + status);
         }
 
-        @PutMapping("/service/{id}")
-        public ResponseEntity<Services> updateService(@PathVariable Long id, @RequestBody Services updatedService) {
+        @PutMapping("/services/{id}")
+        public ResponseEntity<Services> updateService(@PathVariable Long id,
+                        @Valid @RequestBody ServiceRequest updatedService) {
                 Services updated = serviceService.updateService(id, updatedService);
                 return ResponseEntity.ok(updated);
         }
 
+        @PutMapping("/services/{id}/language")
+        public ResponseEntity<String> addServiceLanguage(@PathVariable Long id,
+                        @Valid @RequestBody ServiceRequest updatedService) {
+                String updated = serviceService.addServiceLanguage(id, updatedService);
+                return ResponseEntity.ok(updated);
+        }
+
         @PostMapping("/services")
-        public Services createService(@RequestBody Services service) {
+        public String createService(@Valid @RequestBody ServiceRequest service) {
                 return serviceService.saveService(service);
+        }
+
+        @PostMapping("/service-categories")
+        public String createServiceCategory(@Valid @RequestBody ServiceCatagoryRequest serviceCategory) {
+                return serviceCategoryService.saveServiceCategory(serviceCategory);
+        }
+
+        @PostMapping("/service-categories/{id}/language")
+        public String addServiceCategoryLanguage(@PathVariable Long id,
+                        @Valid @RequestBody ServiceCatagoryRequest serviceCategory) {
+                return serviceCategoryService.addServiceCategoryLanguage(id, serviceCategory);
+        }
+
+        @PutMapping("/service-categories/{id}")
+        public ServiceCategory updateServiceCategory(@PathVariable Long id,
+                        @RequestBody ServiceCatagoryRequest serviceCategory) {
+                return serviceCategoryService.updateServiceCategory(id, serviceCategory);
         }
 
         @GetMapping("/customer")
@@ -177,11 +210,13 @@ public class AdminController {
                 return ResponseEntity.ok("Customer deleted successfully");
         }
 
-        @GetMapping("/technician")
-        public ResponseEntity<Page<TechnicianProfileDTO>> getAllTechnicians(Pageable pageable) {
-                Page<TechnicianProfileDTO> technicians = technicianService.getAllTechnicians(pageable);
-                return ResponseEntity.ok(technicians);
-        }
+        // @GetMapping("/technician")
+        // public ResponseEntity<Page<TechnicianProfileDTO>> getAllTechnicians(Pageable
+        // pageable) {
+        // Page<TechnicianProfileDTO> technicians =
+        // technicianService.getAllTechnicians(pageable);
+        // return ResponseEntity.ok(technicians);
+        // }
 
         @DeleteMapping("/technician/{id}")
         public ResponseEntity<String> deleteTechnician(@PathVariable Long id) {

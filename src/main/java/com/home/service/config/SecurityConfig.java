@@ -32,11 +32,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/search/**", "/services", "/home",
-                                "/static/**",
-                                "/uploads/**")
-                        .permitAll()
-                        // .requestMatchers("/**").permitAll()
+                        // .requestMatchers("/auth/**", "/search/**", "/services", "/home",
+                        // "/static/**",
+                        // "/uploads/**")
+                        // .permitAll()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

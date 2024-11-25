@@ -2,27 +2,33 @@ package com.home.service.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.home.service.Service.NotificationService;
 import com.home.service.dto.NotificationDTO;
+import com.home.service.dto.NotificationRequest;
 import com.home.service.models.Notification;
 import com.home.service.models.enums.NotificationType;
+import com.home.service.services.FcmService;
 
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
     private final NotificationService notificationService;
+    private FcmService fcmService;
 
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService, FcmService fcmService) {
         this.notificationService = notificationService;
+        this.fcmService = fcmService;
     }
 
     @PostMapping("/send")
@@ -34,6 +40,17 @@ public class NotificationController {
         Notification notification = notificationService.sendNotification(recipientId, title, message, type,
                 relatedEntityId);
         return ResponseEntity.ok(notification);
+    }
+
+    @PostMapping("/fcm-send")
+    public String sendNotification(@RequestBody NotificationRequest request) {
+        fcmService.sendNotification(
+                request.getTargetToken(),
+                request.getTitle(),
+                request.getBody(),
+                request.getImageUrl() // Pass the optional image URL
+        );
+        return "Notification sent!";
     }
 
     @GetMapping("/unread/{userId}")

@@ -141,7 +141,7 @@ public class CustomerService {
     private CustomerDetailDTO convertToCustomerDetailDTO(Customer customer) {
         List<Booking> bookings = bookingRepository.findByCustomer_Id(customer.getId());
         List<ServiceDTO> services = bookings.stream()
-                .map(booking -> new ServiceDTO(booking.getService()))
+                .map(booking -> new ServiceDTO(booking.getService(), customer.getUser().getPreferredLanguage()))
                 .distinct()
                 .toList();
 

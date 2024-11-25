@@ -15,6 +15,7 @@ import com.home.service.Service.CustomerService;
 import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
 import com.home.service.dto.CustomerProfileDTO;
+import com.home.service.dto.PreferredLanguageRequest;
 import com.home.service.dto.ProfileUpdateDTO;
 import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.TechnicianWeeklyScheduleResponse;
@@ -120,5 +121,13 @@ public class ProfileController {
 
         List<Map<String, Object>> schedule = bookingService.getTechnicianSchedule(technicianId);
         return ResponseEntity.ok(schedule);
+    }
+
+    @PatchMapping("/{userId}/preferred-language")
+    public ResponseEntity<String> updatePreferredLanguage(
+            @PathVariable Long userId,
+            @RequestBody PreferredLanguageRequest request) {
+        userService.updatePreferredLanguage(userId, request.getPreferredLanguage());
+        return ResponseEntity.ok("Preferred language updated successfully.");
     }
 }

@@ -38,6 +38,7 @@ import com.home.service.models.CustomDetails;
 import com.home.service.models.Operator;
 import com.home.service.models.Review;
 import com.home.service.models.enums.BookingStatus;
+import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.TechnicianAddressRepository;
@@ -340,7 +341,9 @@ public class TechnicianService {
                 dto.setPhoneNumber(technician.getUser().getPhoneNumber());
                 dto.setBio(technician.getBio());
                 dto.setIdCardImage(technician.getIdCardImage());
-                dto.setServices(technician.getServices().stream().map(Services::getName).collect(Collectors.toSet()));
+                dto.setServices(technician.getServices().stream()
+                                .map(service -> new ServiceDTO(service, technician.getUser().getPreferredLanguage()))
+                                .collect(Collectors.toList()));
                 dto.setRating(technician.getRating());
                 dto.setCompletedJobs(technician.getCompletedJobs());
                 dto.setWeeklySchedule(schedule != null ? new TechnicianWeeklyScheduleDTO(schedule) : null);
@@ -361,10 +364,10 @@ public class TechnicianService {
                 return technicianRepository.save(technician);
         }
 
-        public Page<TechnicianProfileDTO> getAllTechnicians(Pageable pageable) {
+        public Page<TechnicianProfileDTO> getAllTechnicians(Pageable pageable, EthiopianLanguage language) {
                 Page<Technician> technicians = technicianRepository.findAll(pageable);
                 List<TechnicianProfileDTO> technicianProfiles = technicians.stream()
-                                .map(technician -> new TechnicianProfileDTO(technician))
+                                .map(technician -> new TechnicianProfileDTO(technician, language))
                                 .collect(Collectors.toList());
                 return new PageImpl<>(technicianProfiles, pageable, technicians.getTotalElements());
         }
@@ -375,13 +378,13 @@ public class TechnicianService {
                 technicianRepository.delete(technician);
         }
 
-        public List<TechnicianDTO> getTopFiveTechniciansByRating() {
+        public List<TechnicianDTO> getTopFiveTechniciansByRating(EthiopianLanguage language) {
                 return technicianRepository.findAll().stream()
                                 .sorted((t1, t2) -> Double.compare(
                                                 Optional.ofNullable(t2.getRating()).orElse(0.0),
                                                 Optional.ofNullable(t1.getRating()).orElse(0.0)))
                                 .limit(5)
-                                .map(technician -> new TechnicianDTO(technician))
+                                .map(technician -> new TechnicianDTO(technician, language))
                                 .collect(Collectors.toList());
         }
 
@@ -469,7 +472,9 @@ public class TechnicianService {
                 dto.setProfileImage(user.getProfileImage());
                 dto.setBio(technician.getBio());
                 dto.setRating(technician.getRating());
-                dto.setServices(technician.getServices().stream().map(ServiceDTO::new).collect(Collectors.toSet()));
+                dto.setServices(technician.getServices().stream()
+                                .map(service -> new ServiceDTO(service, EthiopianLanguage.ENGLISH))
+                                .collect(Collectors.toSet()));
                 dto.setCompletedJobs(technician.getCompletedJobs());
                 Optional<TechnicianAddress> primaryAddress = technicianAddressRepository
                                 .findByTechnicianId(technician.getId());

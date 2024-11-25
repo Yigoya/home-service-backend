@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import com.home.service.models.Technician;
+import com.home.service.models.enums.EthiopianLanguage;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class TechnicianResponse {
     private List<String> documents;
     private Set<ServiceDTO> services;
 
-    public TechnicianResponse(Technician technician) {
+    public TechnicianResponse(Technician technician, EthiopianLanguage language) {
 
         this.id = technician.getId();
         this.bio = technician.getBio();
@@ -30,7 +31,7 @@ public class TechnicianResponse {
         this.idCardImage = technician.getIdCardImage();
         this.documents = technician.getDocuments();
         this.services = technician.getServices().stream()
-                .map(service -> new ServiceDTO(service))
+                .map(service -> new ServiceDTO(service, language))
                 .collect(Collectors.toSet());
     }
 }

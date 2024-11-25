@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.home.service.models.Technician;
+import com.home.service.models.enums.EthiopianLanguage;
 
 @Data
 @AllArgsConstructor
@@ -34,7 +35,7 @@ public class TechnicianDTO {
     private String profileImage;
     private Set<ServiceDTO> services;
 
-    public TechnicianDTO(Technician technician) {
+    public TechnicianDTO(Technician technician, EthiopianLanguage language) {
         this.id = technician.getId();
         this.name = technician.getUser().getName();
         this.email = technician.getUser().getEmail();
@@ -48,7 +49,7 @@ public class TechnicianDTO {
         this.documents = technician.getDocuments();
         this.profileImage = technician.getUser().getProfileImage();
         this.services = technician.getServices().stream()
-                .map(service -> new ServiceDTO(service))
+                .map(service -> new ServiceDTO(service, language))
                 .collect(Collectors.toSet());
     }
     // Getters and Setters

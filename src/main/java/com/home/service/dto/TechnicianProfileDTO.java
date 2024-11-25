@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianWeeklySchedule;
+import com.home.service.models.enums.EthiopianLanguage;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class TechnicianProfileDTO {
     private String phoneNumber;
     private String bio;
     private String idCardImage;
-    private Set<String> services;
+    private List<ServiceDTO> services;
     private Double rating;
     private Integer completedJobs;
     private TechnicianWeeklyScheduleDTO weeklySchedule;
@@ -48,7 +49,7 @@ public class TechnicianProfileDTO {
 
     }
 
-    public TechnicianProfileDTO(Technician technician) {
+    public TechnicianProfileDTO(Technician technician, EthiopianLanguage language) {
 
         this.id = technician.getId();
 
@@ -62,7 +63,8 @@ public class TechnicianProfileDTO {
 
         this.idCardImage = technician.getIdCardImage();
 
-        this.services = technician.getServices().stream().map(Services::getName).collect(Collectors.toSet());
+        this.services = technician.getServices().stream().map(service -> new ServiceDTO(service, language))
+                .collect(Collectors.toList());
 
         this.rating = technician.getRating();
 

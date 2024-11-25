@@ -30,6 +30,7 @@ import com.home.service.models.Technician;
 import com.home.service.models.User;
 import com.home.service.models.VerificationToken;
 import com.home.service.models.enums.AccountStatus;
+import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.CustomerRepository;
 import com.home.service.repositories.PasswordResetTokenRepository;
@@ -38,6 +39,7 @@ import com.home.service.repositories.UserRepository;
 import com.home.service.repositories.VerificationTokenRepository;
 import com.home.service.services.EmailService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -158,7 +160,8 @@ public class UserService {
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
         if (user.getRole() == UserRole.TECHNICIAN) {
             Technician technician = technicianRepository.findByUser(user).get();
-            TechnicianResponse technicianResponse = new TechnicianResponse(technician);
+            TechnicianResponse technicianResponse = new TechnicianResponse(technician,
+                    technician.getUser().getPreferredLanguage());
 
             authenticationResponse.setTechnician(technicianResponse);
 
@@ -214,6 +217,14 @@ public class UserService {
             return (CustomDetails) authentication.getPrincipal();
         }
         throw new IllegalStateException("User not authenticated");
+    }
+
+    public void updatePreferredLanguage(Long userId, EthiopianLanguage preferredLanguage) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+
+        user.setPreferredLanguage(preferredLanguage);
+        userRepository.save(user);
     }
 
 }

@@ -3,16 +3,24 @@ package com.home.service.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.home.service.dto.ServiceCatagoryRequest;
+import com.home.service.dto.ServiceCategoryDTO;
 import com.home.service.dto.ServiceCategoryWithServicesDTO;
 import com.home.service.dto.ServiceDTO;
 import com.home.service.models.ServiceCategory;
+import com.home.service.models.ServiceCategoryTranslation;
+import com.home.service.models.ServiceTranslation;
+import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.repositories.ServiceCategoryRepository;
+import com.home.service.repositories.ServiceCategoryTranslationRepository;
 import com.home.service.repositories.ServiceRepository;
+import com.home.service.repositories.ServiceTranslationRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ServiceCategoryService {
@@ -22,26 +30,78 @@ public class ServiceCategoryService {
     @Autowired
     private ServiceRepository serviceRepository;
 
-    public List<ServiceCategory> getAllServiceCategories() {
-        return serviceCategoryRepository.findAll();
+    @Autowired
+    private ServiceCategoryTranslationRepository serviceCategoryTranslationRepository;
+
+    public List<ServiceCategoryDTO> getAllServiceCategories(EthiopianLanguage lang) {
+        return serviceCategoryRepository.findAll().stream()
+                .map(serviceCategory -> new ServiceCategoryDTO(serviceCategory, lang)).collect(Collectors.toList());
     }
 
     public Optional<ServiceCategory> getServiceCategoryById(Long id) {
         return serviceCategoryRepository.findById(id);
     }
 
-    public Optional<ServiceCategoryWithServicesDTO> getServiceCategoryWithServicesById(Long id) {
+    public Optional<ServiceCategoryWithServicesDTO> getServiceCategoryWithServicesById(Long id,
+            EthiopianLanguage lang) {
         ServiceCategory serviceCategory = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
         List<ServiceDTO> services = serviceRepository.findByCategory(serviceCategory).stream()
-                .map(ServiceDTO::new)
+                .map(service -> new ServiceDTO(service, lang))
                 .toList();
 
         return Optional.of(new ServiceCategoryWithServicesDTO(serviceCategory, services));
     }
 
-    public ServiceCategory saveServiceCategory(ServiceCategory serviceCategory) {
-        return serviceCategoryRepository.save(serviceCategory);
+    public String saveServiceCategory(ServiceCatagoryRequest serviceCategoryRequest) {
+        // Create a new ServiceCategory instance
+        ServiceCategory category = new ServiceCategory();
+
+        // Map and add translations before saving
+        ServiceCategoryTranslation translation = new ServiceCategoryTranslation();
+        translation.setName(serviceCategoryRequest.getName());
+        translation.setDescription(serviceCategoryRequest.getDescription());
+        translation.setLang(serviceCategoryRequest.getLang());
+        translation.setCategory(category);
+
+        // Add the translation to the category
+        category.getTranslations().add(translation);
+
+        // Save the category (translations will be saved automatically due to cascading)
+        serviceCategoryRepository.save(category);
+
+        return "Service Category saved successfully";
+    }
+
+    public ServiceCategory updateServiceCategory(Long id, ServiceCatagoryRequest serviceCategory) {
+        ServiceCategory category = serviceCategoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
+        ServiceCategoryTranslation translation = serviceCategoryTranslationRepository.findByCategoryAndLang(category,
+                serviceCategory.getLang()).orElseThrow(() -> new EntityNotFoundException("Translation not found"));
+        translation.setName(serviceCategory.getName());
+        translation.setDescription(serviceCategory.getDescription());
+        translation.setLang(serviceCategory.getLang());
+        return serviceCategoryRepository.save(category);
+    }
+
+    public String addServiceCategoryLanguage(Long id, ServiceCatagoryRequest serviceCategoryRequest) {
+        // Fetch the existing ServiceCategory
+        ServiceCategory category = serviceCategoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
+
+        // Create a new ServiceCategoryTranslation
+        ServiceCategoryTranslation translation = new ServiceCategoryTranslation();
+        translation.setName(serviceCategoryRequest.getName());
+        translation.setDescription(serviceCategoryRequest.getDescription());
+        translation.setLang(serviceCategoryRequest.getLang());
+        translation.setCategory(category); // Link the translation to the category
+
+        // Add the translation to the category's translations
+        category.getTranslations().add(translation);
+
+        // Save the updated category (cascade will handle saving the translation)
+        serviceCategoryRepository.save(category);
+        return "Language added successfully";
     }
 
     public void deleteServiceCategory(Long id) {

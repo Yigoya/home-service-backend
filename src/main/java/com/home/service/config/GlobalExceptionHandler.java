@@ -119,6 +119,7 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception ex, WebRequest request) {
+                ex.printStackTrace();
                 ErrorResponse errorResponse = new ErrorResponse(
                                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                 "Server Error",

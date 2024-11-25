@@ -2,6 +2,7 @@ package com.home.service.models;
 
 import jakarta.persistence.*;
 import java.util.List;
+
 import lombok.*;
 
 @Entity
@@ -18,4 +19,6 @@ public class Customer extends BaseEntity {
 
     @ElementCollection
     private List<String> serviceHistory;
+
+    private Integer coinBalance = 0;
 }

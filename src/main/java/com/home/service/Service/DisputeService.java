@@ -126,7 +126,9 @@ public class DisputeService {
         // Reuse method from BookingService or create a new one if needed
         BookingDetailDTO dto = new BookingDetailDTO();
         dto.setBookingId(booking.getId());
-        dto.setService(booking.getService().getName());
+        dto.setService(booking.getService().getTranslations().stream()
+                .filter(t -> t.getLang().equals(booking.getTechnician().getUser().getPreferredLanguage()))
+                .findFirst().get().getName());
         dto.setCreatedAt(booking.getCreatedAt());
         dto.setTimeSchedule(booking.getTimeSchedule());
         dto.setStatus(booking.getStatus());

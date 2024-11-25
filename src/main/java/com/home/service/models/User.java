@@ -33,4 +33,11 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private AccountStatus status = AccountStatus.INACTIVE;
+
+    @Enumerated(EnumType.STRING)
+    private EthiopianLanguage preferredLanguage = EthiopianLanguage.ENGLISH;
+
+    private String authProvider; // e.g., "google", "facebook", "direct"
+    private String providerId; // e.g., Google UID, Facebook UID
+
 }

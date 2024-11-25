@@ -18,15 +18,20 @@ import com.home.service.dto.TechnicianDTO;
 import com.home.service.dto.records.SingleTechnician;
 import com.home.service.models.Booking;
 import com.home.service.models.ContactUs;
-import com.home.service.models.ServiceCategory;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
+import com.home.service.models.enums.EthiopianLanguage;
+
+import jakarta.validation.Valid;
+
 import com.home.service.dto.ContactUsRequest;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.DisputeRequest;
 import com.home.service.dto.ReviewDTO;
+import com.home.service.dto.ServiceCategoryDTO;
 import com.home.service.dto.ServiceCategoryWithServicesDTO;
 import com.home.service.dto.ServiceDTO;
+import com.home.service.dto.ServiceRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -58,17 +63,17 @@ public class ServiceManagementController {
     private ReviewService reviewService;
 
     @GetMapping("/home")
-    public ResponseEntity<Map<String, Object>> getDataForHome() {
-        List<ServiceDTO> service = serviceService.getAllServices();
-        List<ServiceCategory> serviceCategory = serviceCategoryService.getAllServiceCategories();
-        List<TechnicianDTO> topFiveTechnician = technicianService.getTopFiveTechniciansByRating();
+    public ResponseEntity<Map<String, Object>> getDataForHome(
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+        List<ServiceDTO> service = serviceService.getAllServices(lang);
+        List<ServiceCategoryDTO> serviceCategory = serviceCategoryService.getAllServiceCategories(lang);
+        List<TechnicianDTO> topFiveTechnician = technicianService.getTopFiveTechniciansByRating(lang);
         List<ReviewDTO> topFiveReviews = reviewService.getTop5ReviewsByRating();
 
         Map<String, Object> response = Map.of("services", service, "serviceCategories", serviceCategory,
                 "topFiveTechnicians", topFiveTechnician, "topFiveReviews", topFiveReviews);
 
         return ResponseEntity.ok(response);
-
     }
 
     // Technician Endpoints
@@ -90,19 +95,19 @@ public class ServiceManagementController {
 
     // Service Endpoints
     @GetMapping("/services")
-    public List<ServiceDTO> getAllServices() {
-        return serviceService.getAllServices();
+    public List<ServiceDTO> getAllServices(@RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+        return serviceService.getAllServices(lang);
     }
 
     @GetMapping("/services/{id}")
-    public Map<String, Object> getServiceById(@PathVariable Long id) {
-        return serviceService.getServiceById(id);
+    public Map<String, Object> getServiceById(@PathVariable Long id,
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+        return serviceService.getServiceById(id, lang);
     }
 
     @PutMapping("/services/{id}")
-    public Services updateService(@PathVariable Long id, @RequestBody Services service) {
-        service.setId(id);
-        return serviceService.saveService(service);
+    public Services updateService(@PathVariable Long id, @Valid @RequestBody ServiceRequest serviceRequest) {
+        return serviceService.updateService(id, serviceRequest);
     }
 
     @DeleteMapping("/services/{id}")
@@ -112,32 +117,18 @@ public class ServiceManagementController {
 
     // Service Category Endpoints
     @GetMapping("/service-categories")
-    public List<ServiceCategory> getAllServiceCategories() {
-        return serviceCategoryService.getAllServiceCategories();
+    public List<ServiceCategoryDTO> getAllServiceCategories(
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+        return serviceCategoryService.getAllServiceCategories(lang);
     }
 
-    @GetMapping("/service-categorie/{id}")
-    public ResponseEntity<ServiceCategoryWithServicesDTO> getServiceCategoryById(@PathVariable Long id) {
+    @GetMapping("/service-categories/{id}")
+    public ResponseEntity<ServiceCategoryWithServicesDTO> getServiceCategoryById(@PathVariable Long id,
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
         Optional<ServiceCategoryWithServicesDTO> serviceCategory = serviceCategoryService
-                .getServiceCategoryWithServicesById(id);
+                .getServiceCategoryWithServicesById(id, lang);
         return serviceCategory.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/service-categories")
-    public ServiceCategory createServiceCategory(@RequestBody ServiceCategory serviceCategory) {
-        return serviceCategoryService.saveServiceCategory(serviceCategory);
-    }
-
-    @PutMapping("/service-categories/{id}")
-    public ServiceCategory updateServiceCategory(@PathVariable Long id, @RequestBody ServiceCategory serviceCategory) {
-        serviceCategory.setId(id);
-        return serviceCategoryService.saveServiceCategory(serviceCategory);
-    }
-
-    @DeleteMapping("/service-categories/{id}")
-    public void deleteServiceCategory(@PathVariable Long id) {
-        serviceCategoryService.deleteServiceCategory(id);
     }
 
     // Booking Endpoints
