@@ -14,45 +14,49 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig {
 
-    // @Bean
-    // public WebMvcConfigurer corsConfigurer() {
-    // return new WebMvcConfigurer() {
-    // @Override
-    // public void addCorsMappings(CorsRegistry registry) {
-    // registry.addMapping("/**")
-    // .allowedOriginPatterns("*") // Use patterns instead of wildcard
-    // .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-    // .allowedHeaders("*")
+     @Bean
+     public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
 
-    // .allowCredentials(true); // Enable credentials
-    // }
+    //     @Override
+    //     public void addCorsMappings(CorsRegistry registry) {
+    //         registry.addMapping("/**")
+    //         .allowedOriginPatterns("*") // Use patterns instead of wildcard
+    //         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+    //         .allowedHeaders("*")
+    //
+    //         .allowCredentials(true); // Enable credentials
+    //     }
+             @Override
+             public void addCorsMappings(CorsRegistry registry) {
 
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    // CorsConfiguration configuration = new CorsConfiguration();
-    // configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173/")); //
-    // Replace with your frontend
-    // // origin
-    // configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE",
-    // "OPTIONS"));
-    // configuration.setAllowedHeaders(Arrays.asList("Authorization",
-    // "Content-Type"));
-    // configuration.setExposedHeaders(Arrays.asList("Authorization"));
-    // configuration.setAllowCredentials(true);
+                 registry.addMapping("/**");
+             }
 
-    // UrlBasedCorsConfigurationSource source = new
-    // UrlBasedCorsConfigurationSource();
-    // source.registerCorsConfiguration("/**", configuration);
-    // return source;
-    // }
+             @Bean
+             public CorsConfigurationSource corsConfigurationSource() {
+                 CorsConfiguration configuration = new CorsConfiguration();
+                 //configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173/")); //
+                 configuration.setAllowedOriginPatterns(Arrays.asList("*")); //Replace with your frontend  // origin
+                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE","OPTIONS"));
+                 configuration.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
+                 configuration.setExposedHeaders(Arrays.asList("Authorization"));
+                 configuration.setAllowCredentials(true);
 
-    // @Override
-    // public void addResourceHandlers(ResourceHandlerRegistry registry) {
-    // registry.addResourceHandler("/uploads/**")
-    // .addResourceLocations("file:" + System.getProperty("user.dir") +
-    // "/uploads/");
-    // }
-    // };
-    // }
+                 UrlBasedCorsConfigurationSource source = new
+                 UrlBasedCorsConfigurationSource();
+                 source.registerCorsConfiguration("/**", configuration);
+
+                 return source;
+             }
+
+             @Override
+             public void addResourceHandlers(ResourceHandlerRegistry registry) {
+                 registry.addResourceHandler("/uploads/**")
+                     .addResourceLocations("file:" + System.getProperty("user.dir") +
+                     "/uploads/");
+                 }
+             };
+     }
 
 }

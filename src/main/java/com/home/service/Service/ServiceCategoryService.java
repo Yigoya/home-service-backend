@@ -89,19 +89,31 @@ public class ServiceCategoryService {
         ServiceCategory category = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
 
-        // Create a new ServiceCategoryTranslation
-        ServiceCategoryTranslation translation = new ServiceCategoryTranslation();
-        translation.setName(serviceCategoryRequest.getName());
-        translation.setDescription(serviceCategoryRequest.getDescription());
-        translation.setLang(serviceCategoryRequest.getLang());
-        translation.setCategory(category); // Link the translation to the category
+        // Check if a translation for the given language already exists
+        Optional<ServiceCategoryTranslation> existingTranslation = serviceCategoryTranslationRepository
+                .findByCategoryAndLang(category, serviceCategoryRequest.getLang());
 
-        // Add the translation to the category's translations
-        category.getTranslations().add(translation);
+        if (existingTranslation.isPresent()) {
+            // Update the existing translation
+            ServiceCategoryTranslation translation = existingTranslation.get();
+            translation.setName(serviceCategoryRequest.getName());
+            translation.setDescription(serviceCategoryRequest.getDescription());
+            category.getTranslations().add(translation);
+        } else {
+            // Create a new ServiceCategoryTranslation
+            ServiceCategoryTranslation translation = new ServiceCategoryTranslation();
+            translation.setName(serviceCategoryRequest.getName());
+            translation.setDescription(serviceCategoryRequest.getDescription());
+            translation.setLang(serviceCategoryRequest.getLang());
+            translation.setCategory(category); // Link the translation to the category
+
+            // Add the translation to the category's translations
+            category.getTranslations().add(translation);
+        }
 
         // Save the updated category (cascade will handle saving the translation)
         serviceCategoryRepository.save(category);
-        return "Language added successfully";
+        return "Language added or updated successfully";
     }
 
     public void deleteServiceCategory(Long id) {

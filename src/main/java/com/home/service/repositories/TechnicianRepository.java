@@ -29,16 +29,17 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long>, J
                         "(:query IS NULL OR u.name LIKE %:query%) ")
         List<Technician> findTechnicians(@Param("query") String query);
 
-        @Query("SELECT t FROM Technician t JOIN t.services s " +
-                        "JOIN TechnicianWeeklySchedule tws ON t.id = tws.technician.id " +
+        @Query("SELECT t FROM Technician t LEFT JOIN TechnicianWeeklySchedule tws ON t.id = tws.technician.id  " +
+                        "JOIN t.services s " +
                         "WHERE s.id = :serviceId AND t.availability = 'Available' " +
-                        "AND (:dayOfWeek = 'MONDAY' AND :time BETWEEN tws.mondayStart AND tws.mondayEnd " +
+                        "AND (tws IS NULL OR " +
+                        "(:dayOfWeek = 'MONDAY' AND :time BETWEEN tws.mondayStart AND tws.mondayEnd " +
                         "OR :dayOfWeek = 'TUESDAY' AND :time BETWEEN tws.tuesdayStart AND tws.tuesdayEnd " +
                         "OR :dayOfWeek = 'WEDNESDAY' AND :time BETWEEN tws.wednesdayStart AND tws.wednesdayEnd " +
                         "OR :dayOfWeek = 'THURSDAY' AND :time BETWEEN tws.thursdayStart AND tws.thursdayEnd " +
                         "OR :dayOfWeek = 'FRIDAY' AND :time BETWEEN tws.fridayStart AND tws.fridayEnd " +
                         "OR :dayOfWeek = 'SATURDAY' AND :time BETWEEN tws.saturdayStart AND tws.saturdayEnd " +
-                        "OR :dayOfWeek = 'SUNDAY' AND :time BETWEEN tws.sundayStart AND tws.sundayEnd)")
+                        "OR :dayOfWeek = 'SUNDAY' AND :time BETWEEN tws.sundayStart AND tws.sundayEnd))")
         Page<Technician> findAvailableTechniciansByServiceAndSchedule(
                         @Param("serviceId") Long serviceId,
                         @Param("dayOfWeek") String dayOfWeek,

@@ -13,49 +13,49 @@ import jakarta.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingRequest {
-    @NotNull(message = "Customer ID cannot be null")
+    @NotNull(message = "Please provide a valid Customer ID.")
     private Long customerId;
 
-    @NotNull(message = "Technician ID cannot be null")
+    @NotNull(message = "Please provide a valid Technician ID.")
     private Long technicianId;
 
-    @NotNull(message = "Service ID cannot be null")
+    @NotNull(message = "Please provide a valid Service ID.")
     private Long serviceId;
 
-    @NotBlank(message = "Description cannot be blank")
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    @NotBlank(message = "Description is required and cannot be blank.")
+    @Size(max = 500, message = "Description cannot exceed 500 characters.")
     private String description;
 
-    @NotNull(message = "Scheduled date cannot be null")
+    @NotNull(message = "Please provide a valid Scheduled Date.")
     private LocalDateTime scheduledDate;
 
-    @NotBlank(message = "Street cannot be blank")
+    @NotBlank(message = "Street is required and cannot be blank.")
     private String street;
 
-    @NotBlank(message = "City cannot be blank")
+    @NotBlank(message = "City is required and cannot be blank.")
     private String city;
 
-    @NotBlank(message = "Subcity cannot be blank")
+    @NotBlank(message = "Subcity is required and cannot be blank.")
     private String subcity;
 
-    @NotBlank(message = "Wereda cannot be blank")
+    @NotBlank(message = "Wereda is required and cannot be blank.")
     private String wereda;
 
-    @NotBlank(message = "State cannot be blank")
+    @NotBlank(message = "State is required and cannot be blank.")
     private String state;
 
-    @NotBlank(message = "Country cannot be blank")
+    @NotBlank(message = "Country is required and cannot be blank.")
     private String country;
 
-    @NotBlank(message = "Zip code cannot be blank")
+    @NotBlank(message = "Zip code is required and cannot be blank.")
     private String zipCode;
 
-    @NotNull(message = "Latitude cannot be null")
+    @NotNull(message = "Please provide a valid Latitude.")
     private Double latitude;
 
-    @NotNull(message = "Longitude cannot be null")
+    @NotNull(message = "Please provide a valid Longitude.")
     private Double longitude;
 
-    @NotBlank(message = "Time schedule cannot be blank")
+    @NotBlank(message = "Time schedule is required and cannot be blank.")
     private String timeSchedule;
 }

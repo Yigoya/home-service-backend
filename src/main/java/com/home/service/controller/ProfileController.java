@@ -14,6 +14,7 @@ import com.home.service.Service.BookingService;
 import com.home.service.Service.CustomerService;
 import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
+import com.home.service.dto.ChangeContactRequest;
 import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.PreferredLanguageRequest;
 import com.home.service.dto.ProfileUpdateDTO;
@@ -21,6 +22,8 @@ import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.TechnicianWeeklyScheduleResponse;
 import com.home.service.dto.WeeklyScheduleRequest;
 import com.home.service.services.FileStorageService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/profile")
@@ -129,5 +132,17 @@ public class ProfileController {
             @RequestBody PreferredLanguageRequest request) {
         userService.updatePreferredLanguage(userId, request.getPreferredLanguage());
         return ResponseEntity.ok("Preferred language updated successfully.");
+    }
+
+    @PostMapping("/change-contact")
+    public ResponseEntity<String> changeContact(@Valid @RequestBody ChangeContactRequest request) {
+        userService.initiateChangeContact(request);
+        return ResponseEntity.ok("Change request initiated. Check your email for verification instructions.");
+    }
+
+    @GetMapping("/verify-email-change")
+    public ResponseEntity<String> verifyEmailChange(@RequestParam("token") String token) {
+        userService.verifyEmailChange(token);
+        return ResponseEntity.ok("Email change verified successfully.");
     }
 }

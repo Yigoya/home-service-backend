@@ -18,8 +18,6 @@ public class TechnicianDTO {
 
     private Long id;
     private String name;
-    private String email;
-    private String phoneNumber;
     private String bio;
     private String availability;
     private Double rating;
@@ -38,8 +36,6 @@ public class TechnicianDTO {
     public TechnicianDTO(Technician technician, EthiopianLanguage language) {
         this.id = technician.getId();
         this.name = technician.getUser().getName();
-        this.email = technician.getUser().getEmail();
-        this.phoneNumber = technician.getUser().getPhoneNumber();
         this.bio = technician.getBio();
         this.availability = technician.getAvailability();
         this.rating = technician.getRating();

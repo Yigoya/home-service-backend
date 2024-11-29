@@ -40,15 +40,15 @@ public class TechnicianSpecificationSchedule {
             // Location filters
             if (city != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("address").get("city"), city));
+                        criteriaBuilder.equal(root.get("technicianAddresses").get("city"), city));
             }
             if (subcity != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("address").get("subcity"), subcity));
+                        criteriaBuilder.equal(root.get("technicianAddresses").get("subcity"), subcity));
             }
             if (wereda != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("address").get("wereda"), wereda));
+                        criteriaBuilder.equal(root.get("technicianAddresses").get("wereda"), wereda));
             }
             if (minLatitude != null) {
                 predicate = criteriaBuilder.and(predicate,

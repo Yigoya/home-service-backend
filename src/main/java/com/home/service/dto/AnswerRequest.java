@@ -1,34 +1,69 @@
 package com.home.service.dto;
 
-import java.util.List;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class AnswerRequest {
-    @NotNull(message = "Booking ID cannot be null")
+
+    @NotNull(message = "Booking ID is required.")
     private Long bookingId;
 
-    @NotNull(message = "Customer ID cannot be null")
+    @NotNull(message = "Customer ID is required.")
     private Long customerId;
 
-    @NotEmpty(message = "Answers cannot be empty")
-    private List<QuestionAnswer> answers;
+    @NotEmpty(message = "Answers list cannot be empty.")
+    private List<@Valid AnswerDTO> answers;
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class QuestionAnswer {
-        @NotNull(message = "Question ID cannot be null")
+    // Getters and setters
+    public Long getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public List<AnswerDTO> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<AnswerDTO> answers) {
+        this.answers = answers;
+    }
+
+    public static class AnswerDTO {
+
+        @NotNull(message = "Question ID is required.")
         private Long questionId;
 
-        @NotEmpty(message = "Response cannot be empty")
+        @NotEmpty(message = "Response cannot be empty.")
         private String response;
+
+        // Getters and setters
+        public Long getQuestionId() {
+            return questionId;
+        }
+
+        public void setQuestionId(Long questionId) {
+            this.questionId = questionId;
+        }
+
+        public String getResponse() {
+            return response;
+        }
+
+        public void setResponse(String response) {
+            this.response = response;
+        }
     }
 }

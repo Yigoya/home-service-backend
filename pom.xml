@@ -83,6 +83,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- <dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency> -->
+
 		<dependency>
 			<groupId>io.github.cdimascio</groupId>
 			<artifactId>java-dotenv</artifactId>
@@ -167,6 +173,4 @@
 		</plugins>
 		
 	</build>
-	
-
 </project>

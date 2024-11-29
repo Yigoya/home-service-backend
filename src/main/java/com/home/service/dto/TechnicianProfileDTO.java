@@ -23,6 +23,7 @@ public class TechnicianProfileDTO {
     private String email;
     private String phoneNumber;
     private String bio;
+    private String profileImage;
     private String idCardImage;
     private List<ServiceDTO> services;
     private Double rating;
@@ -45,7 +46,7 @@ public class TechnicianProfileDTO {
 
         this.completedJobs = completedJobs;
 
-        this.weeklySchedule = new TechnicianWeeklyScheduleDTO(weeklySchedule);
+        this.weeklySchedule = weeklySchedule != null ? new TechnicianWeeklyScheduleDTO(weeklySchedule) : null;
 
     }
 
@@ -56,6 +57,8 @@ public class TechnicianProfileDTO {
         this.name = technician.getUser().getName();
 
         this.email = technician.getUser().getEmail();
+
+        this.profileImage = technician.getUser().getProfileImage();
 
         this.phoneNumber = technician.getUser().getPhoneNumber();
 

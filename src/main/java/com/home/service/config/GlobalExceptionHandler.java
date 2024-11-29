@@ -20,7 +20,9 @@ import javax.naming.AuthenticationException;
 import jakarta.validation.ConstraintViolationException;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -140,6 +142,18 @@ public class GlobalExceptionHandler {
                                 request.getDescription(false));
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
+
+        // @ExceptionHandler(MethodArgumentNotValidException.class)
+        // public ResponseEntity<Map<String, String>>
+        // handleValidationExceptions(MethodArgumentNotValidException ex) {
+        // Map<String, String> errors = new HashMap<>();
+        // ex.getBindingResult().getAllErrors().forEach(error -> {
+        // String fieldName = ((FieldError) error).getField();
+        // String errorMessage = error.getDefaultMessage();
+        // errors.put(fieldName, errorMessage);
+        // });
+        // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        // }
 
         // Handle authentication errors
         @ExceptionHandler(AuthenticationException.class)

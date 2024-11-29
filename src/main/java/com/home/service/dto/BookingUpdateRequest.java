@@ -56,6 +56,9 @@ public class BookingUpdateRequest {
     @Size(max = 255, message = "Time schedule cannot exceed 255 characters")
     private String timeSchedule;
 
+    @NotBlank(message = "Description cannot be blank")
+    private String description;
+
     @NotNull(message = "Status cannot be null")
     private BookingStatus status;
 }

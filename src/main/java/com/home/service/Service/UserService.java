@@ -14,17 +14,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.home.service.dto.AuthenticationResponse;
+import com.home.service.dto.ChangeContactRequest;
 import com.home.service.dto.CustomerResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
 import com.home.service.dto.SignupRequest;
+import com.home.service.dto.SocialLoginRequest;
 import com.home.service.dto.TechnicianResponse;
 import com.home.service.dto.UserResponse;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.home.service.config.JwtUtil;
 import com.home.service.config.MyUserDetailsService;
 import com.home.service.config.exceptions.UserNotFoundException;
 import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
+import com.home.service.models.DeviceInfo;
 import com.home.service.models.PasswordResetToken;
 import com.home.service.models.Technician;
 import com.home.service.models.User;
@@ -74,6 +80,9 @@ public class UserService {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private VerificationTokenRepository tokenRepository;
+
     public User signup(SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             throw new IllegalStateException("Email already in use");
@@ -91,7 +100,8 @@ public class UserService {
     }
 
     public String verifyToken(String token) {
-        VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalStateException("Token is invalid or expired."));
         if (verificationToken == null || verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("Token is invalid or expired.");
         }
@@ -142,38 +152,111 @@ public class UserService {
 
     @Transactional
     public AuthenticationResponse authenticate(LoginRequest loginRequest) {
-        System.out.println("loginRequest = " + loginRequest.getEmail());
-        System.out.println("loginRequest = " + loginRequest.getPassword());
-
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
                         loginRequest.getPassword()));
 
-        System.out.println("loginRequest.getEmail() = " + loginRequest.getEmail());
-        final CustomDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
-        final String jwtToken = jwtUtil.generateToken(userDetails.getEmail());
-        final User user = userRepository.findByEmail(loginRequest.getEmail()).get();
+        CustomDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        String jwtToken = jwtUtil.generateToken(userDetails.getEmail());
+        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
+                () -> new UserNotFoundException("User not found"));
+        DeviceInfo deviceInfo = user.getDevices().stream()
+                .filter(device -> device.getFCMToken().equals(loginRequest.getFCMToken()))
+                .findFirst().orElse(null);
+        if (deviceInfo != null) {
+            deviceInfo.setDeviceType(loginRequest.getDeviceType());
+            deviceInfo.setDeviceModel(loginRequest.getDeviceModel());
+            deviceInfo.setOperatingSystem(loginRequest.getOperatingSystem());
+        } else {
+            deviceInfo = new DeviceInfo();
+            deviceInfo.setFCMToken(loginRequest.getFCMToken());
+            deviceInfo.setDeviceType(loginRequest.getDeviceType());
+            deviceInfo.setDeviceModel(loginRequest.getDeviceModel());
+            deviceInfo.setOperatingSystem(loginRequest.getOperatingSystem());
+            user.addDevice(deviceInfo);
+        }
+
+        userRepository.save(user);
+
+        UserResponse userResponse = new UserResponse(
+                user.getId(), user.getName(), user.getEmail(),
+                user.getPhoneNumber(), user.getRole().name(),
+                user.getStatus().name(), user.getProfileImage());
+
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
+
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            Technician technician = technicianRepository.findByUser(user).orElseThrow(
+                    () -> new UserNotFoundException("Technician not found"));
+            TechnicianResponse technicianResponse = new TechnicianResponse(technician, user.getPreferredLanguage());
+            authenticationResponse.setTechnician(technicianResponse);
+        } else if (user.getRole() == UserRole.CUSTOMER) {
+            Customer customer = customerRepository.findByUser(user).orElseThrow(
+                    () -> new UserNotFoundException("Customer not found"));
+            CustomerResponse customerResponse = new CustomerResponse(
+                    customer.getId(), customer.getServiceHistory(), customer.getSavedAddresses());
+            authenticationResponse.setCustomer(customerResponse);
+        }
+
+        return authenticationResponse;
+    }
+
+    @Transactional
+    public AuthenticationResponse handleSocialLogin(SocialLoginRequest loginRequest) throws FirebaseAuthException {
+        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginRequest.getIdToken());
+
+        String email = firebaseToken.getEmail();
+        String name = (String) firebaseToken.getClaims().get("name");
+        String providerId = firebaseToken.getUid();
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            if (name == null) {
+                name = email.split("@")[0];
+            }
+            user = new User();
+            user.setEmail(email);
+            user.setName(name);
+            user.setAuthProvider(loginRequest.getProvider());
+            user.setProviderId(providerId);
+        }
+
+        DeviceInfo deviceInfo = user.getDevices().stream()
+                .filter(device -> device.getFCMToken().equals(loginRequest.getFCMToken()))
+                .findFirst().orElse(null);
+        if (deviceInfo != null) {
+            deviceInfo.setDeviceType(loginRequest.getDeviceType());
+            deviceInfo.setDeviceModel(loginRequest.getDeviceModel());
+            deviceInfo.setOperatingSystem(loginRequest.getOperatingSystem());
+        } else {
+            deviceInfo = new DeviceInfo();
+            deviceInfo.setFCMToken(loginRequest.getFCMToken());
+            deviceInfo.setDeviceType(loginRequest.getDeviceType());
+            deviceInfo.setDeviceModel(loginRequest.getDeviceModel());
+            deviceInfo.setOperatingSystem(loginRequest.getOperatingSystem());
+            user.addDevice(deviceInfo);
+        }
+
+        userRepository.save(user);
+
+        final String jwtToken = jwtUtil.generateToken(user.getEmail());
         UserResponse userResponse = new UserResponse(user.getId(), user.getName(), user.getEmail(),
                 user.getPhoneNumber(), user.getRole().name(), user.getStatus().name(), user.getProfileImage());
-        System.out.println("user = " + user);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
         if (user.getRole() == UserRole.TECHNICIAN) {
-            Technician technician = technicianRepository.findByUser(user).get();
-            TechnicianResponse technicianResponse = new TechnicianResponse(technician,
-                    technician.getUser().getPreferredLanguage());
-
+            Technician technician = technicianRepository.findByUser(user).orElseThrow(
+                    () -> new UserNotFoundException("Technician not found"));
+            TechnicianResponse technicianResponse = new TechnicianResponse(technician, user.getPreferredLanguage());
             authenticationResponse.setTechnician(technicianResponse);
-
         } else if (user.getRole() == UserRole.CUSTOMER) {
-            Customer customer = customerRepository.findByUser(user).get();
-            CustomerResponse customerResponse = new CustomerResponse(customer.getId(), customer.getServiceHistory(),
-                    customer.getSavedAddresses());
-
+            Customer customer = customerRepository.findByUser(user).orElseThrow(
+                    () -> new UserNotFoundException("Customer not found"));
+            CustomerResponse customerResponse = new CustomerResponse(
+                    customer.getId(), customer.getServiceHistory(), customer.getSavedAddresses());
             authenticationResponse.setCustomer(customerResponse);
         }
         return authenticationResponse;
-        // return new AuthenticationResponse(jwtToken, new User());
     }
 
     public String suspendUser(Long userId) {
@@ -202,7 +285,7 @@ public class UserService {
     @Transactional
     public void updateProfileImage(Long userId, String fileName) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         // Update the profile image path
         user.setProfileImage(fileName);
@@ -225,6 +308,61 @@ public class UserService {
 
         user.setPreferredLanguage(preferredLanguage);
         userRepository.save(user);
+    }
+
+    public void initiateChangeContact(ChangeContactRequest request) {
+        // Fetch the user
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Update phone number immediately if provided
+        if (request.getNewPhoneNumber() != null) {
+            user.setPhoneNumber(request.getNewPhoneNumber());
+        }
+
+        // Handle email change
+        if (request.getNewEmail() != null) {
+            // Check if the new email already exists in the system
+            if (userRepository.existsByEmail(request.getNewEmail())) {
+                throw new IllegalStateException("Email already in use");
+            }
+
+            user.setPendingEmail(request.getNewEmail());
+            String token = UUID.randomUUID().toString();
+
+            // Save the token
+            VerificationToken verificationToken = tokenRepository.findByUser(user)
+                    .orElse(new VerificationToken(token, LocalDateTime.now().plusHours(1), user));
+            verificationToken.setToken(token);
+            verificationToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+            tokenRepository.save(verificationToken);
+
+            // Send verification email
+            emailService.sendVerifyEmailForChange(user, token);
+        }
+
+        // Save user
+        userRepository.save(user);
+    }
+
+    public void verifyEmailChange(String token) {
+        // Fetch and validate the token
+        VerificationToken verificationToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
+
+        User user = verificationToken.getUser();
+
+        if (user.getPendingEmail() == null) {
+            throw new IllegalStateException("No pending email change request.");
+        }
+
+        // Update the email
+        user.setEmail(user.getPendingEmail());
+        user.setPendingEmail(null);
+
+        // Save user and remove the token
+        userRepository.save(user);
+        tokenRepository.delete(verificationToken);
     }
 
 }

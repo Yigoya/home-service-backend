@@ -23,6 +23,8 @@ import com.home.service.models.Booking;
 import com.home.service.models.Question;
 import com.home.service.models.QuestionRequest;
 
+import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -40,7 +42,7 @@ public class BookingController {
     private AnswerService answerService;
 
     @PostMapping("/request")
-    public ResponseEntity<Map<String, Long>> requestBooking(@RequestBody BookingRequest bookingRequest) {
+    public ResponseEntity<Map<String, Long>> requestBooking(@Valid @RequestBody BookingRequest bookingRequest) {
         Booking booking = bookingService.createBooking(bookingRequest);
         Map<String, Long> response = new HashMap<>();
         response.put("bookingId", booking.getId());
@@ -56,7 +58,8 @@ public class BookingController {
     }
 
     @PutMapping("/update-status")
-    public ResponseEntity<String> updateBookingStatus(@RequestBody UpdateBookingStatusDTO updateBookingStatusDTO) {
+    public ResponseEntity<String> updateBookingStatus(
+            @Valid @RequestBody UpdateBookingStatusDTO updateBookingStatusDTO) {
         // Call the service to update the booking status
         Booking updatedBooking = bookingService.updateBookingStatus(updateBookingStatusDTO.getBookingId(),
                 updateBookingStatusDTO.getStatus());
@@ -90,11 +93,6 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @PostMapping("/question")
-    public ResponseEntity<String> createQuestion(@RequestBody QuestionRequest request) {
-        return ResponseEntity.status(201).body(questionService.createQuestion(request));
-    }
-
     @GetMapping("/questions")
     public ResponseEntity<List<Question>> getAllQuestions() {
         List<Question> questions = questionService.getAllQuestions();
@@ -102,7 +100,7 @@ public class BookingController {
     }
 
     @PostMapping("/answer")
-    public ResponseEntity<String> submitAnswers(@RequestBody AnswerRequest request) {
+    public ResponseEntity<String> submitAnswers(@Valid @RequestBody AnswerRequest request) {
         bookingService.saveAnswers(request);
         return ResponseEntity.status(201).body("Answers submitted successfully");
     }

@@ -243,6 +243,8 @@ public class BookingService {
             booking.setStatus(request.getStatus());
         }
 
+        booking.setDescription(request.getDescription());
+
         return bookingRepository.save(booking);
     }
 

@@ -55,6 +55,7 @@ com/home/service/models/QuestionOption.class
 com/home/service/dto/AuthenticationRequest.class
 com/home/service/dto/TechnicianWeeklyScheduleDTO.class
 com/home/service/dto/NotificationRequest.class
+com/home/service/models/DeviceInfo.class
 com/home/service/dto/TechnicianSearchFilterDTO.class
 com/home/service/dto/admin/CustomerDTO.class
 com/home/service/Service/BookingSpecification.class
@@ -80,6 +81,7 @@ com/home/service/dto/AddressDTO.class
 com/home/service/controller/AdminController.class
 com/home/service/dto/admin/ServiceCategoryWithServicesDTO.class
 com/home/service/models/Booking.class
+com/home/service/repositories/DeviceInfoRepository.class
 com/home/service/models/Transaction.class
 com/home/service/dto/TechnicianDTO.class
 com/home/service/controller/TransactionController.class
@@ -88,7 +90,6 @@ com/home/service/ServiceApplication.class
 com/home/service/controller/ServiceManagementController.class
 com/home/service/dto/ServiceCategoryWithServicesDTO.class
 com/home/service/models/Services.class
-com/home/service/config/CORSFilter.class
 com/home/service/models/Answer.class
 com/home/service/dto/admin/AddressDTO.class
 com/home/service/Service/TechnicianSpecification.class
@@ -99,7 +100,6 @@ com/home/service/Service/TechnicianAdminSpecification.class
 com/home/service/repositories/ContactUsRepository.class
 com/home/service/Service/BookingService.class
 com/home/service/controller/NotificationController.class
-com/home/service/dto/AnswerRequest$QuestionAnswer.class
 com/home/service/repositories/CustomerRepository.class
 com/home/service/Service/WebSocketNotificationService.class
 com/home/service/repositories/TechnicianAddressRepository.class
@@ -127,6 +127,7 @@ com/home/service/dto/OperatorSignupRequest.class
 com/home/service/models/Notification.class
 com/home/service/models/PasswordResetToken.class
 com/home/service/dto/AnswerDTO.class
+com/home/service/dto/PreferredLanguageRequest.class
 com/home/service/controller/BookingController.class
 com/home/service/models/BaseEntity.class
 com/home/service/repositories/TechnicianDocumentRepository.class
@@ -145,6 +146,7 @@ com/home/service/services/FileStorageService.class
 com/home/service/dto/AnswerRequest.class
 com/home/service/Service/AnswerService.class
 com/home/service/Service/ReviewService.class
+com/home/service/config/WebConfig$1.class
 com/home/service/dto/ProfileUpdateDTO.class
 com/home/service/dto/TechnicianWeeklyScheduleResponse.class
 com/home/service/models/PaymentMethod.class

@@ -14,21 +14,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.home.service.Service.NotificationService;
+import com.home.service.config.exceptions.UserNotFoundException;
 import com.home.service.dto.NotificationDTO;
 import com.home.service.dto.NotificationRequest;
 import com.home.service.models.Notification;
+import com.home.service.models.User;
 import com.home.service.models.enums.NotificationType;
+import com.home.service.repositories.UserRepository;
 import com.home.service.services.FcmService;
 
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
     private final NotificationService notificationService;
-    private FcmService fcmService;
+    private final FcmService fcmService;
+    private final UserRepository userRepository;
 
-    public NotificationController(NotificationService notificationService, FcmService fcmService) {
+    public NotificationController(NotificationService notificationService, FcmService fcmService,
+            UserRepository userRepository) {
         this.notificationService = notificationService;
         this.fcmService = fcmService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/send")
@@ -44,8 +50,10 @@ public class NotificationController {
 
     @PostMapping("/fcm-send")
     public String sendNotification(@RequestBody NotificationRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         fcmService.sendNotification(
-                request.getTargetToken(),
+                user,
                 request.getTitle(),
                 request.getBody(),
                 request.getImageUrl() // Pass the optional image URL

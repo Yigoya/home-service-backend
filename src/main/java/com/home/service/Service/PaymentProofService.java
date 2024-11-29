@@ -18,6 +18,7 @@ import com.home.service.services.EmailService;
 import com.home.service.services.FileStorageService;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class PaymentProofService {
@@ -34,6 +35,7 @@ public class PaymentProofService {
     @Autowired
     private EmailService emailService;
 
+    @Transactional
     public String uploadPaymentProof(MultipartFile file, Long technicianId) {
         // Find the technician
         Technician technician = technicianRepository.findById(technicianId)
@@ -85,6 +87,7 @@ public class PaymentProofService {
         }
     }
 
+    @Transactional
     public List<TechnicianProofResponse> getTechniciansWithPendingProofs() {
         // Fetch pending technician documents
         List<TechnicianDocument> pendingDocuments = technicianDocumentRepository.findByStatus(DocumentStatus.PENDING);

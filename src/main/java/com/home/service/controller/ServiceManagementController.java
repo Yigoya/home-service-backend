@@ -83,7 +83,7 @@ public class ServiceManagementController {
     }
 
     @PostMapping("/set-service-price")
-    public ResponseEntity<String> setServicePrice(@RequestBody SetServicePriceDTO setServicePriceDTO) {
+    public ResponseEntity<String> setServicePrice(@Valid @RequestBody SetServicePriceDTO setServicePriceDTO) {
         technicianService.setServicePrice(setServicePriceDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body("Service price set successfully");
     }
@@ -177,14 +177,14 @@ public class ServiceManagementController {
     }
 
     @PostMapping("/contact-us")
-    public ResponseEntity<ContactUs> submitContactUs(@RequestBody ContactUsRequest contactUsRequest) {
+    public ResponseEntity<ContactUs> submitContactUs(@Valid @RequestBody ContactUsRequest contactUsRequest) {
 
         ContactUs contactUs = contactUsService.submitContactUs(contactUsRequest);
         return ResponseEntity.status(201).body(contactUs);
     }
 
     @PostMapping("/dispute")
-    public ResponseEntity<String> submitDispute(@RequestBody DisputeRequest disputeRequest) {
+    public ResponseEntity<String> submitDispute(@Valid @RequestBody DisputeRequest disputeRequest) {
 
         disputeService.submitDispute(disputeRequest);
         return ResponseEntity.status(201).body("Dispute submitted successfully");

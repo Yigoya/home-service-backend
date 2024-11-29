@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.home.service.dto.ServiceDTO;
+import com.home.service.dto.ServiceLangRequest;
 import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.admin.ServiceCategoryWithServicesDTO;
@@ -88,7 +89,8 @@ public class ServiceService {
 
     @Transactional
     public Services updateService(Long id, ServiceRequest serviceRequest) {
-        Services service = new Services();
+        Services service = serviceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Service not found"));
         ServiceTranslation translation = new ServiceTranslation();
         translation.setLang(serviceRequest.getLang());
         translation.setName(serviceRequest.getName());
@@ -104,16 +106,30 @@ public class ServiceService {
     }
 
     @Transactional
-    public String addServiceLanguage(Long id, ServiceRequest serviceRequest) {
+    public String addServiceLanguage(Long id, ServiceLangRequest serviceRequest) {
         Services service = serviceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service not found"));
-        ServiceTranslation translation = new ServiceTranslation();
+
+        // Check if translation for the given language already exists
+        ServiceTranslation translation = service.getTranslations().stream()
+                .filter(t -> t.getLang().equals(serviceRequest.getLang()))
+                .findFirst()
+                .orElse(new ServiceTranslation());
+
+        // Update or set new translation details
         translation.setLang(serviceRequest.getLang());
         translation.setName(serviceRequest.getName());
         translation.setDescription(serviceRequest.getDescription());
         translation.setService(service);
-        service.getTranslations().add(translation);
-        return "Language" + serviceRequest.getLang() + "added successfully";
+
+        // Add translation to service if it's new
+        if (!service.getTranslations().contains(translation)) {
+            service.getTranslations().add(translation);
+        }
+
+        serviceRepository.save(service);
+
+        return "Language " + serviceRequest.getLang() + " added/updated successfully";
     }
 
     public void deleteService(Long id) {

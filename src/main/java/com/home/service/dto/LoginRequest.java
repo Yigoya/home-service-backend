@@ -1,9 +1,18 @@
 package com.home.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoginRequest {
+
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
@@ -11,27 +20,16 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    public LoginRequest() {
-    }
+    @NotBlank(message = "FCM token is required")
+    @JsonProperty("FCMToken")
+    private String FCMToken;
 
-    public LoginRequest(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
+    @NotBlank(message = "Device type is required")
+    private String deviceType;
 
-    public String getEmail() {
-        return email;
-    }
+    @NotBlank(message = "Device model is required")
+    private String deviceModel;
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    @NotBlank(message = "Operating system is required")
+    private String operatingSystem;
 }

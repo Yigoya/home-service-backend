@@ -122,4 +122,17 @@ public class EmailService {
         message.setText(text);
         mailSender.send(message);
     }
+
+    public void sendVerifyEmailForChange(User user, String token) {
+        String subject = "Verify Your New Email Address";
+        String text = "Please confirm your new email address by clicking the link below:\n"
+                + "http://your-production-url/api/user/verify-email-change?token=" + token;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getPendingEmail());
+        message.setSubject(subject);
+        message.setText(text);
+        mailSender.send(message);
+    }
+
 }

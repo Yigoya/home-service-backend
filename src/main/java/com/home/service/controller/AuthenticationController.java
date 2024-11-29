@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.google.firebase.FirebaseApp;
@@ -23,16 +24,25 @@ import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
 import com.home.service.dto.AdminLoginRequest;
 import com.home.service.dto.AuthenticationResponse;
+import com.home.service.dto.CustomerResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
 import com.home.service.dto.OperatorSignupRequest;
 import com.home.service.dto.SocialLoginRequest;
+import com.home.service.dto.TechnicianResponse;
 import com.home.service.dto.TechnicianSignupRequest;
 import com.home.service.dto.UploadPaymentProofRequest;
 import com.home.service.dto.UserResponse;
 import com.home.service.config.JwtUtil;
+import com.home.service.config.exceptions.UserNotFoundException;
+import com.home.service.models.CustomDetails;
+import com.home.service.models.Customer;
+import com.home.service.models.DeviceInfo;
+import com.home.service.models.Technician;
 import com.home.service.models.TechnicianProofResponse;
 import com.home.service.models.User;
+import com.home.service.models.enums.UserRole;
+import com.home.service.repositories.DeviceInfoRepository;
 import com.home.service.repositories.UserRepository;
 
 import jakarta.validation.Valid;
@@ -51,10 +61,12 @@ public class AuthenticationController {
     private final JwtUtil jwtUtil;
     private final PaymentProofService paymentProofService;
     private final UserRepository userRepository;
+    private final DeviceInfoRepository deviceInfoRepository;
 
     public AuthenticationController(CustomerService customerService, TechnicianService technicianService,
             OperatorService operatorService, AdminService adminService, UserService userService, JwtUtil jwtUtil,
-            PaymentProofService paymentProofService, UserRepository userRepository) {
+            PaymentProofService paymentProofService, UserRepository userRepository,
+            DeviceInfoRepository deviceInfoRepository) {
         this.customerService = customerService;
         this.technicianService = technicianService;
         this.operatorService = operatorService;
@@ -63,43 +75,20 @@ public class AuthenticationController {
         this.jwtUtil = jwtUtil;
         this.paymentProofService = paymentProofService;
         this.userRepository = userRepository;
+        this.deviceInfoRepository = deviceInfoRepository;
     }
 
     @PostMapping("/login")
     public AuthenticationResponse loginCustomer(@Valid @RequestBody LoginRequest loginRequest) {
+        System.out.println("token token token " + loginRequest.getDeviceModel());
         return userService.authenticate(loginRequest);
     }
 
     @PostMapping("/social-login")
     public ResponseEntity<?> handleSocialLogin(@Valid @RequestBody SocialLoginRequest loginRequest) {
         try {
-            System.out.println(loginRequest.getIdToken());
-            FirebaseToken firebaseToken = verifyToken(loginRequest.getIdToken());
-
-            String email = firebaseToken.getEmail();
-            String name = (String) firebaseToken.getClaims().get("name");
-            String providerId = firebaseToken.getUid();
-
-            User user = userRepository.findByEmail(email).orElse(null);
-            if (user == null) {
-                // Create a new user
-                if (name == null) {
-                    name = email.split("@")[0];
-                }
-                user = new User();
-                user.setEmail(email);
-                user.setName(name);
-                user.setAuthProvider(loginRequest.getProvider());
-                user.setProviderId(providerId);
-                userRepository.save(user);
-            }
-
-            // Generate JWT
-            final String jwtToken = jwtUtil.generateToken(user.getEmail());
-            UserResponse userResponse = new UserResponse(user.getId(), user.getName(), user.getEmail(),
-                    user.getPhoneNumber(), user.getRole().name(), user.getStatus().name(), user.getProfileImage());
-            return ResponseEntity.ok(new AuthenticationResponse(jwtToken, userResponse));
-
+            AuthenticationResponse authenticationResponse = userService.handleSocialLogin(loginRequest);
+            return ResponseEntity.ok(authenticationResponse);
         } catch (FirebaseAuthException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
@@ -200,12 +189,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(responseMessage);
     }
 
-    @GetMapping("/pending-proofs")
-    public ResponseEntity<List<TechnicianProofResponse>> getTechniciansWithPendingProofs() {
-        List<TechnicianProofResponse> response = paymentProofService.getTechniciansWithPendingProofs();
-        return ResponseEntity.ok(response);
-    }
-
     @PutMapping("/review-proof/{technicianId}")
     public ResponseEntity<String> reviewPaymentProof(
             @PathVariable Long technicianId,
@@ -216,5 +199,27 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseMessage);
         }
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @DeleteMapping("/logout")
+    public ResponseEntity<String> deleteDevice(@RequestParam String firebaseToken,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        // Find the logged-in user
+        User user = userRepository.findByEmail(currentUser.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Find the device with the given firebaseToken
+        DeviceInfo device = deviceInfoRepository.findByFCMToken(firebaseToken)
+                .orElseThrow(() -> new RuntimeException("Device not found"));
+
+        // Ensure the device belongs to the logged-in user
+        if (!device.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You are not authorized to delete this device");
+        }
+
+        // Delete the device
+        deviceInfoRepository.delete(device);
+        return ResponseEntity.ok("Device successfully deleted");
     }
 }

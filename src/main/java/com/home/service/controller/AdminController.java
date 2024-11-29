@@ -3,10 +3,12 @@ package com.home.service.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.method.AuthorizeReturnObject;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,10 +24,12 @@ import com.home.service.Service.CustomerService;
 import com.home.service.Service.DisputeService;
 import com.home.service.Service.ServiceService;
 import com.home.service.Service.TechnicianService;
+import com.home.service.Service.UserService;
 import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.OperatorProfileDTO;
 import com.home.service.dto.ServiceCatagoryRequest;
+import com.home.service.dto.ServiceLangRequest;
 import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.admin.BookingDetailDTO;
@@ -40,15 +44,19 @@ import com.home.service.models.TechnicianWeeklySchedule;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.DisputeStatus;
 import com.home.service.Service.OperatorService;
+import com.home.service.Service.PaymentProofService;
+import com.home.service.Service.QuestionService;
 import com.home.service.Service.ServiceCategoryService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 import com.home.service.models.Dispute;
+import com.home.service.models.QuestionRequest;
 import com.home.service.models.ServiceCategory;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
+import com.home.service.models.TechnicianProofResponse;
 
 @RestController
 @RequestMapping("/admin")
@@ -84,20 +92,18 @@ public class AdminController {
         @Autowired
         private ServiceCategoryService serviceCategoryService;
 
-        @GetMapping("technicians/unverified")
-        public ResponseEntity<List<TechnicianProfileDTO>> listUnverifiedTechnicians() {
-                List<Technician> unverifiedTechnicians = technicianRepository.findByVerifiedFalse();
-                List<TechnicianProfileDTO> technicianDTOs = unverifiedTechnicians.stream()
-                                .map(technician -> new TechnicianProfileDTO(
-                                                technician.getId(),
-                                                technician.getUser().getName(),
-                                                technician.getUser().getEmail(),
-                                                technician.getBio(),
-                                                technician.getRating(),
-                                                technician.getCompletedJobs(),
-                                                new TechnicianWeeklySchedule()))
-                                .collect(Collectors.toList());
+        @Autowired
+        private PaymentProofService paymentProofService;
 
+        @Autowired
+        private UserService userService;
+
+        @Autowired
+        private QuestionService questionService;
+
+        @GetMapping("/unverified-technicians")
+        public ResponseEntity<List<TechnicianProfileDTO>> listUnverifiedTechnicians() {
+                List<TechnicianProfileDTO> technicianDTOs = technicianService.listUnverifiedTechnicians();
                 return ResponseEntity.ok(technicianDTOs);
         }
 
@@ -111,6 +117,12 @@ public class AdminController {
 
                 emailService.sendTechnicianVerificationEmail(technician.getUser());
                 return ResponseEntity.ok("Technician verified and verification email sent");
+        }
+
+        @GetMapping("/pending-proofs")
+        public ResponseEntity<List<TechnicianProofResponse>> getTechniciansWithPendingProofs() {
+                List<TechnicianProofResponse> response = paymentProofService.getTechniciansWithPendingProofs();
+                return ResponseEntity.ok(response);
         }
 
         @GetMapping("technicians/decline/{technicianId}")
@@ -171,7 +183,7 @@ public class AdminController {
 
         @PutMapping("/services/{id}/language")
         public ResponseEntity<String> addServiceLanguage(@PathVariable Long id,
-                        @Valid @RequestBody ServiceRequest updatedService) {
+                        @Valid @RequestBody ServiceLangRequest updatedService) {
                 String updated = serviceService.addServiceLanguage(id, updatedService);
                 return ResponseEntity.ok(updated);
         }
@@ -287,5 +299,22 @@ public class AdminController {
         public ResponseEntity<List<ServiceCategoryWithServicesDTO>> getAllServicesCategorized() {
                 List<ServiceCategoryWithServicesDTO> categories = serviceService.getAllServicesCategorized();
                 return ResponseEntity.ok(categories);
+        }
+
+        @PostMapping("/suspend/{userId}")
+        public ResponseEntity<String> suspendUser(@PathVariable Long userId) {
+                String message = userService.suspendUser(userId);
+                return ResponseEntity.ok(message);
+        }
+
+        @PostMapping("/delete/{userId}")
+        public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
+                String message = userService.deleteUser(userId);
+                return ResponseEntity.ok(message);
+        }
+
+        @PostMapping("/question")
+        public ResponseEntity<String> createQuestion(@Valid @RequestBody QuestionRequest request) {
+                return ResponseEntity.status(201).body(questionService.createQuestion(request));
         }
 }

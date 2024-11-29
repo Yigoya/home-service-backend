@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ServiceCategoryDTO {
+    private Long id;
 
     private String categoryName;
 
@@ -19,6 +20,7 @@ public class ServiceCategoryDTO {
     private EthiopianLanguage lang;
 
     public ServiceCategoryDTO(ServiceCategory serviceCategory, EthiopianLanguage lang) {
+        this.id = serviceCategory.getId();
 
         this.categoryName = serviceCategory.getTranslations().stream()
                 .filter(translation -> translation.getLang().equals(lang))

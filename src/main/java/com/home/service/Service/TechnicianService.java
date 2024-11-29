@@ -141,8 +141,20 @@ public class TechnicianService {
                                 technician.getServices(),
                                 Optional.ofNullable(technician.getRating()).orElse(0.0), // Handle null rating with
                                 bookings.size(),
-                                schedule != null ? new TechnicianWeeklyScheduleDTO(schedule) : null,
+                                (schedule != null && schedule.getTechnician() != null)
+                                                ? new TechnicianWeeklyScheduleDTO(schedule)
+                                                : null,
                                 reviewDTOs);
+        }
+
+        @Transactional
+        public List<TechnicianProfileDTO> listUnverifiedTechnicians() {
+                List<Technician> unverifiedTechnicians = technicianRepository.findByVerifiedFalse();
+                return unverifiedTechnicians.stream()
+                                .map(technician -> new TechnicianProfileDTO(
+                                                technician,
+                                                EthiopianLanguage.ENGLISH))
+                                .collect(Collectors.toList());
         }
 
         public Set<Services> getServicesForTechnician(Long technicianId) {
@@ -334,18 +346,9 @@ public class TechnicianService {
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
                 TechnicianWeeklySchedule schedule = technicianWeeklyScheduleRepository.findByTechnicianId(technicianId);
                 List<Map<String, Object>> calender = bookingService.getTechnicianSchedule(technicianId);
-                TechnicianProfileDTO dto = new TechnicianProfileDTO();
-                dto.setId(technician.getId());
-                dto.setName(technician.getUser().getName());
-                dto.setEmail(technician.getUser().getEmail());
-                dto.setPhoneNumber(technician.getUser().getPhoneNumber());
-                dto.setBio(technician.getBio());
-                dto.setIdCardImage(technician.getIdCardImage());
-                dto.setServices(technician.getServices().stream()
-                                .map(service -> new ServiceDTO(service, technician.getUser().getPreferredLanguage()))
-                                .collect(Collectors.toList()));
-                dto.setRating(technician.getRating());
-                dto.setCompletedJobs(technician.getCompletedJobs());
+                TechnicianProfileDTO dto = new TechnicianProfileDTO(technician,
+                                technician.getUser().getPreferredLanguage());
+
                 dto.setWeeklySchedule(schedule != null ? new TechnicianWeeklyScheduleDTO(schedule) : null);
                 dto.setCalender(calender);
                 return dto;
