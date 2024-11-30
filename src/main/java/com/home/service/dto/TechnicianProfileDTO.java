@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.checkerframework.checker.units.qual.A;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,6 +32,7 @@ public class TechnicianProfileDTO {
     private Integer completedJobs;
     private TechnicianWeeklyScheduleDTO weeklySchedule;
     private List<Map<String, Object>> calender;
+    private AddressDTO address;
 
     public TechnicianProfileDTO(Long id, String name, String email, String bio, Double rating, Integer completedJobs,
             TechnicianWeeklySchedule weeklySchedule) {

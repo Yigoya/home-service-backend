@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.home.service.dto.AddressDTO;
 import com.home.service.dto.AuthenticationResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.ProfileUpdateDTO;
@@ -122,6 +123,8 @@ public class TechnicianService {
                 // Initialize city with default value if present, else null
                 String city = technicianAddressOpt.map(TechnicianAddress::getCity)
                                 .orElse("Addis Ababa");
+                String subcity = technicianAddressOpt.map(TechnicianAddress::getSubcity)
+                                .orElse(null);
 
                 // Safely handle nullable fields like `completedJobs`
                 List<Booking> bookings = bookingRepository.findAllByTechnician_Id(id);
@@ -134,11 +137,14 @@ public class TechnicianService {
                                 technician.getUser().getName(),
                                 technician.getUser().getEmail(),
                                 city,
+                                subcity,
                                 technician.getUser().getPhoneNumber(),
                                 technician.getUser().getProfileImage(),
                                 technician.getBio(),
                                 technician.getUser().getRole().name(),
-                                technician.getServices(),
+                                technician.getServices().stream()
+                                                .map(service -> new ServiceDTO(service, EthiopianLanguage.ENGLISH))
+                                                .collect(Collectors.toSet()),
                                 Optional.ofNullable(technician.getRating()).orElse(0.0), // Handle null rating with
                                 bookings.size(),
                                 (schedule != null && schedule.getTechnician() != null)
@@ -150,10 +156,27 @@ public class TechnicianService {
         @Transactional
         public List<TechnicianProfileDTO> listUnverifiedTechnicians() {
                 List<Technician> unverifiedTechnicians = technicianRepository.findByVerifiedFalse();
+                Optional<TechnicianAddress> technicianAddressOpt = technicianAddressRepository
+                                .findByTechnicianId(unverifiedTechnicians.get(0).getId());
+                TechnicianAddress address = technicianAddressOpt.orElse(null);
                 return unverifiedTechnicians.stream()
-                                .map(technician -> new TechnicianProfileDTO(
-                                                technician,
-                                                EthiopianLanguage.ENGLISH))
+                                .map(technician -> {
+                                        TechnicianProfileDTO dto = new TechnicianProfileDTO(
+                                                        technician,
+                                                        EthiopianLanguage.ENGLISH);
+                                        if (address != null) {
+                                                AddressDTO addressDTO = new AddressDTO();
+                                                addressDTO.setCity(address.getCity());
+                                                addressDTO.setSubcity(address.getSubcity());
+                                                addressDTO.setWereda(address.getWereda());
+                                                addressDTO.setCountry(address.getCountry());
+                                                addressDTO.setZipCode(address.getZipCode());
+                                                addressDTO.setLatitude(address.getLatitude());
+                                                addressDTO.setLongitude(address.getLongitude());
+                                                dto.setAddress(addressDTO);
+                                        }
+                                        return dto;
+                                })
                                 .collect(Collectors.toList());
         }
 
@@ -498,5 +521,11 @@ public class TechnicianService {
                 dto.setLatitude(address.getLatitude());
                 dto.setLongitude(address.getLongitude());
                 return dto;
+        }
+
+        public boolean isTechnicianActive(Long technicianId) {
+                Technician technician = technicianRepository.findById(technicianId)
+                                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+                return technician.getUser().getStatus().equals("ACTIVE");
         }
 }

@@ -5,8 +5,11 @@ import com.home.service.models.DeviceInfo;
 import com.home.service.models.User;
 
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -15,59 +18,43 @@ import java.util.List;
 public class FcmService {
 
   private static final String FCM_URL = "https://fcm.googleapis.com/v1/projects/home-service-92c52/messages:send";
-  private String accessToken;
+  private static final String FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+  private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 
-  public FcmService() throws IOException {
+  private String accessToken;
+  private final Logger logger = LoggerFactory.getLogger(FcmService.class);
+
+  @PostConstruct
+  public void initialize() throws IOException {
     // Load service account credentials
     GoogleCredentials googleCredentials = GoogleCredentials
         .fromStream(new FileInputStream("./serviceAccountKey.json"))
-        .createScoped("https://www.googleapis.com/auth/firebase.messaging");
+        .createScoped(FCM_SCOPE);
 
-    // Fetch the access token
+    // Fetch and set the access token
     googleCredentials.refreshIfExpired();
     this.accessToken = googleCredentials.getAccessToken().getTokenValue();
   }
 
-  public void sendNotification(User user, String title, String body, String imageUrl) {
-    // Initialize HTTP client
+  public void sendNotification(User user, String title, String body, String imageUrl, String targetPage) {
     OkHttpClient client = new OkHttpClient();
-
-    // Retrieve all device tokens for the user
     List<DeviceInfo> devices = user.getDevices();
 
     if (devices.isEmpty()) {
-      System.out.println("No devices found for user: " + user.getEmail());
+      logger.warn("No devices found for user: {}", user.getEmail());
       return;
     }
 
-    // Loop through each device and send notification
     for (DeviceInfo device : devices) {
-      String FCMToken = device.getFCMToken();
+      String fcmToken = device.getFCMToken();
+      if (fcmToken == null || fcmToken.isEmpty()) {
+        logger.warn("Invalid FCM token for device of user: {}", user.getEmail());
+        continue;
+      }
 
-      // Construct JSON payload with optional image
-      String jsonPayload = """
-          {
-            "message": {
-              "token": "%s",
-              "notification": {
-                "title": "%s",
-                "body": "%s" %s
-              }
-            }
-          }
-          """.formatted(
-          FCMToken,
-          title,
-          body,
-          imageUrl != null && !imageUrl.isEmpty()
-              ? ", \"image\": \"" + imageUrl + "\"" // Include image if provided
-              : "" // Exclude image if not provided
-      );
+      String jsonPayload = constructPayload(fcmToken, title, body, imageUrl, targetPage);
 
-      RequestBody requestBody = RequestBody.create(
-          jsonPayload,
-          MediaType.get("application/json; charset=utf-8"));
-
+      RequestBody requestBody = RequestBody.create(jsonPayload, JSON_MEDIA_TYPE);
       Request request = new Request.Builder()
           .url(FCM_URL)
           .addHeader("Authorization", "Bearer " + accessToken)
@@ -77,16 +64,36 @@ public class FcmService {
 
       try (Response response = client.newCall(request).execute()) {
         if (!response.isSuccessful()) {
-          System.err.println("Failed to send notification to token: " + FCMToken);
-          System.err.println("Response: " + response.body().string());
+          logger.error("Failed to send notification to token: {}. Response: {}", fcmToken, response.body().string());
         } else {
-          System.out.println("Notification sent successfully to token: " + FCMToken);
+          logger.info("Notification sent successfully to token: {}", fcmToken);
         }
       } catch (IOException e) {
-        System.err.println("Error sending notification to token: " + FCMToken);
-        e.printStackTrace();
+        logger.error("Error sending notification to token: {}", fcmToken, e);
       }
     }
+  }
+
+  private String constructPayload(String fcmToken, String title, String body, String imageUrl, String targetPage) {
+    String imageJsonPart = (imageUrl != null && !imageUrl.isEmpty())
+        ? String.format(", \"image\": \"%s\"", imageUrl)
+        : "";
+
+    String dataJsonPart = targetPage != null
+        ? String.format(", \"data\": {\"targetPage\": \"%s\"}", targetPage)
+        : "";
+
+    return """
+        {
+          "message": {
+            "token": "%s",
+            "notification": {
+              "title": "%s",
+              "body": "%s" %s
+            }%s
+          }
+        }
+        """.formatted(fcmToken, title, body, imageJsonPart, dataJsonPart);
   }
 
 }

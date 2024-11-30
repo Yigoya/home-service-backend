@@ -129,7 +129,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
+    public ResponseEntity<Map<String, Object>> verifyAccount(@RequestParam("token") String token) {
         return ResponseEntity.ok(userService.verifyToken(token));
     }
 

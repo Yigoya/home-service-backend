@@ -8,10 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "translations")
 public class Services extends BaseEntity {
 
     @ManyToOne

@@ -89,6 +89,7 @@ com/home/service/repositories/UserRepository.class
 com/home/service/ServiceApplication.class
 com/home/service/controller/ServiceManagementController.class
 com/home/service/dto/ServiceCategoryWithServicesDTO.class
+com/home/service/dto/ServiceLangRequest.class
 com/home/service/models/Services.class
 com/home/service/models/Answer.class
 com/home/service/dto/admin/AddressDTO.class
@@ -160,10 +161,12 @@ com/home/service/Service/TechnicianService.class
 com/home/service/repositories/ServiceCategoryRepository.class
 com/home/service/dto/ReviewDTO.class
 com/home/service/dto/ServiceDTO.class
+com/home/service/dto/ChangeContactRequest.class
 com/home/service/dto/BookingRequestDTO.class
 com/home/service/dto/records/SingleTechnician.class
 com/home/service/config/exceptions/UserNotFoundException.class
 com/home/service/models/CustomDetails.class
+com/home/service/dto/AnswerRequest$AnswerDTO.class
 com/home/service/Service/AdminService.class
 com/home/service/repositories/TransactionRepository.class
 com/home/service/models/Dispute.class

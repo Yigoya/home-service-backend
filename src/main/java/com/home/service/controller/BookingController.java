@@ -57,6 +57,7 @@ public class BookingController {
         return new ResponseEntity<>("Booking updated successfully with ID: " + booking.getId(), HttpStatus.OK);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/update-status")
     public ResponseEntity<String> updateBookingStatus(
             @Valid @RequestBody UpdateBookingStatusDTO updateBookingStatusDTO) {

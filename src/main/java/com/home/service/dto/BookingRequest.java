@@ -29,10 +29,8 @@ public class BookingRequest {
     @NotNull(message = "Please provide a valid Scheduled Date.")
     private LocalDateTime scheduledDate;
 
-    @NotBlank(message = "Street is required and cannot be blank.")
     private String street;
 
-    @NotBlank(message = "City is required and cannot be blank.")
     private String city;
 
     @NotBlank(message = "Subcity is required and cannot be blank.")
@@ -41,21 +39,15 @@ public class BookingRequest {
     @NotBlank(message = "Wereda is required and cannot be blank.")
     private String wereda;
 
-    @NotBlank(message = "State is required and cannot be blank.")
     private String state;
 
-    @NotBlank(message = "Country is required and cannot be blank.")
     private String country;
 
-    @NotBlank(message = "Zip code is required and cannot be blank.")
     private String zipCode;
 
-    @NotNull(message = "Please provide a valid Latitude.")
     private Double latitude;
 
-    @NotNull(message = "Please provide a valid Longitude.")
     private Double longitude;
 
-    @NotBlank(message = "Time schedule is required and cannot be blank.")
     private String timeSchedule;
 }

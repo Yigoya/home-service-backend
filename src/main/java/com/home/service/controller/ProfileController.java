@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import com.home.service.dto.TechnicianWeeklyScheduleResponse;
 import com.home.service.dto.WeeklyScheduleRequest;
 import com.home.service.services.FileStorageService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -48,6 +50,16 @@ public class ProfileController {
     public ResponseEntity<TechnicianProfileDTO> getTechnicianProfile(@PathVariable Long id) {
         TechnicianProfileDTO profile = technicianService.getTechnicianProfile(id);
         return ResponseEntity.ok(profile);
+    }
+
+    @GetMapping("/{technicianId}/active")
+    public ResponseEntity<Boolean> isTechnicianActive(@PathVariable Long technicianId) {
+        try {
+            boolean isActive = technicianService.isTechnicianActive(technicianId);
+            return ResponseEntity.ok(isActive);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body(false);
+        }
     }
 
     @GetMapping("/customer/{id}")

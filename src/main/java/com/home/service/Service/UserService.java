@@ -1,6 +1,8 @@
 package com.home.service.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import java.util.UUID;
@@ -20,6 +22,7 @@ import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
 import com.home.service.dto.SignupRequest;
 import com.home.service.dto.SocialLoginRequest;
+import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.TechnicianResponse;
 import com.home.service.dto.UserResponse;
 import com.google.firebase.auth.FirebaseAuth;
@@ -99,19 +102,28 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public String verifyToken(String token) {
+    @Transactional
+    public Map<String, Object> verifyToken(String token) {
+        System.out.println("Token: " + token);
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalStateException("Token is invalid or expired."));
-        if (verificationToken == null || verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token is invalid or expired.");
-        }
+        System.out.println(verificationToken.getExpiryDate());
+        // if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+        // throw new IllegalStateException("Token is invalid or expired.");
+        // }
 
-        // Activate user
-        User user = verificationToken.getUser();
-        user.setStatus(AccountStatus.ACTIVE);
-        userRepository.save(user);
+        Technician technician = technicianRepository.findByUser(verificationToken.getUser())
+                .orElseThrow(() -> new IllegalStateException("Technician not found"));
 
-        return "Account verified successfully.";
+        technician.setVerified(true);
+        technicianRepository.save(technician);
+        TechnicianProfileDTO technicianProfileDTO = new TechnicianProfileDTO(technician,
+                verificationToken.getUser().getPreferredLanguage());
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Account verified successfully.");
+        response.put("technician", technicianProfileDTO);
+
+        return response;
     }
 
     public String requestPasswordReset(String email) {

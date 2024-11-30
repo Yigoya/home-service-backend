@@ -56,8 +56,8 @@ public class NotificationController {
                 user,
                 request.getTitle(),
                 request.getBody(),
-                request.getImageUrl() // Pass the optional image URL
-        );
+                request.getImageUrl(),
+                request.getTargetPage());
         return "Notification sent!";
     }
 

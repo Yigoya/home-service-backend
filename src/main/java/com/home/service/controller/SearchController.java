@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.home.service.models.Technician;
+import com.home.service.models.TechnicianAddress;
 import com.home.service.models.enums.EthiopianLanguage;
+import com.home.service.repositories.TechnicianAddressRepository;
 import com.home.service.dto.QuestionDTO;
 import com.home.service.dto.TechnicianDTO;
 
@@ -31,18 +33,32 @@ public class SearchController {
 
         private final TechnicianService technicianService;
         private final QuestionService questionService;
+        private final TechnicianAddressRepository technicianAddressRepository;
 
-        public SearchController(TechnicianService technicianService, QuestionService questionService) {
+        public SearchController(TechnicianService technicianService, QuestionService questionService,
+                        TechnicianAddressRepository technicianAddressRepository) {
                 this.technicianService = technicianService;
                 this.questionService = questionService;
+                this.technicianAddressRepository = technicianAddressRepository;
         }
 
         @GetMapping("/service/{serviceId}")
         public ResponseEntity<List<TechnicianDTO>> searchForService(@PathVariable Long serviceId,
                         @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
                 List<Technician> technicians = technicianService.findTechniciansByService(serviceId);
+                TechnicianAddress technicianAddress = technicianAddressRepository
+                                .findByTechnicianId(technicians.get(0).getId()).orElse(null);
                 List<TechnicianDTO> technicianDTOs = technicians.stream()
-                                .map(technician -> new TechnicianDTO(technician, lang))
+                                .map(technician -> {
+                                        TechnicianDTO technicianDTO = new TechnicianDTO(technician, lang);
+                                        technicianDTO.setCity(technicianAddress.getCity());
+                                        technicianDTO.setSubcity(technicianAddress.getSubcity());
+                                        technicianDTO.setWereda(technicianAddress.getWereda());
+                                        technicianDTO.setCountry(technicianAddress.getCountry());
+                                        technicianDTO.setLatitude(technicianAddress.getLatitude());
+                                        technicianDTO.setLongitude(technicianAddress.getLongitude());
+                                        return technicianDTO;
+                                })
                                 .collect(Collectors.toList());
                 return ResponseEntity.ok(technicianDTOs);
         }

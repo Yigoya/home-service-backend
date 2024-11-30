@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.home.service.models.Technician;
 import com.home.service.models.enums.EthiopianLanguage;
+import com.home.service.repositories.TechnicianAddressRepository;
 
 @Data
 @AllArgsConstructor
@@ -41,7 +44,6 @@ public class TechnicianDTO {
         this.rating = technician.getRating();
         this.completedJobs = technician.getCompletedJobs();
         this.verified = technician.getVerified();
-
         this.documents = technician.getDocuments();
         this.profileImage = technician.getUser().getProfileImage();
         this.services = technician.getServices().stream()

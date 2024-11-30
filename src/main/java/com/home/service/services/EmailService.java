@@ -1,7 +1,7 @@
 package com.home.service.services;
 
 import java.time.LocalDateTime;
-
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -80,13 +80,20 @@ public class EmailService {
 
     public void sendTechnicianVerificationEmail(User user) {
         String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
+        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByUser(user);
+        VerificationToken verificationToken;
+        if (optionalToken.isPresent()) {
+            verificationToken = optionalToken.get();
+            verificationToken.setToken(token);
+            verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        } else {
+            verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
+        }
         verificationTokenRepository.save(verificationToken);
 
         String subject = "Technician Account Verification";
         String text = "Congratulations! Your application has been accepted. Please verify your account by clicking the link below:\n"
-                +
-                "http://localhost:8090/auth/verify?token=" + token;
+                + "https://link-rosy.vercel.app/verify?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
