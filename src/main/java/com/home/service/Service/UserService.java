@@ -228,10 +228,20 @@ public class UserService {
                 name = email.split("@")[0];
             }
             user = new User();
-            user.setEmail(email);
             user.setName(name);
+            user.setEmail(email);
             user.setAuthProvider(loginRequest.getProvider());
             user.setProviderId(providerId);
+            user.setPassword(providerId);
+            user.setRole(UserRole.CUSTOMER);
+            user.setStatus(AccountStatus.ACTIVE);
+            user.setPhoneNumber(
+                    loginRequest.getPhoneNumber() == null ? "No phone number" : loginRequest.getPhoneNumber());
+            userRepository.save(user);
+            Customer customer = new Customer();
+            customer.setUser(user);
+            customerRepository.save(customer);
+            System.out.println("Customer saved");
         }
 
         DeviceInfo deviceInfo = user.getDevices().stream()

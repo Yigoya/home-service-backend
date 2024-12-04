@@ -109,7 +109,10 @@ public class EmailService {
         String subject = "Technician Account Verification";
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
                 + "<h2 style='color: #2E86C1;'>Technician Account Verification</h2>"
-                + "<p>Congratulations! Your application has been accepted. Please verify your account by clicking the link below:</p>"
+                + "<p>Congratulations! Your application has been accepted. Please verify your account by clicking the link below or copy if you using mobile app:</p>"
+                + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>"
+                + token
+                + "</pre>"
                 + "<a href='https://link-rosy.vercel.app/verify?token=" + token
                 + "' style='color: #2E86C1;'>Verify Account</a>"
                 + "</body></html>";

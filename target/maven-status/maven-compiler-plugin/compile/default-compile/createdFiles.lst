@@ -21,6 +21,7 @@ com/home/service/repositories/QuestionOptionRepository.class
 com/home/service/models/TechnicianProofResponse.class
 com/home/service/dto/OperatorProfileDTO.class
 com/home/service/config/SecurityConfig.class
+com/home/service/dto/DeductCoinsRequest.class
 com/home/service/Service/CustomerService.class
 com/home/service/dto/ServiceCatagoryRequest.class
 com/home/service/models/TechnicianDocument.class
@@ -147,6 +148,7 @@ com/home/service/dto/SingleBookingResponseDTO.class
 com/home/service/services/FileStorageService.class
 com/home/service/dto/AnswerRequest.class
 com/home/service/Service/AnswerService.class
+com/home/service/dto/PurchaseCoinsRequest.class
 com/home/service/Service/ReviewService.class
 com/home/service/config/WebConfig$1.class
 com/home/service/dto/ProfileUpdateDTO.class
