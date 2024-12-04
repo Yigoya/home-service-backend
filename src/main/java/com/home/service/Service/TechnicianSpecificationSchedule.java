@@ -34,7 +34,8 @@ public class TechnicianSpecificationSchedule {
             // Name filter
             if (name != null && !name.isEmpty()) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.like(criteriaBuilder.lower(root.join("user").get("name")), "%" + name + "%"));
+                        criteriaBuilder.like(criteriaBuilder.lower(root.join("user").get("name")),
+                                "%" + name.toLowerCase() + "%"));
             }
 
             // Location filters
@@ -80,38 +81,79 @@ public class TechnicianSpecificationSchedule {
                 switch (dayOfWeek.toLowerCase()) {
                     case "monday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("mondayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("mondayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("mondayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("mondayEnd"), time))));
                         break;
                     case "tuesday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("tuesdayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("tuesdayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("tuesdayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("tuesdayEnd"), time))));
                         break;
                     case "wednesday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("wednesdayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("wednesdayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("wednesdayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("wednesdayEnd"), time))));
                         break;
                     case "thursday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("thursdayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("thursdayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("thursdayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("thursdayEnd"), time))));
                         break;
                     case "friday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("fridayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("fridayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("fridayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("fridayEnd"), time))));
                         break;
                     case "saturday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("saturdayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("saturdayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("saturdayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("saturdayEnd"), time))));
                         break;
                     case "sunday":
                         predicate = criteriaBuilder.and(predicate,
-                                criteriaBuilder.lessThanOrEqualTo(scheduleJoin.get("sundayStart"), time),
-                                criteriaBuilder.greaterThanOrEqualTo(scheduleJoin.get("sundayEnd"), time));
+                                criteriaBuilder.or(
+                                        criteriaBuilder.isNull(scheduleJoin),
+                                        criteriaBuilder.and(
+                                                criteriaBuilder.lessThanOrEqualTo(
+                                                        scheduleJoin.get("sundayStart"), time),
+                                                criteriaBuilder.greaterThanOrEqualTo(
+                                                        scheduleJoin.get("sundayEnd"), time))));
                         break;
                 }
             }

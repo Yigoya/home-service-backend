@@ -1,5 +1,7 @@
 package com.home.service.dto;
 
+import com.home.service.models.enums.EthiopianLanguage;
+
 import lombok.*;
 
 @Data
@@ -13,5 +15,6 @@ public class UserResponse {
     private String role;
     private String status;
     private String profileImage;
+    private EthiopianLanguage language;
 
 }

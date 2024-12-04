@@ -38,6 +38,7 @@ import com.home.service.models.Booking;
 import com.home.service.models.CustomDetails;
 import com.home.service.models.Operator;
 import com.home.service.models.Review;
+import com.home.service.models.enums.AccountStatus;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.enums.UserRole;
@@ -451,10 +452,12 @@ public class TechnicianService {
                         Double maxLongitude,
                         Boolean availability,
                         LocalTime time,
-                        String dayOfWeek,
+                        LocalDate date,
                         Long serviceId,
                         Pageable pageable) {
 
+                String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
+                System.out.println("dayOfWeek = " + dayOfWeek);
                 Specification<Technician> specification = TechnicianSpecificationSchedule.filterTechnicians(
                                 name, minPrice, maxPrice, city, subcity, wereda, minLatitude, maxLatitude, minLongitude,
                                 maxLongitude,
@@ -526,6 +529,6 @@ public class TechnicianService {
         public boolean isTechnicianActive(Long technicianId) {
                 Technician technician = technicianRepository.findById(technicianId)
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
-                return technician.getUser().getStatus().equals("ACTIVE");
+                return technician.getUser().getStatus().equals(AccountStatus.ACTIVE);
         }
 }

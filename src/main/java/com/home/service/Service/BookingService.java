@@ -473,7 +473,7 @@ public class BookingService {
             questionDTO.setOptions(optionsDTO);
 
             // Map answers for each question
-            List<AnswerDTO> answerDTOs = answerRepository.findByQuestion(q).stream().map(a -> {
+            List<AnswerDTO> answerDTOs = answerRepository.findByQuestionAndBooking(q, booking).stream().map(a -> {
                 AnswerDTO answerDTO = new AnswerDTO();
                 answerDTO.setAnswerId(a.getId());
                 answerDTO.setResponse(a.getResponse());

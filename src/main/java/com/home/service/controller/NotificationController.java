@@ -57,7 +57,8 @@ public class NotificationController {
                 request.getTitle(),
                 request.getBody(),
                 request.getImageUrl(),
-                request.getTargetPage());
+                request.getTargetPage(),
+                null);
         return "Notification sent!";
     }
 

@@ -68,4 +68,11 @@ public class TransactionService {
     public List<Transaction> getTransactions(Long customerId) {
         return transactionRepository.findByCustomerId(customerId);
     }
+
+    public Integer getBalance(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+
+        return customer.getCoinBalance();
+    }
 }

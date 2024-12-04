@@ -30,6 +30,12 @@ public class Technician extends BaseEntity {
 
     private String idCardImage;
 
+    @OneToOne(mappedBy = "technician", cascade = CascadeType.ALL, orphanRemoval = true)
+    private TechnicianWeeklySchedule weeklySchedule;
+
+    @OneToMany(mappedBy = "technician", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TechnicianServicePrice> servicePrices;
+
     @ManyToMany
     @JoinTable(name = "technician_services", joinColumns = @JoinColumn(name = "technician_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
     private Set<Services> services;

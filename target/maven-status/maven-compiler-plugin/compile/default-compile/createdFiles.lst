@@ -126,6 +126,7 @@ com/home/service/dto/TechnicianProfileDTO.class
 com/home/service/Service/DisputeSpecification.class
 com/home/service/dto/OperatorSignupRequest.class
 com/home/service/models/Notification.class
+com/home/service/services/EmailService$1.class
 com/home/service/models/PasswordResetToken.class
 com/home/service/dto/AnswerDTO.class
 com/home/service/dto/PreferredLanguageRequest.class

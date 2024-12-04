@@ -88,7 +88,7 @@ public class BookingController {
     public ResponseEntity<Page<BookingResponseDTO>> getBookingsForTechnician(
             @PathVariable Long technicianId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<BookingResponseDTO> bookings = bookingService.getBookingsForTechnician(technicianId, pageable);
         return ResponseEntity.ok(bookings);

@@ -18,7 +18,7 @@ public class TechnicianWeeklySchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "technician_id", nullable = false)
     private Technician technician;
 

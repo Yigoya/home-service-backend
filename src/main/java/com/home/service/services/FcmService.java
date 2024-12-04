@@ -36,7 +36,7 @@ public class FcmService {
     this.accessToken = googleCredentials.getAccessToken().getTokenValue();
   }
 
-  public void sendNotification(User user, String title, String body, String imageUrl, String targetPage) {
+  public void sendNotification(User user, String title, String body, String imageUrl, String targetPage, String value) {
     OkHttpClient client = new OkHttpClient();
     List<DeviceInfo> devices = user.getDevices();
 
@@ -52,7 +52,7 @@ public class FcmService {
         continue;
       }
 
-      String jsonPayload = constructPayload(fcmToken, title, body, imageUrl, targetPage);
+      String jsonPayload = constructPayload(fcmToken, title, body, imageUrl, targetPage, value);
 
       RequestBody requestBody = RequestBody.create(jsonPayload, JSON_MEDIA_TYPE);
       Request request = new Request.Builder()
@@ -74,14 +74,19 @@ public class FcmService {
     }
   }
 
-  private String constructPayload(String fcmToken, String title, String body, String imageUrl, String targetPage) {
+  private String constructPayload(String fcmToken, String title, String body, String imageUrl, String targetPage,
+      String value) {
     String imageJsonPart = (imageUrl != null && !imageUrl.isEmpty())
         ? String.format(", \"image\": \"%s\"", imageUrl)
         : "";
 
-    String dataJsonPart = targetPage != null
-        ? String.format(", \"data\": {\"targetPage\": \"%s\"}", targetPage)
-        : "";
+    String dataJsonPart = targetPage != null && value != null
+        ? String.format(", \"data\": {\"targetPage\": \"%s\", \"value\": \"%s\"}", targetPage, value)
+        : targetPage != null
+            ? String.format(", \"data\": {\"targetPage\": \"%s\"}", targetPage)
+            : value != null
+                ? String.format(", \"data\": {\"value\": \"%s\"}", value)
+                : "";
 
     return """
         {

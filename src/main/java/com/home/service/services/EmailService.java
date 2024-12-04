@@ -4,15 +4,22 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.home.service.models.PasswordResetToken;
 import com.home.service.models.User;
 import com.home.service.models.VerificationToken;
+import com.home.service.models.enums.NotificationType;
 import com.home.service.repositories.PasswordResetTokenRepository;
 import com.home.service.repositories.VerificationTokenRepository;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
@@ -26,56 +33,64 @@ public class EmailService {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
+    public void sendHtmlEmail(String to, String subject, String htmlContent) {
+        MimeMessage message = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new MailSendException("Failed to send email", e);
+        }
+    }
+
     public void sendVerifyEmail(User user) {
-        // Generate verification token
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
         verificationTokenRepository.save(verificationToken);
 
         String subject = "Account Verification";
-        String text = "To verify your email, click the link below:\nhttp://localhost:8090/auth/verify?token="
-                + token;
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #2E86C1;'>Account Verification</h2>"
+                + "<p>To verify your email, click the link below:</p>"
+                + "<a href='http://localhost:8090/auth/verify?token=" + token
+                + "' style='color: #2E86C1;'>Verify Email</a>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
     public void sendDeclineEmail(User user) {
         String subject = "Application Declined";
-        String text = "Dear " + user.getName() + ",\n\n"
-                + "We regret to inform you that your application to join our platform has been declined after careful review. "
-                + "For more information, please feel free to reach out to our support team.\n\n"
-                + "Thank you for your interest.\n\n"
-                + "Best regards,\n"
-                + "Support Team";
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #C0392B;'>Application Declined</h2>"
+                + "<p>Dear " + user.getName() + ",</p>"
+                + "<p>We regret to inform you that your application to join our platform has been declined after careful review. "
+                + "For more information, please feel free to reach out to our support team.</p>"
+                + "<p>Thank you for your interest.</p>"
+                + "<p>Best regards,<br>Support Team</p>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
     public void sendResetPassEmail(User user) {
-
-        // Generate verification token
         String token = UUID.randomUUID().toString();
         PasswordResetToken passwordResetToken = new PasswordResetToken(token, LocalDateTime.now().plusMinutes(30),
                 user);
         passwordResetTokenRepository.save(passwordResetToken);
 
         String subject = "Password Reset Request";
-        String text = "To verify your email, click the link below:\nhttp://localhost:8090/auth/reset-password?token="
-                + token;
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #2E86C1;'>Password Reset Request</h2>"
+                + "<p>To reset your password, click the link below:</p>"
+                + "<a href='http://localhost:8090/auth/reset-password?token=" + token
+                + "' style='color: #2E86C1;'>Reset Password</a>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
     public void sendTechnicianVerificationEmail(User user) {
@@ -92,54 +107,76 @@ public class EmailService {
         verificationTokenRepository.save(verificationToken);
 
         String subject = "Technician Account Verification";
-        String text = "Congratulations! Your application has been accepted. Please verify your account by clicking the link below:\n"
-                + "https://link-rosy.vercel.app/verify?token=" + token;
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #2E86C1;'>Technician Account Verification</h2>"
+                + "<p>Congratulations! Your application has been accepted. Please verify your account by clicking the link below:</p>"
+                + "<a href='https://link-rosy.vercel.app/verify?token=" + token
+                + "' style='color: #2E86C1;'>Verify Account</a>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
     public void sendApprovalEmail(User user) {
         String subject = "Account Approved";
-        String text = "Dear " + user.getName() + ",\n\n"
-                + "Congratulations! Your account has been activated.\n\n"
-                + "Welcome to our platform!\n\n"
-                + "Best regards,\nSupport Team";
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #28B463;'>Account Approved</h2>"
+                + "<p>Dear " + user.getName() + ",</p>"
+                + "<p>Congratulations! Your account has been activated.</p>"
+                + "<p>Welcome to our platform!</p>"
+                + "<p>Best regards,<br>Support Team</p>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
     public void sendRejectionEmail(User user) {
         String subject = "Document Declined";
-        String text = "Dear " + user.getName() + ",\n\n"
-                + "We regret to inform you that your submitted payment proof has been declined.\n\n"
-                + "Please contact support for more information.\n\n"
-                + "Best regards,\nSupport Team";
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #C0392B;'>Document Declined</h2>"
+                + "<p>Dear " + user.getName() + ",</p>"
+                + "<p>We regret to inform you that your submitted payment proof has been declined.</p>"
+                + "<p>Please contact support for more information.</p>"
+                + "<p>Best regards,<br>Support Team</p>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
     public void sendVerifyEmailForChange(User user, String token) {
         String subject = "Verify Your New Email Address";
-        String text = "Please confirm your new email address by clicking the link below:\n"
-                + "http://your-production-url/api/user/verify-email-change?token=" + token;
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: #2E86C1;'>Verify Your New Email Address</h2>"
+                + "<p>Please confirm your new email address by clicking the link below:</p>"
+                + "<a href='http://your-production-url/api/user/verify-email-change?token=" + token
+                + "' style='color: #2E86C1;'>Verify Email</a>"
+                + "</body></html>";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getPendingEmail());
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        sendHtmlEmail(user.getPendingEmail(), subject, htmlContent);
     }
 
+    public void sendNotificationEmail(User user, String title, String message, NotificationType notificationType) {
+        String color;
+        switch (notificationType) {
+            case BOOKING_REQUEST:
+                color = "#28B463"; // Green
+                break;
+            case NotificationType.BOOKING_ACCEPTANCE:
+                color = "#F39C12"; // Orange
+                break;
+            case NotificationType.BOOKING_START:
+                color = "#2E86C1"; // Blue
+                break;
+            default:
+                color = "#C0392B"; // Red
+        }
+
+        String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
+                + "<h2 style='color: " + color + ";'>" + title + "</h2>"
+                + "<p>" + message + "</p>"
+                + "<p>Best regards,<br>Support Team</p>"
+                + "</body></html>";
+
+        sendHtmlEmail(user.getEmail(), title, htmlContent);
+    }
 }

@@ -62,6 +62,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/ContactUsRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/CustomerProfileDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/CustomerResponse.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DeductCoinsRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeResponse.java
@@ -74,6 +75,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorSignupRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/PreferredLanguageRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/ProfileUpdateDTO.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/PurchaseCoinsRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/QuestionDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/QuestionOptionDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/QuestionWithAnswerDTO.java

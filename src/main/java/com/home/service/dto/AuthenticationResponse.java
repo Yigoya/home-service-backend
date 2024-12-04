@@ -1,5 +1,7 @@
 package com.home.service.dto;
 
+import com.home.service.models.enums.EthiopianLanguage;
+
 public class AuthenticationResponse {
     private final String token;
     private final UserResponse user;

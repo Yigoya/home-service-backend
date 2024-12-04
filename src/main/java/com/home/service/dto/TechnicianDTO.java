@@ -49,6 +49,10 @@ public class TechnicianDTO {
         this.services = technician.getServices().stream()
                 .map(service -> new ServiceDTO(service, language))
                 .collect(Collectors.toSet());
+        this.city = technician.getTechnicianAddresses().getFirst().getCity();
+        this.subcity = technician.getTechnicianAddresses().getFirst().getSubcity();
+        this.wereda = technician.getTechnicianAddresses().getFirst().getWereda();
+        this.country = technician.getTechnicianAddresses().getFirst().getCountry();
     }
     // Getters and Setters
 }

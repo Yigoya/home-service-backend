@@ -133,7 +133,7 @@ public class SearchController {
                         @RequestParam(required = false) Double minLongitude,
                         @RequestParam(required = false) Double maxLongitude,
                         @RequestParam(required = false) Boolean availability,
-                        @RequestParam(required = false) String dayOfWeek,
+                        @RequestParam(required = false) LocalDate date,
                         @RequestParam(required = false) LocalTime time,
                         @RequestParam(required = false) Long serviceId,
                         Pageable pageable) {
@@ -141,7 +141,7 @@ public class SearchController {
                 Page<Technician> technicians = technicianService.filterTechnicians(
                                 name, minPrice, maxPrice, city, subcity, wereda, minLatitude, maxLatitude, minLongitude,
                                 maxLongitude,
-                                availability, time, dayOfWeek, serviceId, pageable);
+                                availability, time, date, serviceId, pageable);
 
                 Page<TechnicianDTO> technicianDTOs = technicians.map(technician -> new TechnicianDTO(technician, lang));
                 return ResponseEntity.ok(technicianDTOs);

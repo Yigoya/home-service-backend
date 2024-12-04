@@ -194,7 +194,7 @@ public class UserService {
         UserResponse userResponse = new UserResponse(
                 user.getId(), user.getName(), user.getEmail(),
                 user.getPhoneNumber(), user.getRole().name(),
-                user.getStatus().name(), user.getProfileImage());
+                user.getStatus().name(), user.getProfileImage(), user.getPreferredLanguage());
 
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
 
@@ -254,7 +254,8 @@ public class UserService {
 
         final String jwtToken = jwtUtil.generateToken(user.getEmail());
         UserResponse userResponse = new UserResponse(user.getId(), user.getName(), user.getEmail(),
-                user.getPhoneNumber(), user.getRole().name(), user.getStatus().name(), user.getProfileImage());
+                user.getPhoneNumber(), user.getRole().name(), user.getStatus().name(), user.getProfileImage(),
+                user.getPreferredLanguage());
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
         if (user.getRole() == UserRole.TECHNICIAN) {
             Technician technician = technicianRepository.findByUser(user).orElseThrow(

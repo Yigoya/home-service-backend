@@ -10,10 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianDocument;
 import com.home.service.models.TechnicianProofResponse;
+import com.home.service.models.User;
 import com.home.service.models.enums.AccountStatus;
 import com.home.service.models.enums.DocumentStatus;
 import com.home.service.repositories.TechnicianDocumentRepository;
 import com.home.service.repositories.TechnicianRepository;
+import com.home.service.repositories.UserRepository;
 import com.home.service.services.EmailService;
 import com.home.service.services.FileStorageService;
 
@@ -34,6 +36,9 @@ public class PaymentProofService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public String uploadPaymentProof(MultipartFile file, Long technicianId) {
@@ -79,6 +84,9 @@ public class PaymentProofService {
         if (approve) {
             technician.setVerified(true);
             technicianRepository.save(technician);
+            User user = technician.getUser();
+            user.setStatus(AccountStatus.ACTIVE);
+            userRepository.save(user);
             emailService.sendApprovalEmail(technician.getUser());
             return "Technician approved and account activated.";
         } else {
