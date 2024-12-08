@@ -32,7 +32,7 @@ public class TechnicianProfileDTO {
     private Integer completedJobs;
     private TechnicianWeeklyScheduleDTO weeklySchedule;
     private List<Map<String, Object>> calender;
-    private AddressDTO address;
+    private List<AddressDTO> address;
 
     public TechnicianProfileDTO(Long id, String name, String email, String bio, Double rating, Integer completedJobs,
             TechnicianWeeklySchedule weeklySchedule) {

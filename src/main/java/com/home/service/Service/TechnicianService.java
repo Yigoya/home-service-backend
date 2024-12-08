@@ -157,25 +157,15 @@ public class TechnicianService {
         @Transactional
         public List<TechnicianProfileDTO> listUnverifiedTechnicians() {
                 List<Technician> unverifiedTechnicians = technicianRepository.findByVerifiedFalse();
-                Optional<TechnicianAddress> technicianAddressOpt = technicianAddressRepository
-                                .findByTechnicianId(unverifiedTechnicians.get(0).getId());
-                TechnicianAddress address = technicianAddressOpt.orElse(null);
                 return unverifiedTechnicians.stream()
                                 .map(technician -> {
                                         TechnicianProfileDTO dto = new TechnicianProfileDTO(
                                                         technician,
                                                         EthiopianLanguage.ENGLISH);
-                                        if (address != null) {
-                                                AddressDTO addressDTO = new AddressDTO();
-                                                addressDTO.setCity(address.getCity());
-                                                addressDTO.setSubcity(address.getSubcity());
-                                                addressDTO.setWereda(address.getWereda());
-                                                addressDTO.setCountry(address.getCountry());
-                                                addressDTO.setZipCode(address.getZipCode());
-                                                addressDTO.setLatitude(address.getLatitude());
-                                                addressDTO.setLongitude(address.getLongitude());
-                                                dto.setAddress(addressDTO);
-                                        }
+
+                                        dto.setAddress(technician.getTechnicianAddresses().stream()
+                                                        .map(address -> new AddressDTO(address))
+                                                        .collect(Collectors.toList()));
                                         return dto;
                                 })
                                 .collect(Collectors.toList());
@@ -375,6 +365,9 @@ public class TechnicianService {
 
                 dto.setWeeklySchedule(schedule != null ? new TechnicianWeeklyScheduleDTO(schedule) : null);
                 dto.setCalender(calender);
+                dto.setAddress(technician.getTechnicianAddresses().stream()
+                                .map(address -> new AddressDTO(address))
+                                .collect(Collectors.toList()));
                 return dto;
         }
 
