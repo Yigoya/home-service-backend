@@ -28,6 +28,7 @@ import com.home.service.dto.CustomerResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
 import com.home.service.dto.OperatorSignupRequest;
+import com.home.service.dto.PasswordResetRequest;
 import com.home.service.dto.SocialLoginRequest;
 import com.home.service.dto.TechnicianResponse;
 import com.home.service.dto.TechnicianSignupRequest;
@@ -134,8 +135,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/password-reset-request")
-    public ResponseEntity<String> requestPasswordReset(@RequestParam("email") String email) {
-        return ResponseEntity.ok(userService.requestPasswordReset(email));
+    public ResponseEntity<String> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        return ResponseEntity.ok(userService.requestPasswordReset(request.getEmail()));
     }
 
     @PostMapping("/reset-password")

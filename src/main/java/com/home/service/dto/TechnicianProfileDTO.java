@@ -27,6 +27,7 @@ public class TechnicianProfileDTO {
     private String bio;
     private String profileImage;
     private String idCardImage;
+    private List<String> documents;
     private List<ServiceDTO> services;
     private Double rating;
     private Integer completedJobs;
@@ -68,6 +69,7 @@ public class TechnicianProfileDTO {
         this.bio = technician.getBio();
 
         this.idCardImage = technician.getIdCardImage();
+        this.documents = technician.getDocuments();
 
         this.services = technician.getServices().stream().map(service -> new ServiceDTO(service, language))
                 .collect(Collectors.toList());

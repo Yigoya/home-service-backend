@@ -55,7 +55,7 @@ public class EmailService {
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
                 + "<h2 style='color: #2E86C1;'>Account Verification</h2>"
                 + "<p>To verify your email, click the link below:</p>"
-                + "<a href='http://localhost:8090/auth/verify?token=" + token
+                + "<a href='http://188.245.43.110/auth/verify?token=" + token
                 + "' style='color: #2E86C1;'>Verify Email</a>"
                 + "</body></html>";
 
@@ -85,8 +85,11 @@ public class EmailService {
         String subject = "Password Reset Request";
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
                 + "<h2 style='color: #2E86C1;'>Password Reset Request</h2>"
-                + "<p>To reset your password, click the link below:</p>"
-                + "<a href='http://localhost:8090/auth/reset-password?token=" + token
+                + "<p>To reset your password, click the link below or copy the token if you are using a mobile app:</p>"
+                + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>"
+                + token
+                + "</pre>"
+                + "<a href='http://188.245.43.110/reset-password?token=" + token
                 + "' style='color: #2E86C1;'>Reset Password</a>"
                 + "</body></html>";
 
@@ -113,7 +116,7 @@ public class EmailService {
                 + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>"
                 + token
                 + "</pre>"
-                + "<a href='https://link-rosy.vercel.app/verify?token=" + token
+                + "<a href='http://188.245.43.110/verify?token=" + token
                 + "' style='color: #2E86C1;'>Verify Account</a>"
                 + "</body></html>";
 
@@ -151,7 +154,7 @@ public class EmailService {
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
                 + "<h2 style='color: #2E86C1;'>Verify Your New Email Address</h2>"
                 + "<p>Please confirm your new email address by clicking the link below:</p>"
-                + "<a href='http://your-production-url/api/user/verify-email-change?token=" + token
+                + "<a href='http://188.245.43.110/verify-email-change?token=" + token
                 + "' style='color: #2E86C1;'>Verify Email</a>"
                 + "</body></html>";
 

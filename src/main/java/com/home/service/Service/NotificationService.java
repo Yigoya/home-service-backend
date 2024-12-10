@@ -106,4 +106,15 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    // Mark all notifications as read
+    public void markAllAsRead(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        List<Notification> notifications = notificationRepository.findByRecipientAndReadStatus(user, false);
+        notifications.forEach(notification -> {
+            notification.setReadStatus(true);
+            notificationRepository.save(notification);
+        });
+    }
+
 }

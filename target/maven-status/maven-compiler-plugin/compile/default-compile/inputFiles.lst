@@ -73,6 +73,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorProfileDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorResponse.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/OperatorSignupRequest.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/PasswordResetRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/PreferredLanguageRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/ProfileUpdateDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/PurchaseCoinsRequest.java

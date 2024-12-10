@@ -134,7 +134,7 @@ public class UserService {
         // Check if a token already exists for the user
         PasswordResetToken existingToken = passwordResetTokenRepository.findByUser(user.get());
         if (existingToken != null) {
-            throw new IllegalStateException("A password reset token already exists for this user.");
+            passwordResetTokenRepository.delete(existingToken);
         }
         emailService.sendResetPassEmail(user.get());
 
@@ -142,7 +142,8 @@ public class UserService {
     }
 
     public String resetPassword(NewPasswordRequest newPasswordRequest) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(newPasswordRequest.getToken());
+        PasswordResetToken resetToken = passwordResetTokenRepository
+                .findFirstByTokenOrderByExpiryDateDesc(newPasswordRequest.getToken());
         if (resetToken == null ||
                 resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("Token is invalid or expired.");
