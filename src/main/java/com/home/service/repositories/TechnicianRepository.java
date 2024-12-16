@@ -20,6 +20,8 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long>, J
 
         List<Technician> findByVerifiedFalse();
 
+        Optional<Technician> findByIdAndVerifiedFalse(Long id);
+
         List<Technician> findByServices(Services service);
 
         @Query("SELECT t FROM Technician t JOIN t.services s WHERE s.id = :serviceId")

@@ -171,6 +171,18 @@ public class TechnicianService {
                                 .collect(Collectors.toList());
         }
 
+        @Transactional
+        public TechnicianProfileDTO getUnverifiedTechnicianById(Long id) {
+                Technician technician = technicianRepository.findByIdAndVerifiedFalse(id)
+                                .orElseThrow(() -> new EntityNotFoundException("Unverified technician not found"));
+
+                TechnicianProfileDTO dto = new TechnicianProfileDTO(technician, EthiopianLanguage.ENGLISH);
+                dto.setAddress(technician.getTechnicianAddresses().stream()
+                                .map(address -> new AddressDTO(address))
+                                .collect(Collectors.toList()));
+                return dto;
+        }
+
         public Set<Services> getServicesForTechnician(Long technicianId) {
                 Technician technician = technicianRepository.findById(technicianId)
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
@@ -322,16 +334,18 @@ public class TechnicianService {
         }
 
         @Transactional
-        public List<Technician> filterTechnicians(
+        public Page<Technician> filterTechnicians(
+                        Long serviceId,
                         String name, Double minPrice, Double maxPrice, String city,
                         String subcity, String wereda, Double minLatitude, Double maxLatitude,
-                        Double minLongitude, Double maxLongitude) {
+                        Double minLongitude, Double maxLongitude, Pageable pageable) {
 
                 Specification<Technician> spec = TechnicianSpecification.getTechnicianFilter(
+                                serviceId,
                                 name, minPrice, maxPrice, city, subcity, wereda,
                                 minLatitude, maxLatitude, minLongitude, maxLongitude);
 
-                return technicianRepository.findAll(spec);
+                return technicianRepository.findAll(spec, pageable);
         }
 
         @Transactional

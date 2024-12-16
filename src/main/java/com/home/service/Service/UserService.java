@@ -217,6 +217,7 @@ public class UserService {
 
     @Transactional
     public AuthenticationResponse handleSocialLogin(SocialLoginRequest loginRequest) throws FirebaseAuthException {
+        System.out.println(loginRequest.getIdToken());
         FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginRequest.getIdToken());
 
         String email = firebaseToken.getEmail();
@@ -252,16 +253,20 @@ public class UserService {
             deviceInfo.setDeviceType(loginRequest.getDeviceType());
             deviceInfo.setDeviceModel(loginRequest.getDeviceModel());
             deviceInfo.setOperatingSystem(loginRequest.getOperatingSystem());
+            deviceInfo.setBrowserName(loginRequest.getBrowerName());
         } else {
             deviceInfo = new DeviceInfo();
             deviceInfo.setFCMToken(loginRequest.getFCMToken());
             deviceInfo.setDeviceType(loginRequest.getDeviceType());
             deviceInfo.setDeviceModel(loginRequest.getDeviceModel());
             deviceInfo.setOperatingSystem(loginRequest.getOperatingSystem());
+            deviceInfo.setBrowserName(loginRequest.getBrowerName());
+
             user.addDevice(deviceInfo);
         }
 
         userRepository.save(user);
+        user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
         final String jwtToken = jwtUtil.generateToken(user.getEmail());
         UserResponse userResponse = new UserResponse(user.getId(), user.getName(), user.getEmail(),

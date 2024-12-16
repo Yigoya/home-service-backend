@@ -107,6 +107,12 @@ public class AdminController {
                 return ResponseEntity.ok(technicianDTOs);
         }
 
+        @GetMapping("/unverified-technicians/{technicianId}")
+        public ResponseEntity<TechnicianProfileDTO> getUnverifiedTechnicianById(@PathVariable Long technicianId) {
+                TechnicianProfileDTO technicianDTO = technicianService.getUnverifiedTechnicianById(technicianId);
+                return ResponseEntity.ok(technicianDTO);
+        }
+
         @GetMapping("technicians/verify/{technicianId}")
         public ResponseEntity<String> acceptTechnician(@PathVariable Long technicianId) {
                 Technician technician = technicianRepository.findById(technicianId)

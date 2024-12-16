@@ -25,6 +25,8 @@ public class DeviceInfo extends BaseEntity {
 
     private String operatingSystem; // e.g., "Android 12", "iOS 16"
 
+    private String browserName; // e.g., "Chrome", "Safari"
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

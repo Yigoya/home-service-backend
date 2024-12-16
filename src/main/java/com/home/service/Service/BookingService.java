@@ -153,8 +153,12 @@ public class BookingService {
         transaction.setAmount(-serviceFee);
         transaction.setTransactionDate(LocalDateTime.now());
         transaction.setDescription("Coins used for booking service: " + service.getTranslations().stream()
-                .filter(t -> t.getLang().equals(customer.getUser().getPreferredLanguage())).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Translation not found for preferred language"))
+                .filter(t -> t.getLang().equals(customer.getUser().getPreferredLanguage()))
+                .findFirst()
+                .orElse(service.getTranslations().stream()
+                        .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Translation not found for English")))
                 .getName());
         transaction.setTransactionType(TransactionType.USAGE);
         transactionRepository.save(transaction);
@@ -309,13 +313,15 @@ public class BookingService {
 
     @Transactional
     public Page<BookingResponseDTO> getBookingsForCustomer(Long customerId, Pageable pageable) {
-        Page<Booking> bookings = bookingRepository.findByCustomerIdOrderByStatusPriority(customerId, pageable);
+        Page<Booking> bookings = bookingRepository.findByCustomerIdOrderByStatusPriority(customerId,
+                Pageable.unpaged());
         return bookings.map(this::convertToDTO);
     }
 
     @Transactional
     public Page<BookingResponseDTO> getBookingsForTechnician(Long technicianId, Pageable pageable) {
-        Page<Booking> bookings = bookingRepository.findByTechnicianIdOrderByStatusPriority(technicianId, pageable);
+        Page<Booking> bookings = bookingRepository.findByTechnicianIdOrderByStatusPriority(technicianId,
+                Pageable.unpaged());
         return bookings.map(this::convertToDTO);
     }
 

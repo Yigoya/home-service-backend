@@ -35,6 +35,9 @@ public class SocialLoginRequest {
     @NotBlank(message = "Operating system is required")
     private String operatingSystem;
 
+    private String browerName;
+
     @NotBlank(message = "Auth provider is required")
     private String provider; // e.g., "google", "facebook", "direct"
+
 }

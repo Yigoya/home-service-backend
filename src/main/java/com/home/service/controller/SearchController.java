@@ -79,8 +79,9 @@ public class SearchController {
                 return ResponseEntity.ok(technicianDTOs);
         }
 
-        @GetMapping("/technicians")
-        public List<TechnicianDTO> getTechnicians(
+        @GetMapping("/technicians/{serviceId}")
+        public ResponseEntity<Page<TechnicianDTO>> getTechnicians(
+                        @PathVariable Long serviceId,
                         @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
                         @RequestParam(required = false) String name,
                         @RequestParam(required = false) Double minPrice,
@@ -91,15 +92,15 @@ public class SearchController {
                         @RequestParam(required = false) Double minLatitude,
                         @RequestParam(required = false) Double maxLatitude,
                         @RequestParam(required = false) Double minLongitude,
-                        @RequestParam(required = false) Double maxLongitude) {
+                        @RequestParam(required = false) Double maxLongitude,
+                        Pageable pageable) {
 
-                List<Technician> technicians = technicianService.filterTechnicians(
-                                name, minPrice, maxPrice, city, subcity, wereda,
-                                minLatitude, maxLatitude, minLongitude, maxLongitude);
+                Page<Technician> technicians = technicianService.filterTechnicians(
+                                serviceId, name, minPrice, maxPrice, city, subcity, wereda,
+                                minLatitude, maxLatitude, minLongitude, maxLongitude, pageable);
 
-                return technicians.stream()
-                                .map(technician -> new TechnicianDTO(technician, lang))
-                                .collect(Collectors.toList());
+                Page<TechnicianDTO> technicianDTOs = technicians.map(technician -> new TechnicianDTO(technician, lang));
+                return ResponseEntity.ok(technicianDTOs);
         }
 
         @GetMapping("/service-schedule/{serviceId}")
@@ -108,10 +109,8 @@ public class SearchController {
                         @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime time,
-                        @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int size) {
+                        Pageable pageable) {
 
-                Pageable pageable = PageRequest.of(page, size);
                 Page<Technician> technicians = technicianService.findAvailableTechniciansByServiceAndSchedule(serviceId,
                                 date, time, pageable);
 
