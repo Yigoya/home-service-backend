@@ -339,15 +339,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void initiateChangeContact(ChangeContactRequest request) {
+    public void initiateChangeEmail(ChangeContactRequest request) {
         // Fetch the user
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        // Update phone number immediately if provided
-        if (request.getNewPhoneNumber() != null) {
-            user.setPhoneNumber(request.getNewPhoneNumber());
-        }
 
         // Handle email change
         if (request.getNewEmail() != null) {
@@ -368,6 +363,20 @@ public class UserService {
 
             // Send verification email
             emailService.sendVerifyEmailForChange(user, token);
+        }
+
+        // Save user
+        userRepository.save(user);
+    }
+
+    public void initiateChangePhoneNumber(ChangeContactRequest request) {
+        // Fetch the user
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Update phone number immediately if provided
+        if (request.getNewPhoneNumber() != null) {
+            user.setPhoneNumber(request.getNewPhoneNumber());
         }
 
         // Save user

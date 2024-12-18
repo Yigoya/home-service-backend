@@ -111,7 +111,6 @@ com/home/service/models/TechnicianServicePrice.class
 com/home/service/dto/QuestionWithAnswerDTO.class
 com/home/service/repositories/CustomerAddressRepository.class
 com/home/service/dto/UpdateBookingStatusDTO.class
-com/home/service/controller/ProfileController.class
 com/home/service/dto/admin/TechnicianDetailDTO.class
 com/home/service/config/exceptions/FileException.class
 com/home/service/repositories/NotificationRepository.class

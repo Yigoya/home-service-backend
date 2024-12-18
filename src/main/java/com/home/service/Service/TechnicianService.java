@@ -538,4 +538,13 @@ public class TechnicianService {
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
                 return technician.getUser().getStatus().equals(AccountStatus.ACTIVE);
         }
+
+        public List<AddressDTO> getTechnicianAddresses(Long technicianId) {
+                Technician technician = technicianRepository.findById(technicianId)
+                                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+                return technician.getTechnicianAddresses().stream()
+                                .map(address -> new AddressDTO(address))
+                                .collect(Collectors.toList());
+        }
+
 }

@@ -175,4 +175,37 @@ public class CustomerService {
         return dto;
     }
 
+    public List<com.home.service.dto.AddressDTO> getCustomerAddresses(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        List<Address> addresses = addressRepository.findByCustomerId(customer.getId());
+        List<com.home.service.dto.AddressDTO> addressDTOs = new ArrayList<>();
+        for (Address address : addresses) {
+            com.home.service.dto.AddressDTO dto = new com.home.service.dto.AddressDTO();
+            dto.setId(address.getId());
+            dto.setStreet(address.getStreet());
+            dto.setCity(address.getCity());
+            dto.setSubcity(address.getSubcity());
+            dto.setWereda(address.getWereda());
+            dto.setCountry(address.getCountry());
+            dto.setZipCode(address.getZipCode());
+            dto.setLatitude(address.getLatitude());
+            dto.setLongitude(address.getLongitude());
+            addressDTOs.add(dto);
+        }
+        return addressDTOs;
+    }
+
+    @Transactional
+    public void deleteCustomerAddress(Long customerId, Long addressId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+        if (!address.getCustomer().getId().equals(customer.getId())) {
+            throw new IllegalArgumentException("Address does not belong to the customer");
+        }
+        addressRepository.delete(address);
+    }
+
 }

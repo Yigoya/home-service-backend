@@ -15,6 +15,7 @@ import com.home.service.Service.BookingService;
 import com.home.service.Service.CustomerService;
 import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
+import com.home.service.dto.AddressDTO;
 import com.home.service.dto.ChangeContactRequest;
 import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.PreferredLanguageRequest;
@@ -102,6 +103,34 @@ public class ProfileController {
         return ResponseEntity.ok(schedule);
     }
 
+    @GetMapping("/customer/{id}/addresses")
+    public ResponseEntity<List<AddressDTO>> getCustomerAddresses(@PathVariable Long id) {
+        List<AddressDTO> addresses = customerService.getCustomerAddresses(id);
+        return ResponseEntity.ok(addresses);
+    }
+
+    @DeleteMapping("/customer/{customerId}/address/{addressId}")
+    public ResponseEntity<String> deleteCustomerAddress(
+            @PathVariable Long customerId,
+            @PathVariable Long addressId) {
+        customerService.deleteCustomerAddress(customerId, addressId);
+        return ResponseEntity.ok("Address deleted successfully");
+    }
+
+    // @DeleteMapping("/technician/{technicianId}/address/{addressId}")
+    // public ResponseEntity<String> deleteTechnicianAddress(
+    // @PathVariable Long technicianId,
+    // @PathVariable Long addressId) {
+    // technicianService.deleteTechnicianAddress(technicianId, addressId);
+    // return ResponseEntity.ok("Address deleted successfully");
+    // }
+
+    @GetMapping("/technician/{id}/addresses")
+    public ResponseEntity<List<AddressDTO>> getTechnicianAddresses(@PathVariable Long id) {
+        List<AddressDTO> addresses = technicianService.getTechnicianAddresses(id);
+        return ResponseEntity.ok(addresses);
+    }
+
     @PostMapping("/uploadProfileImage/{userId}")
     public ResponseEntity<Map<String, String>> uploadProfileImage(
             @PathVariable Long userId,
@@ -146,10 +175,17 @@ public class ProfileController {
         return ResponseEntity.ok("Preferred language updated successfully.");
     }
 
-    @PostMapping("/change-contact")
-    public ResponseEntity<String> changeContact(@Valid @RequestBody ChangeContactRequest request) {
-        userService.initiateChangeContact(request);
-        return ResponseEntity.ok("Change request initiated. Check your email for verification instructions.");
+    @PostMapping("/change-email")
+    public ResponseEntity<String> changeEmail(@Valid @RequestBody ChangeContactRequest request) {
+        userService.initiateChangeEmail(request);
+        return ResponseEntity.ok("Email change request initiated. Check your email for verification instructions.");
+    }
+
+    @PostMapping("/change-phone")
+    public ResponseEntity<String> changePhone(@Valid @RequestBody ChangeContactRequest request) {
+        userService.initiateChangePhoneNumber(request);
+        return ResponseEntity
+                .ok("Phone number change request initiated. Check your phone for verification instructions.");
     }
 
     @GetMapping("/verify-email-change")
@@ -157,4 +193,5 @@ public class ProfileController {
         userService.verifyEmailChange(token);
         return ResponseEntity.ok("Email change verified successfully.");
     }
+
 }

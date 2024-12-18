@@ -5,6 +5,9 @@ import com.home.service.models.enums.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -30,7 +33,8 @@ public class Booking extends BaseEntity {
     private BookingStatus status;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "service_location_id")
+    @JoinColumn(name = "service_location_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Address serviceLocation;
 
     private Double totalCost;
