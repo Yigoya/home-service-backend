@@ -41,3 +41,8 @@ spring:
 server:
   port: 5000
   address: 0.0.0.0
+  ssl:
+    enabled: true
+    key-store: keystore.p12
+    key-store-password: Ya+371240
+    key-store-type: PKCS12
