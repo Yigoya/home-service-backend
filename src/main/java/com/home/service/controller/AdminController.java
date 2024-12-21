@@ -3,12 +3,10 @@ package com.home.service.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authorization.method.AuthorizeReturnObject;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -41,7 +39,6 @@ import com.home.service.dto.admin.TechnicianDetailDTO;
 import com.home.service.repositories.DisputeRepository;
 import com.home.service.repositories.TechnicianRepository;
 import com.home.service.services.EmailService;
-import com.home.service.models.TechnicianWeeklySchedule;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.DisputeStatus;
 import com.home.service.Service.OperatorService;
@@ -54,8 +51,6 @@ import jakarta.validation.Valid;
 
 import com.home.service.models.Dispute;
 import com.home.service.models.QuestionRequest;
-import com.home.service.models.ServiceCategory;
-import com.home.service.models.Services;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianProofResponse;
 
