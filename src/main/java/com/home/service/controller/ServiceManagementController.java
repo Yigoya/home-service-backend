@@ -106,7 +106,7 @@ public class ServiceManagementController {
     }
 
     @PutMapping("/services/{id}")
-    public Services updateService(@PathVariable Long id, @Valid @RequestBody ServiceRequest serviceRequest) {
+    public String updateService(@PathVariable Long id, @Valid @RequestBody ServiceRequest serviceRequest) {
         return serviceService.updateService(id, serviceRequest);
     }
 

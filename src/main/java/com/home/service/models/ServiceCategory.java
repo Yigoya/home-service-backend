@@ -14,6 +14,16 @@ public class ServiceCategory extends BaseEntity {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<ServiceCategoryTranslation> translations = new HashSet<>();
 
+    private String icon;
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
     public Set<ServiceCategoryTranslation> getTranslations() {
         return translations;
     }

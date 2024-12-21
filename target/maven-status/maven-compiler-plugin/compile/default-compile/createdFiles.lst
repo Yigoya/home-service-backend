@@ -79,7 +79,6 @@ com/home/service/repositories/TechnicianServicePriceRepository.class
 com/home/service/config/GlobalExceptionHandler.class
 com/home/service/config/WebConfig.class
 com/home/service/dto/AddressDTO.class
-com/home/service/controller/AdminController.class
 com/home/service/dto/admin/ServiceCategoryWithServicesDTO.class
 com/home/service/models/Booking.class
 com/home/service/repositories/DeviceInfoRepository.class
@@ -88,7 +87,6 @@ com/home/service/dto/TechnicianDTO.class
 com/home/service/controller/TransactionController.class
 com/home/service/repositories/UserRepository.class
 com/home/service/ServiceApplication.class
-com/home/service/controller/ServiceManagementController.class
 com/home/service/dto/ServiceCategoryWithServicesDTO.class
 com/home/service/dto/ServiceLangRequest.class
 com/home/service/models/Services.class

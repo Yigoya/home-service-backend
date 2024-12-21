@@ -15,6 +15,7 @@ import com.home.service.repositories.ServiceCategoryRepository;
 import com.home.service.repositories.ServiceCategoryTranslationRepository;
 import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.ServiceTranslationRepository;
+import com.home.service.services.FileStorageService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -32,6 +33,9 @@ public class ServiceCategoryService {
 
     @Autowired
     private ServiceCategoryTranslationRepository serviceCategoryTranslationRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public List<ServiceCategoryDTO> getAllServiceCategories(EthiopianLanguage lang) {
         return serviceCategoryRepository.findAll().stream()
@@ -66,6 +70,8 @@ public class ServiceCategoryService {
 
         // Add the translation to the category
         category.getTranslations().add(translation);
+        String icon = fileStorageService.storeFile(serviceCategoryRequest.getIcon());
+        category.setIcon(icon);
 
         // Save the category (translations will be saved automatically due to cascading)
         serviceCategoryRepository.save(category);
@@ -73,7 +79,7 @@ public class ServiceCategoryService {
         return "Service Category saved successfully";
     }
 
-    public ServiceCategory updateServiceCategory(Long id, ServiceCatagoryRequest serviceCategory) {
+    public String updateServiceCategory(Long id, ServiceCatagoryRequest serviceCategory) {
         ServiceCategory category = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
         ServiceCategoryTranslation translation = serviceCategoryTranslationRepository.findByCategoryAndLang(category,
@@ -81,7 +87,11 @@ public class ServiceCategoryService {
         translation.setName(serviceCategory.getName());
         translation.setDescription(serviceCategory.getDescription());
         translation.setLang(serviceCategory.getLang());
-        return serviceCategoryRepository.save(category);
+
+        String icon = fileStorageService.storeFile(serviceCategory.getIcon());
+        category.setIcon(icon);
+        serviceCategoryRepository.save(category);
+        return "Service Category updated successfully";
     }
 
     public String addServiceCategoryLanguage(Long id, ServiceCatagoryRequest serviceCategoryRequest) {

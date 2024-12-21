@@ -2,6 +2,8 @@ package com.home.service.dto;
 
 import java.time.LocalTime;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.home.service.models.enums.EthiopianLanguage;
 
 import jakarta.validation.constraints.NotBlank;
@@ -34,5 +36,7 @@ public class ServiceRequest {
 
     @NotNull(message = "Language is required")
     private EthiopianLanguage lang;
+
+    private MultipartFile icon;
 
 }

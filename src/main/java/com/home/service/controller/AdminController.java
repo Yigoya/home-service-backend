@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.method.AuthorizeReturnObject;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -181,10 +182,10 @@ public class AdminController {
         }
 
         @PutMapping("/services/{id}")
-        public ResponseEntity<Services> updateService(@PathVariable Long id,
-                        @Valid @RequestBody ServiceRequest updatedService) {
-                Services updated = serviceService.updateService(id, updatedService);
-                return ResponseEntity.ok(updated);
+        public ResponseEntity<String> updateService(@PathVariable Long id,
+                        @Valid @ModelAttribute ServiceRequest updatedService) {
+                serviceService.updateService(id, updatedService);
+                return ResponseEntity.ok("Service updated successfully");
         }
 
         @PutMapping("/services/{id}/language")
@@ -195,12 +196,12 @@ public class AdminController {
         }
 
         @PostMapping("/services")
-        public String createService(@Valid @RequestBody ServiceRequest service) {
+        public String createService(@Valid @ModelAttribute ServiceRequest service) {
                 return serviceService.saveService(service);
         }
 
         @PostMapping("/service-categories")
-        public String createServiceCategory(@Valid @RequestBody ServiceCatagoryRequest serviceCategory) {
+        public String createServiceCategory(@Valid @ModelAttribute ServiceCatagoryRequest serviceCategory) {
                 return serviceCategoryService.saveServiceCategory(serviceCategory);
         }
 
@@ -211,8 +212,8 @@ public class AdminController {
         }
 
         @PutMapping("/service-categories/{id}")
-        public ServiceCategory updateServiceCategory(@PathVariable Long id,
-                        @RequestBody ServiceCatagoryRequest serviceCategory) {
+        public String updateServiceCategory(@PathVariable Long id,
+                        @ModelAttribute ServiceCatagoryRequest serviceCategory) {
                 return serviceCategoryService.updateServiceCategory(id, serviceCategory);
         }
 

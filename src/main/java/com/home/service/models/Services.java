@@ -25,6 +25,16 @@ public class Services extends BaseEntity {
     @Transient
     private Long categoryId;
 
+    private String icon;
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<ServiceTranslation> translations = new HashSet<>();
 
