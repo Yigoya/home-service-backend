@@ -208,7 +208,7 @@ public class AdminController {
 
         @PutMapping("/service-categories/{id}")
         public String updateServiceCategory(@PathVariable Long id,
-                        @ModelAttribute ServiceCatagoryRequest serviceCategory) {
+                        @Valid @ModelAttribute ServiceCatagoryRequest serviceCategory) {
                 return serviceCategoryService.updateServiceCategory(id, serviceCategory);
         }
 

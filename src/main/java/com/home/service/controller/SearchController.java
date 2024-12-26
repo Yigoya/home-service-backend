@@ -46,6 +46,9 @@ public class SearchController {
         public ResponseEntity<List<TechnicianDTO>> searchForService(@PathVariable Long serviceId,
                         @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
                 List<Technician> technicians = technicianService.findTechniciansByService(serviceId);
+                if (technicians.isEmpty()) {
+                        return ResponseEntity.ok(List.of());
+                }
                 TechnicianAddress technicianAddress = technicianAddressRepository
                                 .findByTechnicianId(technicians.get(0).getId()).orElse(null);
                 List<TechnicianDTO> technicianDTOs = technicians.stream()

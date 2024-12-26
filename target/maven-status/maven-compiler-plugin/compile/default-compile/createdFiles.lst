@@ -79,6 +79,7 @@ com/home/service/repositories/TechnicianServicePriceRepository.class
 com/home/service/config/GlobalExceptionHandler.class
 com/home/service/config/WebConfig.class
 com/home/service/dto/AddressDTO.class
+com/home/service/controller/AdminController.class
 com/home/service/dto/admin/ServiceCategoryWithServicesDTO.class
 com/home/service/models/Booking.class
 com/home/service/repositories/DeviceInfoRepository.class
@@ -87,6 +88,7 @@ com/home/service/dto/TechnicianDTO.class
 com/home/service/controller/TransactionController.class
 com/home/service/repositories/UserRepository.class
 com/home/service/ServiceApplication.class
+com/home/service/controller/ServiceManagementController.class
 com/home/service/dto/ServiceCategoryWithServicesDTO.class
 com/home/service/dto/ServiceLangRequest.class
 com/home/service/models/Services.class
@@ -109,6 +111,7 @@ com/home/service/models/TechnicianServicePrice.class
 com/home/service/dto/QuestionWithAnswerDTO.class
 com/home/service/repositories/CustomerAddressRepository.class
 com/home/service/dto/UpdateBookingStatusDTO.class
+com/home/service/controller/ProfileController.class
 com/home/service/dto/admin/TechnicianDetailDTO.class
 com/home/service/config/exceptions/FileException.class
 com/home/service/repositories/NotificationRepository.class
@@ -160,6 +163,7 @@ com/home/service/models/ServiceTranslation.class
 com/home/service/Service/TechnicianService.class
 com/home/service/repositories/ServiceCategoryRepository.class
 com/home/service/dto/ReviewDTO.class
+com/home/service/dto/PasswordResetRequest.class
 com/home/service/dto/ServiceDTO.class
 com/home/service/dto/ChangeContactRequest.class
 com/home/service/dto/BookingRequestDTO.class
