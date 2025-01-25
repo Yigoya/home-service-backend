@@ -142,26 +142,28 @@ public class BookingService {
         }
 
         // Deduct coins from customer balance
-        customer.setCoinBalance(customer.getCoinBalance() - serviceFee);
-        customerRepository.save(customer);
+        // customer.setCoinBalance(customer.getCoinBalance() - serviceFee);
+        // customerRepository.save(customer);
 
-        System.out.println(service.getTranslations().toString());
+        // System.out.println(service.getTranslations().toString());
 
-        // Record transaction for coin usage
-        Transaction transaction = new Transaction();
-        transaction.setCustomer(customer);
-        transaction.setAmount(-serviceFee);
-        transaction.setTransactionDate(LocalDateTime.now());
-        transaction.setDescription("Coins used for booking service: " + service.getTranslations().stream()
-                .filter(t -> t.getLang().equals(customer.getUser().getPreferredLanguage()))
-                .findFirst()
-                .orElse(service.getTranslations().stream()
-                        .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Translation not found for English")))
-                .getName());
-        transaction.setTransactionType(TransactionType.USAGE);
-        transactionRepository.save(transaction);
+        // // Record transaction for coin usage
+        // Transaction transaction = new Transaction();
+        // transaction.setCustomer(customer);
+        // transaction.setAmount(-serviceFee);
+        // transaction.setTransactionDate(LocalDateTime.now());
+        // transaction.setDescription("Coins used for booking service: " +
+        // service.getTranslations().stream()
+        // .filter(t -> t.getLang().equals(customer.getUser().getPreferredLanguage()))
+        // .findFirst()
+        // .orElse(service.getTranslations().stream()
+        // .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
+        // .findFirst()
+        // .orElseThrow(() -> new IllegalArgumentException("Translation not found for
+        // English")))
+        // .getName());
+        // transaction.setTransactionType(TransactionType.USAGE);
+        // transactionRepository.save(transaction);
 
         // Create Address from request
         Address address = new Address();

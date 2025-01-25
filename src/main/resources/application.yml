@@ -46,3 +46,11 @@ server:
     key-store: keystore.p12
     key-store-password: Ya+371240
     key-store-type: PKCS12
+chapa:
+  api:
+    key: "CHASECK_TEST-cR8ncgOLLPA53khMS88AqHQU3jPtBRO4" # Replace with your Chapa API key
+    url: "https://api.chapa.co/v1" # Chapa API base URL
+  callback:
+    url: "https://yourwebsite.com/callback" # Callback URL for payment status updates
+  return:
+    url: "https://yourwebsite.com/return" # Return URL after payment completion
