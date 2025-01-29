@@ -7,6 +7,9 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,18 +17,48 @@ public class Services extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private ServiceCategory category;
 
     @ManyToMany(mappedBy = "services")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Set<Question> questions;
 
     private LocalTime estimatedDuration;
     private Double serviceFee;
 
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    Set<ServiceTranslation> translations = new HashSet<>();
+
     @Transient
     private Long categoryId;
 
     private String icon;
+
+    @ManyToOne
+    @JoinColumn(name = "mobile_category_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private ServiceCategory mobileCategory;
+
+    @Transient
+    private Long mobileCategoryId;
+
+    public ServiceCategory getMobileCategory() {
+        return mobileCategory;
+    }
+
+    public void setMobileCategory(ServiceCategory mobileCategory) {
+        this.mobileCategory = mobileCategory;
+    }
+
+    public Long getMobileCategoryId() {
+        return mobileCategoryId;
+    }
+
+    public void setMobileCategoryId(Long mobileCategoryId) {
+        this.mobileCategoryId = mobileCategoryId;
+    }
 
     public String getIcon() {
         return icon;
@@ -34,9 +67,6 @@ public class Services extends BaseEntity {
     public void setIcon(String icon) {
         this.icon = icon;
     }
-
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<ServiceTranslation> translations = new HashSet<>();
 
     public ServiceCategory getCategory() {
         return category;

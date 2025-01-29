@@ -75,6 +75,10 @@ public class ServiceService {
                 service.setCategory(category);
                 service.setEstimatedDuration(serviceRequest.getEstimatedDuration());
                 service.setServiceFee(serviceRequest.getServiceFee());
+                service.setMobileCategory(
+                                serviceRequest.getMobileCategoryId() != null ? serviceCategoryService
+                                                .getServiceCategoryById(serviceRequest.getMobileCategoryId()).get()
+                                                : null);
                 String icon = fileStorageService.storeFile(serviceRequest.getIcon());
                 service.setIcon(icon);
 
@@ -108,6 +112,10 @@ public class ServiceService {
                 service.setId(id);
                 service.setCategory(
                                 serviceCategoryService.getServiceCategoryById(serviceRequest.getCategoryId()).get());
+                service.setMobileCategory(
+                                serviceRequest.getMobileCategoryId() != null ? serviceCategoryService
+                                                .getServiceCategoryById(serviceRequest.getMobileCategoryId()).get()
+                                                : null);
                 service.setEstimatedDuration(serviceRequest.getEstimatedDuration());
                 service.setServiceFee(serviceRequest.getServiceFee());
                 String icon = fileStorageService.storeFile(serviceRequest.getIcon());

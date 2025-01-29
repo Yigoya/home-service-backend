@@ -18,6 +18,7 @@ public class ServiceDTO {
         private Double price;
         private LocalTime duration;
         private Long categoryId;
+        private Long mobileCategoryId;
         private String icon;
 
         public ServiceDTO(Services service, EthiopianLanguage language) {
@@ -48,6 +49,8 @@ public class ServiceDTO {
                 this.duration = service.getEstimatedDuration();
                 this.categoryId = service.getCategory().getId();
                 this.icon = service.getIcon();
+                this.mobileCategoryId = service.getMobileCategory() != null ? service.getMobileCategory().getId()
+                                : null;
 
         }
 }

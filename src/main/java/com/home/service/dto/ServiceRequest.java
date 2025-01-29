@@ -21,6 +21,8 @@ public class ServiceRequest {
     @NotNull(message = "Category ID is required")
     private Long categoryId;
 
+    private Long mobileCategoryId;
+
     @NotBlank(message = "Name is required")
     private String name;
 

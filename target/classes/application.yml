@@ -5,13 +5,10 @@ admin:
 spring:
   datasource:
     # url: jdbc:mariadb://localhost:3306/service
-    # url: jdbc:postgresql://localhost:5432/service
-    # username: root
-    # password: Ya+371240
+    url: jdbc:postgresql://localhost:5432/service
+    username: root
+    password: Ya+371240
     # driver-class-name: org.mariadb.jdbc.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -51,6 +48,6 @@ chapa:
     key: "CHASECK_TEST-cR8ncgOLLPA53khMS88AqHQU3jPtBRO4" # Replace with your Chapa API key
     url: "https://api.chapa.co/v1" # Chapa API base URL
   callback:
-    url: "https://yourwebsite.com/callback" # Callback URL for payment status updates
+    url: "https://home-service-managment.vercel.app/" # Callback URL for payment status updates
   return:
-    url: "https://yourwebsite.com/return" # Return URL after payment completion
+    url: "https://home-service-managment.vercel.app/" # Return URL after payment completion

@@ -37,9 +37,12 @@ public class ServiceCategoryService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    public List<ServiceCategoryDTO> getAllServiceCategories(EthiopianLanguage lang) {
+    public List<ServiceCategoryDTO> getAllServiceCategories(EthiopianLanguage lang, boolean isMobileCategory) {
         return serviceCategoryRepository.findAll().stream()
-                .map(serviceCategory -> new ServiceCategoryDTO(serviceCategory, lang)).collect(Collectors.toList());
+                .filter(serviceCategory -> Boolean.TRUE
+                        .equals(serviceCategory.getIsMobileCategory()) == isMobileCategory)
+                .map(serviceCategory -> new ServiceCategoryDTO(serviceCategory, lang))
+                .collect(Collectors.toList());
     }
 
     public Optional<ServiceCategory> getServiceCategoryById(Long id) {
@@ -72,6 +75,7 @@ public class ServiceCategoryService {
         category.getTranslations().add(translation);
         String icon = fileStorageService.storeFile(serviceCategoryRequest.getIcon());
         category.setIcon(icon);
+        category.setIsMobileCategory(serviceCategoryRequest.getIsMobileCategory());
 
         // Save the category (translations will be saved automatically due to cascading)
         serviceCategoryRepository.save(category);
@@ -90,6 +94,7 @@ public class ServiceCategoryService {
 
         String icon = fileStorageService.storeFile(serviceCategory.getIcon());
         category.setIcon(icon);
+        category.setIsMobileCategory(serviceCategory.getIsMobileCategory());
         serviceCategoryRepository.save(category);
         return "Service Category updated successfully";
     }
