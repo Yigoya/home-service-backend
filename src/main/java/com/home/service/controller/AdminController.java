@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -176,6 +177,7 @@ public class AdminController {
                 return ResponseEntity.ok("Dispute status updated to " + status);
         }
 
+        @CrossOrigin(originPatterns = "*")
         @PutMapping("/services/{id}")
         public ResponseEntity<String> updateService(@PathVariable Long id,
                         @Valid @ModelAttribute ServiceRequest updatedService) {
@@ -206,6 +208,7 @@ public class AdminController {
                 return serviceCategoryService.addServiceCategoryLanguage(id, serviceCategory);
         }
 
+        @CrossOrigin(originPatterns = "*")
         @PutMapping("/service-categories/{id}")
         public String updateServiceCategory(@PathVariable Long id,
                         @Valid @ModelAttribute ServiceCatagoryRequest serviceCategory) {

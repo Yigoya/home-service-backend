@@ -137,6 +137,20 @@ public class ServiceManagementController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // @PutMapping("/services/{id}/icon")
+    // public ResponseEntity<String> updateServiceIcon(@PathVariable Long id,
+    // @RequestParam String iconUrl) {
+    // serviceService.updateServiceIcon(id, iconUrl);
+    // return ResponseEntity.ok("Service icon updated successfully");
+    // }
+
+    // @PutMapping("/service-categories/{id}/icon")
+    // public ResponseEntity<String> updateServiceCategoryIcon(@PathVariable Long
+    // id, @RequestParam String iconUrl) {
+    // serviceCategoryService.updateServiceCategoryIcon(id, iconUrl);
+    // return ResponseEntity.ok("Service category icon updated successfully");
+    // }
+
     // Booking Endpoints
     @GetMapping("/bookings")
     public List<Booking> getAllBookings() {
@@ -204,4 +218,5 @@ public class ServiceManagementController {
         }
         return ResponseEntity.ok(disputes);
     }
+
 }
