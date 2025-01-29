@@ -77,6 +77,11 @@ public class ServiceManagementController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<String> testEndpoint() {
+        return ResponseEntity.ok("Test endpoint is working!");
+    }
+
     // Technician Endpoints
     @GetMapping("/technicians")
     public List<Technician> getAllTechnicians() {
