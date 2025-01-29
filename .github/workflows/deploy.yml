@@ -22,6 +22,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no root@78.46.240.222 << 'EOF'
             cd home-service-backend  # Change this to your project directory
+            git stash
             git pull origin main
             ./mvnw clean package
             sudo systemctl restart springboot  # Ensure this service exists
