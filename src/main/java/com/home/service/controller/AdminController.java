@@ -55,6 +55,7 @@ import com.home.service.models.QuestionRequest;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianProofResponse;
 
+@CrossOrigin(originPatterns = "*")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {

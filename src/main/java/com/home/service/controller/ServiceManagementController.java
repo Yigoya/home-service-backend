@@ -79,7 +79,7 @@ public class ServiceManagementController {
 
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Test endpoint is working! yaaaaaaaaa");
+        return ResponseEntity.ok("Test endpoint is working! 🎉");
     }
 
     // Technician Endpoints
