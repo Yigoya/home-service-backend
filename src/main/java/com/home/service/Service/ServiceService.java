@@ -102,12 +102,23 @@ public class ServiceService {
         public String updateService(Long id, ServiceRequest serviceRequest) {
                 Services service = serviceRepository.findById(id)
                                 .orElseThrow(() -> new EntityNotFoundException("Service not found"));
-                ServiceTranslation translation = new ServiceTranslation();
+
+                // Check if translation for the given language already exists
+                ServiceTranslation translation = service.getTranslations().stream()
+                                .filter(t -> t.getLang().equals(serviceRequest.getLang()))
+                                .findFirst()
+                                .orElse(new ServiceTranslation());
+
+                // Update or set new translation details
                 translation.setLang(serviceRequest.getLang());
                 translation.setName(serviceRequest.getName());
                 translation.setDescription(serviceRequest.getDescription());
                 translation.setService(service); // Set the service reference
-                service.getTranslations().add(translation);
+
+                // Add translation to service if it's new
+                if (!service.getTranslations().contains(translation)) {
+                        service.getTranslations().add(translation);
+                }
 
                 service.setId(id);
                 service.setCategory(
