@@ -126,7 +126,7 @@ public class ServiceService {
                 service.setMobileCategory(
                                 serviceRequest.getMobileCategoryId() != null ? serviceCategoryService
                                                 .getServiceCategoryById(serviceRequest.getMobileCategoryId()).get()
-                                                : null);
+                                                : service.getMobileCategory());
                 service.setEstimatedDuration(serviceRequest.getEstimatedDuration());
                 service.setServiceFee(serviceRequest.getServiceFee());
                 String icon = fileStorageService.storeFile(serviceRequest.getIcon());
