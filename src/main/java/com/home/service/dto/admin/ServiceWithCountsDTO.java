@@ -17,5 +17,6 @@ public class ServiceWithCountsDTO {
     private Double serviceFee;
     private Integer technicianCount;
     private Integer bookingCount;
+    private String icon;
 
 }

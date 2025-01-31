@@ -86,11 +86,22 @@ public class ServiceCategoryService {
     public String updateServiceCategory(Long id, ServiceCatagoryRequest serviceCategory) {
         ServiceCategory category = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
-        ServiceCategoryTranslation translation = serviceCategoryTranslationRepository.findByCategoryAndLang(category,
-                serviceCategory.getLang()).orElseThrow(() -> new EntityNotFoundException("Translation not found"));
-        translation.setName(serviceCategory.getName());
-        translation.setDescription(serviceCategory.getDescription());
-        translation.setLang(serviceCategory.getLang());
+        Optional<ServiceCategoryTranslation> existingTranslation = serviceCategoryTranslationRepository
+                .findByCategoryAndLang(category,
+                        serviceCategory.getLang());
+
+        if (existingTranslation.isPresent()) {
+            ServiceCategoryTranslation translation = existingTranslation.get();
+            translation.setName(serviceCategory.getName());
+            translation.setDescription(serviceCategory.getDescription());
+        } else {
+            ServiceCategoryTranslation translation = new ServiceCategoryTranslation();
+            translation.setName(serviceCategory.getName());
+            translation.setDescription(serviceCategory.getDescription());
+            translation.setLang(serviceCategory.getLang());
+            translation.setCategory(category);
+            category.getTranslations().add(translation);
+        }
 
         String icon = fileStorageService.storeFile(serviceCategory.getIcon());
         category.setIcon(icon);

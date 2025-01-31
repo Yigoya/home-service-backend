@@ -204,6 +204,7 @@ public class ServiceService {
                 dto.setServiceFee(service.getServiceFee());
                 dto.setTechnicianCount(serviceRepository.countTechniciansByServiceId(service.getId()));
                 dto.setBookingCount(serviceRepository.countBookingsByServiceId(service.getId()));
+                dto.setIcon(service.getIcon());
                 return dto;
         }
 
