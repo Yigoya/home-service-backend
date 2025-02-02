@@ -26,11 +26,18 @@ public class FcmService {
 
   @PostConstruct
   public void initialize() throws IOException {
-    // Load service account credentials
-    GoogleCredentials googleCredentials = GoogleCredentials
-        // .fromStream(new FileInputStream("./serviceAccountKey.json"))
-        .fromStream(new FileInputStream("/root/home-service-backend/serviceAccountKey.json"))
-        .createScoped(FCM_SCOPE);
+    GoogleCredentials googleCredentials;
+    try {
+      googleCredentials = GoogleCredentials
+          .fromStream(new FileInputStream("/root/home-service-backend/serviceAccountKey.json"))
+          .createScoped(FCM_SCOPE);
+
+    } catch (IOException e) {
+      googleCredentials = GoogleCredentials
+          .fromStream(new FileInputStream("./serviceAccountKey.json"))
+
+          .createScoped(FCM_SCOPE);
+    }
 
     // Fetch and set the access token
     googleCredentials.refreshIfExpired();

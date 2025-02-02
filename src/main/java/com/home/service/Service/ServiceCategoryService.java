@@ -105,7 +105,8 @@ public class ServiceCategoryService {
 
         String icon = fileStorageService.storeFile(serviceCategory.getIcon());
         category.setIcon(icon);
-        category.setIsMobileCategory(serviceCategory.getIsMobileCategory());
+        category.setIsMobileCategory(serviceCategory.getIsMobileCategory() == null ? category.getIsMobileCategory()
+                : serviceCategory.getIsMobileCategory());
         serviceCategoryRepository.save(category);
         return "Service Category updated successfully";
     }

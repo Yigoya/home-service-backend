@@ -42,6 +42,7 @@ import com.home.service.repositories.TechnicianRepository;
 import com.home.service.services.EmailService;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.DisputeStatus;
+import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.Service.OperatorService;
 import com.home.service.Service.PaymentProofService;
 import com.home.service.Service.QuestionService;
@@ -302,8 +303,9 @@ public class AdminController {
         }
 
         @GetMapping("/services")
-        public ResponseEntity<List<ServiceCategoryWithServicesDTO>> getAllServicesCategorized() {
-                List<ServiceCategoryWithServicesDTO> categories = serviceService.getAllServicesCategorized();
+        public ResponseEntity<List<ServiceCategoryWithServicesDTO>> getAllServicesCategorized(
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+                List<ServiceCategoryWithServicesDTO> categories = serviceService.getAllServicesCategorized(lang);
                 return ResponseEntity.ok(categories);
         }
 

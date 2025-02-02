@@ -167,39 +167,56 @@ public class ServiceService {
                 serviceRepository.deleteById(id);
         }
 
-        public List<ServiceCategoryWithServicesDTO> getAllServicesCategorized() {
+        public List<ServiceCategoryWithServicesDTO> getAllServicesCategorized(EthiopianLanguage lang) {
                 List<ServiceCategory> categories = serviceCategoryRepository.findAll();
-                return categories.stream().map(this::convertToServiceCategoryWithServicesDTO)
+                return categories.stream().map(category -> convertToServiceCategoryWithServicesDTO(category, lang))
                                 .collect(Collectors.toList());
         }
 
-        private ServiceCategoryWithServicesDTO convertToServiceCategoryWithServicesDTO(ServiceCategory category) {
+        private ServiceCategoryWithServicesDTO convertToServiceCategoryWithServicesDTO(ServiceCategory category,
+                        EthiopianLanguage lang) {
                 ServiceCategoryWithServicesDTO dto = new ServiceCategoryWithServicesDTO();
                 dto.setCategoryId(category.getId());
                 dto.setCategoryName(category.getTranslations().stream()
-                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
-                                .findFirst().get().getName());
+                                .filter(t -> t.getLang().equals(lang))
+                                .findFirst()
+                                .orElse(category.getTranslations().stream()
+                                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
+                                                .findFirst().get())
+                                .getName());
                 dto.setDescription(category.getTranslations().stream()
-                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
-                                .findFirst().get().getDescription());
+                                .filter(t -> t.getLang().equals(lang))
+                                .findFirst()
+                                .orElse(category.getTranslations().stream()
+                                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
+                                                .findFirst().get())
+                                .getDescription());
 
                 List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategory(category).stream()
-                                .map(this::convertToServiceWithCountsDTO)
+                                .map(service -> this.convertToServiceWithCountsDTO(service, lang))
                                 .collect(Collectors.toList());
 
                 dto.setServices(serviceDTOs);
                 return dto;
         }
 
-        private ServiceWithCountsDTO convertToServiceWithCountsDTO(Services service) {
+        private ServiceWithCountsDTO convertToServiceWithCountsDTO(Services service, EthiopianLanguage lang) {
                 ServiceWithCountsDTO dto = new ServiceWithCountsDTO();
                 dto.setServiceId(service.getId());
                 dto.setName(service.getTranslations().stream()
-                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
-                                .findFirst().get().getName());
+                                .filter(t -> t.getLang().equals(lang))
+                                .findFirst()
+                                .orElse(service.getTranslations().stream()
+                                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
+                                                .findFirst().get())
+                                .getName());
                 dto.setDescription(service.getTranslations().stream()
-                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
-                                .findFirst().get().getDescription());
+                                .filter(t -> t.getLang().equals(lang))
+                                .findFirst()
+                                .orElse(service.getTranslations().stream()
+                                                .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
+                                                .findFirst().get())
+                                .getDescription());
                 dto.setEstimatedDuration(service.getEstimatedDuration());
                 dto.setServiceFee(service.getServiceFee());
                 dto.setTechnicianCount(serviceRepository.countTechniciansByServiceId(service.getId()));

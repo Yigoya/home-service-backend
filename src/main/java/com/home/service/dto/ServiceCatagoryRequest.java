@@ -16,7 +16,7 @@ public class ServiceCatagoryRequest {
     @NotBlank(message = "Name is required")
     private String name;
 
-    private Boolean isMobileCategory = false;
+    private Boolean isMobileCategory;
 
     @NotBlank(message = "Description is required")
     private String description;
