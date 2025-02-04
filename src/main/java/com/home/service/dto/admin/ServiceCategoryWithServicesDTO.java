@@ -13,6 +13,7 @@ public class ServiceCategoryWithServicesDTO {
     private Long categoryId;
     private String categoryName;
     private String description;
+    private String icon;
     private List<ServiceWithCountsDTO> services;
 
     // Getters and Setters

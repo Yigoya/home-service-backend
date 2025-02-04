@@ -319,7 +319,7 @@ public class ServiceService {
                                                 .filter(t -> t.getLang().equals(EthiopianLanguage.ENGLISH))
                                                 .findFirst().get())
                                 .getDescription());
-
+                dto.setIcon(category.getIcon());
                 List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategory(category).stream()
                                 .map(service -> this.convertToServiceWithCountsDTO(service, lang))
                                 .collect(Collectors.toList());
