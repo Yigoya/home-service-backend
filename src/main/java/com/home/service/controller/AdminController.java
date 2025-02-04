@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.home.service.Service.BookingService;
 import com.home.service.Service.CustomerService;
@@ -197,6 +198,14 @@ public class AdminController {
         @PostMapping("/services")
         public String createService(@Valid @ModelAttribute ServiceRequest service) {
                 return serviceService.saveService(service);
+        }
+
+        @PostMapping("/services/upload")
+        public ResponseEntity<String> uploadServices(@RequestParam("file") MultipartFile file) {
+
+                serviceService.uploadServicesFromExcel(file);
+                return ResponseEntity.ok("Services uploaded successfully.");
+
         }
 
         @PostMapping("/service-categories")

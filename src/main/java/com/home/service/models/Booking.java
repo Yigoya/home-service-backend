@@ -15,15 +15,18 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Booking extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "technician_id", nullable = false)
+    @JoinColumn(name = "technician_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Technician technician;
 
     @ManyToOne
-    @JoinColumn(name = "service_id", nullable = false)
+    @JoinColumn(name = "service_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Services service;
 
     private LocalDateTime scheduledDate;

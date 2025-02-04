@@ -5,6 +5,9 @@ import com.home.service.models.enums.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 public class Notification extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "recipient_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User recipient;
     private String title;
     private String message;

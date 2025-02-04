@@ -1,6 +1,10 @@
 package com.home.service.models;
 
 import jakarta.persistence.*;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.home.service.models.enums.*;
 import lombok.*;
 
@@ -11,6 +15,7 @@ import lombok.*;
 public class PaymentMethod extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     private String cardNumber;

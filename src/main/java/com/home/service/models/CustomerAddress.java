@@ -1,5 +1,8 @@
 package com.home.service.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +13,7 @@ import lombok.*;
 public class CustomerAddress extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Customer customer;
 
     private String street;

@@ -18,6 +18,8 @@ public class ServiceTranslation extends BaseEntity {
     private Services service;
 
     private String name;
+
+    @Column(length = 5000)
     private String description;
 
     @Enumerated(EnumType.STRING)

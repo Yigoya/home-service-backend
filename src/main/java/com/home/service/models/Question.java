@@ -31,5 +31,10 @@ public class Question extends BaseEntity {
     @JoinTable(name = "service_questions", joinColumns = @JoinColumn(name = "question_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
     private Set<Services> services;
 
+    public void removeService(Services service) {
+        services.remove(service);
+        service.getQuestions().remove(this);
+    }
+
     // Getters and setters
 }

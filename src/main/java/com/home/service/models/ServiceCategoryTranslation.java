@@ -1,5 +1,8 @@
 package com.home.service.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.home.service.models.enums.EthiopianLanguage;
 
 import jakarta.persistence.*;
@@ -10,13 +13,14 @@ import lombok.*;
 @AllArgsConstructor
 public class ServiceCategoryTranslation extends BaseEntity {
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private ServiceCategory category;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 5000)
     private String description;
 
     @Enumerated(EnumType.STRING)

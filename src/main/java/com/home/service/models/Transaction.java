@@ -2,6 +2,9 @@ package com.home.service.models;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.home.service.models.enums.TransactionType;
 
 import jakarta.persistence.Entity;
@@ -17,7 +20,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Transaction extends BaseEntity {
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Customer customer;
 
     private Integer amount; // Positive for purchase, negative for usage

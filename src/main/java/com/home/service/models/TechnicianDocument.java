@@ -1,5 +1,8 @@
 package com.home.service.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.home.service.models.enums.DocumentStatus;
 
 import jakarta.persistence.*;
@@ -18,7 +21,8 @@ public class TechnicianDocument extends BaseEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "technician_id", nullable = false)
+    @JoinColumn(name = "technician_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Technician technician;
 
     private String documentType; // e.g., "BANK_TICKET"
