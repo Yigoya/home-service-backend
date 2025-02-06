@@ -18,6 +18,7 @@ import com.home.service.dto.TechnicianDTO;
 import com.home.service.dto.records.SingleTechnician;
 import com.home.service.models.Booking;
 import com.home.service.models.ContactUs;
+import com.home.service.models.DistrictService;
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
 import com.home.service.models.enums.EthiopianLanguage;
@@ -27,6 +28,7 @@ import jakarta.validation.Valid;
 import com.home.service.dto.ContactUsRequest;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.DisputeRequest;
+import com.home.service.dto.District;
 import com.home.service.dto.ReviewDTO;
 import com.home.service.dto.ServiceCategoryDTO;
 import com.home.service.dto.ServiceCategoryWithServicesDTO;
@@ -62,6 +64,9 @@ public class ServiceManagementController {
     @Autowired
     private ReviewService reviewService;
 
+    @Autowired
+    private DistrictService districtService;
+
     @GetMapping("/home")
     public ResponseEntity<Map<String, Object>> getDataForHome(
             @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
@@ -70,16 +75,17 @@ public class ServiceManagementController {
         List<ServiceCategoryDTO> serviceCategory = serviceCategoryService.getAllServiceCategories(lang, isForMobile);
         List<TechnicianDTO> topFiveTechnician = technicianService.getTopFiveTechniciansByRating(lang);
         List<ReviewDTO> topFiveReviews = reviewService.getTop5ReviewsByRating();
-
+        List<District> districts = districtService.getDistricts(Optional.of(lang.toString().toLowerCase()),
+                Optional.empty());
         Map<String, Object> response = Map.of("services", service, "serviceCategories", serviceCategory,
-                "topFiveTechnicians", topFiveTechnician, "topFiveReviews", topFiveReviews);
+                "topFiveTechnicians", topFiveTechnician, "topFiveReviews", topFiveReviews, "locations", districts);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Test endpoint is working! 🎉 6");
+        return ResponseEntity.ok("Test endpoint is working! 🎉 7");
     }
 
     // Technician Endpoints
@@ -217,6 +223,11 @@ public class ServiceManagementController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(disputes);
+    }
+
+    @GetMapping("/districts")
+    public List<District> getDistricts(@RequestParam Optional<String> language, @RequestParam Optional<String> query) {
+        return districtService.getDistricts(language, query);
     }
 
 }

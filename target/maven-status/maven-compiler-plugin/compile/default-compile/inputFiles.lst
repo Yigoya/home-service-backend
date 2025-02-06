@@ -69,6 +69,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeDTO.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/DisputeResponse.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/District.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/InitializeResponseData.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/LoginRequest.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/dto/NewPasswordRequest.java
@@ -131,6 +132,7 @@
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/CustomerAddress.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/DeviceInfo.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/Dispute.java
+/home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/DistrictService.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/Notification.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/Operator.java
 /home/ricky/dev/projects/homeservice/servicedeploy/src/main/java/com/home/service/models/PasswordResetToken.java
