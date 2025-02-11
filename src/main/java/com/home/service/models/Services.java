@@ -20,6 +20,10 @@ public class Services extends BaseEntity {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private ServiceCategory category;
 
+    @ManyToOne
+    @JoinColumn(name = "agency_id", nullable = true)
+    private AgencyProfile agency;
+
     @ManyToMany(mappedBy = "services")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Set<Question> questions;
@@ -31,10 +35,23 @@ public class Services extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     Set<ServiceTranslation> translations = new HashSet<>();
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "service_id")
+    private Set<Services> services = new HashSet<>();
+
+    public boolean hasParentService() {
+        return serviceId != null;
+    }
+
     @Transient
     private Long categoryId;
 
+    @Column(name = "service_id")
+    private Long serviceId;
+
     private String icon;
+
+    private String document;
 
     @ManyToOne
     @JoinColumn(name = "mobile_category_id", nullable = true)
@@ -114,5 +131,37 @@ public class Services extends BaseEntity {
 
     public void setTranslations(Set<ServiceTranslation> translations) {
         this.translations = translations;
+    }
+
+    public String getDocument() {
+        return document;
+    }
+
+    public void setDocument(String document) {
+        this.document = document;
+    }
+
+    public Set<Services> getServices() {
+        return services;
+    }
+
+    public void setServices(Set<Services> services) {
+        this.services = services;
+    }
+
+    public Long getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(Long serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public AgencyProfile getAgency() {
+        return agency;
+    }
+
+    public void setAgency(AgencyProfile agency) {
+        this.agency = agency;
     }
 }

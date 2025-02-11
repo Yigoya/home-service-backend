@@ -21,6 +21,8 @@ public class ServiceRequest {
     @NotNull(message = "Category ID is required")
     private Long categoryId;
 
+    private MultipartFile document;
+    private Long serviceId;
     private Long mobileCategoryId;
 
     @NotBlank(message = "Name is required")

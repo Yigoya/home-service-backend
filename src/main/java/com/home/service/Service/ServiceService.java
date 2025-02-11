@@ -86,6 +86,11 @@ public class ServiceService {
                 String icon = fileStorageService.storeFile(serviceRequest.getIcon());
                 service.setIcon(icon);
 
+                if (serviceRequest.getDocument() != null) {
+                        String document = fileStorageService.storeFile(serviceRequest.getDocument());
+                        service.setDocument(document);
+                }
+
                 // Create the translation and link it to the service
                 ServiceTranslation translation = new ServiceTranslation();
                 translation.setLang(serviceRequest.getLang());
@@ -96,8 +101,14 @@ public class ServiceService {
                 // Add translation to service
                 service.getTranslations().add(translation);
 
-                // Save the service and cascade save translations
-                serviceRepository.save(service);
+                if (serviceRequest.getServiceId() != null) {
+                        Services parentService = serviceRepository.findById(serviceRequest.getServiceId())
+                                        .orElseThrow(() -> new EntityNotFoundException("Service not found"));
+                        parentService.getServices().add(service);
+                        serviceRepository.save(parentService);
+                } else {
+                        serviceRepository.save(service);
+                }
 
                 return "Service saved successfully";
         }
@@ -320,10 +331,13 @@ public class ServiceService {
                                                 .findFirst().get())
                                 .getDescription());
                 dto.setIcon(category.getIcon());
-                List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategory(category).stream()
+                List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategory(category)
+                                .stream().filter(service -> service.getServiceId() == null)
                                 .map(service -> this.convertToServiceWithCountsDTO(service, lang))
                                 .collect(Collectors.toList());
-
+                // serviceDTOs = serviceDTOs.stream()
+                // .filter(serviceDTO -> serviceDTO.getServiceId() == null)
+                // .collect(Collectors.toList());
                 dto.setServices(serviceDTOs);
                 return dto;
         }
@@ -350,7 +364,10 @@ public class ServiceService {
                 dto.setTechnicianCount(serviceRepository.countTechniciansByServiceId(service.getId()));
                 dto.setBookingCount(serviceRepository.countBookingsByServiceId(service.getId()));
                 dto.setIcon(service.getIcon());
+                dto.setDocument(service.getDocument());
+                dto.setCategoryId(service.getCategory().getId());
+                dto.setServices(service.getServices().stream().map(s -> convertToServiceWithCountsDTO(s, lang))
+                                .collect(Collectors.toList()));
                 return dto;
         }
-
 }

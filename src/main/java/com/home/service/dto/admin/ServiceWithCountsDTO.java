@@ -1,6 +1,7 @@
 package com.home.service.dto.admin;
 
 import java.time.LocalTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,5 +19,8 @@ public class ServiceWithCountsDTO {
     private Integer technicianCount;
     private Integer bookingCount;
     private String icon;
+    private String document;
+    private Long categoryId;
+    private List<ServiceWithCountsDTO> services;
 
 }

@@ -51,5 +51,5 @@ public class Booking extends BaseEntity {
     @Transient
     private Long serviceId;
 
-    private String timeSchedule; // New field to store time schedule as a string
+    private String timeSchedule;
 }

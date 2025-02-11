@@ -14,15 +14,15 @@ import com.google.firebase.FirebaseOptions;
 @Configuration
 public class FirebaseInitialization {
 
-    @Bean
-    public FirebaseApp initializeFirebase() throws IOException {
-        InputStream serviceAccount = new FileInputStream("./serviceAccountKey.json");
+    // @Bean
+    // public FirebaseApp initializeFirebase() throws IOException {
+    // InputStream serviceAccount = new FileInputStream("./serviceAccountKey.json");
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build();
+    // FirebaseOptions options = FirebaseOptions.builder()
+    // .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+    // .build();
 
-        return FirebaseApp.initializeApp(options);
-    }
+    // return FirebaseApp.initializeApp(options);
+    // }
 
 }

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.home.service.dto.AddressDTO;
+import com.home.service.dto.AgencyBookingRequest;
 import com.home.service.dto.AnswerDTO;
 import com.home.service.dto.AnswerRequest;
 import com.home.service.dto.BookingRequest;
@@ -13,6 +14,8 @@ import com.home.service.dto.QuestionDTO;
 import com.home.service.dto.QuestionOptionDTO;
 import com.home.service.dto.QuestionWithAnswerDTO;
 import com.home.service.models.Address;
+import com.home.service.models.AgencyBooking;
+import com.home.service.models.AgencyProfile;
 import com.home.service.models.Answer;
 import com.home.service.models.Booking;
 import com.home.service.models.CustomDetails;
@@ -29,6 +32,8 @@ import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.enums.NotificationType;
 import com.home.service.models.enums.TransactionType;
 import com.home.service.repositories.AddressRepository;
+import com.home.service.repositories.AgencyBookingRepository;
+import com.home.service.repositories.AgencyProfileRepository;
 import com.home.service.repositories.AnswerRepository;
 import com.home.service.repositories.BookingRepository;
 import com.home.service.repositories.CustomerRepository;
@@ -66,6 +71,9 @@ public class BookingService {
     private BookingRepository bookingRepository;
 
     @Autowired
+    private AgencyBookingRepository agencyBookingRepository;
+
+    @Autowired
     CustomerRepository customerRepository;
 
     @Autowired
@@ -91,6 +99,9 @@ public class BookingService {
 
     @Autowired
     private TransactionRepository transactionRepository;
+
+    @Autowired
+    private AgencyProfileRepository agencyProfileRepository;
 
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
@@ -136,10 +147,10 @@ public class BookingService {
                 .orElseThrow(() -> new EntityNotFoundException("Service not found"));
 
         // Check if customer has enough coins
-        int serviceFee = service.getServiceFee().intValue();
-        if (customer.getCoinBalance() < serviceFee) {
-            throw new IllegalArgumentException("Insufficient coins for booking");
-        }
+        // int serviceFee = service.getServiceFee().intValue();
+        // if (customer.getCoinBalance() < serviceFee) {
+        // throw new IllegalArgumentException("Insufficient coins for booking");
+        // }
 
         // Deduct coins from customer balance
         // customer.setCoinBalance(customer.getCoinBalance() - serviceFee);
@@ -216,6 +227,27 @@ public class BookingService {
                 newBooking.getId());
 
         return newBooking;
+    }
+
+    public AgencyBooking createAgencyBooking(Long customerId, Long agencyId, Long serviceId,
+            AgencyBookingRequest bookingRequest) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        AgencyProfile agency = agencyProfileRepository.findById(agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
+        Services service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new EntityNotFoundException("Service not found"));
+
+        AgencyBooking agencyBooking = new AgencyBooking();
+        agencyBooking.setCustomer(customer);
+        agencyBooking.setAgency(agency);
+        agencyBooking.setService(service);
+        agencyBooking.setScheduledDate(bookingRequest.getScheduledDate());
+        agencyBooking.setDescription(bookingRequest.getDescription());
+        agencyBooking.setStatus(BookingStatus.PENDING);
+        agencyBooking.setTotalCost(service.getServiceFee());
+
+        return agencyBookingRepository.save(agencyBooking);
     }
 
     @Transactional

@@ -24,27 +24,21 @@ import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
 import com.home.service.dto.AdminLoginRequest;
 import com.home.service.dto.AuthenticationResponse;
-import com.home.service.dto.CustomerResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
 import com.home.service.dto.OperatorSignupRequest;
 import com.home.service.dto.PasswordResetRequest;
 import com.home.service.dto.SocialLoginRequest;
-import com.home.service.dto.TechnicianResponse;
 import com.home.service.dto.TechnicianSignupRequest;
 import com.home.service.dto.UploadPaymentProofRequest;
 import com.home.service.dto.UserResponse;
 import com.home.service.config.JwtUtil;
-import com.home.service.config.exceptions.UserNotFoundException;
 import com.home.service.models.CustomDetails;
-import com.home.service.models.Customer;
 import com.home.service.models.DeviceInfo;
-import com.home.service.models.Technician;
-import com.home.service.models.TechnicianProofResponse;
 import com.home.service.models.User;
-import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.DeviceInfoRepository;
 import com.home.service.repositories.UserRepository;
+import com.home.service.services.SmsService;
 
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
@@ -63,11 +57,12 @@ public class AuthenticationController {
     private final PaymentProofService paymentProofService;
     private final UserRepository userRepository;
     private final DeviceInfoRepository deviceInfoRepository;
+    private final SmsService smsService;
 
     public AuthenticationController(CustomerService customerService, TechnicianService technicianService,
             OperatorService operatorService, AdminService adminService, UserService userService, JwtUtil jwtUtil,
             PaymentProofService paymentProofService, UserRepository userRepository,
-            DeviceInfoRepository deviceInfoRepository) {
+            DeviceInfoRepository deviceInfoRepository, SmsService smsService) {
         this.customerService = customerService;
         this.technicianService = technicianService;
         this.operatorService = operatorService;
@@ -77,6 +72,7 @@ public class AuthenticationController {
         this.paymentProofService = paymentProofService;
         this.userRepository = userRepository;
         this.deviceInfoRepository = deviceInfoRepository;
+        this.smsService = smsService;
     }
 
     @PostMapping("/login")
@@ -222,5 +218,13 @@ public class AuthenticationController {
         // Delete the device
         deviceInfoRepository.delete(device);
         return ResponseEntity.ok("Device successfully deleted");
+    }
+
+    @PostMapping("/send-sms")
+    public ResponseEntity<String> sendSms(@RequestBody Map<String, String> request) {
+        String to = request.get("to");
+        String message = request.get("message");
+        String response = smsService.sendSms(to, message);
+        return ResponseEntity.ok(response);
     }
 }
