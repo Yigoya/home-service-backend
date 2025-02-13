@@ -16,6 +16,7 @@ import com.home.service.models.ServiceCategoryTranslation;
 import com.home.service.models.ServiceTranslation;
 import com.home.service.models.Services;
 import com.home.service.repositories.ServiceCategoryRepository;
+import com.home.service.repositories.ServiceCategoryTranslationRepository;
 import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.ServiceTranslationRepository;
 import com.home.service.repositories.TechnicianRepository;
@@ -53,6 +54,9 @@ public class ServiceService {
         private ServiceTranslationRepository serviceTranslationRepository;
 
         @Autowired
+        private ServiceCategoryTranslationRepository serviceCategoryTranslationRepository;
+
+        @Autowired
         private FileStorageService fileStorageService;
 
         public void importServices(List<ServiceImportDTO> services) {
@@ -70,25 +74,29 @@ public class ServiceService {
                                 translationEnglish.setName(dto.getNameEnglish());
                                 translationEnglish.setDescription(dto.getDescriptionEnglish());
                                 translationEnglish.setLang(EthiopianLanguage.ENGLISH);
-                                translationEnglish.setCategory(currentCategory);
 
                                 ServiceCategoryTranslation translationAmharic = new ServiceCategoryTranslation();
                                 translationAmharic.setName(dto.getNameAmharic());
                                 translationAmharic.setDescription(dto.getDescriptionAmharic());
                                 translationAmharic.setLang(EthiopianLanguage.AMHARIC);
-                                translationAmharic.setCategory(currentCategory);
 
                                 ServiceCategoryTranslation translationOromo = new ServiceCategoryTranslation();
                                 translationOromo.setName(dto.getNameOromo());
                                 translationOromo.setDescription(dto.getDescriptionOromo());
                                 translationOromo.setLang(EthiopianLanguage.OROMO);
-                                translationOromo.setCategory(currentCategory);
 
-                                currentCategory.getTranslations().add(translationEnglish);
-                                currentCategory.getTranslations().add(translationAmharic);
-                                currentCategory.getTranslations().add(translationOromo);
+                                ServiceCategory savedCategory = serviceCategoryRepository.save(currentCategory);
+                                translationEnglish.setCategory(savedCategory);
+                                translationAmharic.setCategory(savedCategory);
+                                translationOromo.setCategory(savedCategory);
 
-                                serviceCategoryRepository.save(currentCategory);
+                                savedCategory.getTranslations()
+                                                .add(serviceCategoryTranslationRepository.save(translationEnglish));
+                                savedCategory.getTranslations()
+                                                .add(serviceCategoryTranslationRepository.save(translationAmharic));
+                                savedCategory.getTranslations()
+                                                .add(serviceCategoryTranslationRepository.save(translationOromo));
+
                         } else {
                                 // Handle service
                                 Services service = new Services();
@@ -99,38 +107,42 @@ public class ServiceService {
                                 translationEnglish.setName(dto.getNameEnglish());
                                 translationEnglish.setDescription(dto.getDescriptionEnglish());
                                 translationEnglish.setLang(EthiopianLanguage.ENGLISH);
-                                translationEnglish.setService(service);
 
                                 ServiceTranslation translationAmharic = new ServiceTranslation();
                                 translationAmharic.setName(dto.getNameAmharic());
                                 translationAmharic.setDescription(dto.getDescriptionAmharic());
                                 translationAmharic.setLang(EthiopianLanguage.AMHARIC);
-                                translationAmharic.setService(service);
 
                                 ServiceTranslation translationOromo = new ServiceTranslation();
                                 translationOromo.setName(dto.getNameOromo());
                                 translationOromo.setDescription(dto.getDescriptionOromo());
                                 translationOromo.setLang(EthiopianLanguage.OROMO);
+
+                                service = serviceRepository.save(service);
+                                levelToServiceMap.put(dto.getLevel(), service);
+                                translationEnglish.setService(service);
+                                translationAmharic.setService(service);
                                 translationOromo.setService(service);
-
-                                service.getTranslations().add(translationEnglish);
-                                service.getTranslations().add(translationAmharic);
-                                service.getTranslations().add(translationOromo);
-
+                                service.getTranslations()
+                                                .add(serviceTranslationRepository.save(translationEnglish));
+                                service.getTranslations()
+                                                .add(serviceTranslationRepository.save(translationAmharic));
+                                service.getTranslations()
+                                                .add(serviceTranslationRepository.save(translationOromo));
+                                serviceRepository.save(service);
                                 // Handle nested services
                                 if (dto.getLevel() > 1) {
                                         Services parentService = levelToServiceMap.get(dto.getLevel() - 1);
                                         parentService.getServices().add(service);
+                                        serviceRepository.save(parentService);
                                 }
 
-                                levelToServiceMap.put(dto.getLevel(), service);
-                                serviceRepository.save(service);
                         }
                 }
         }
 
         public List<ServiceDTO> getAllServices(EthiopianLanguage lang) {
-                return serviceRepository.findAll().stream().map(service -> new ServiceDTO(service, lang))
+                return serviceRepository.findByServiceIdIsNull().stream().map(service -> new ServiceDTO(service, lang))
                                 .collect(Collectors.toList());
         }
 
@@ -446,5 +458,14 @@ public class ServiceService {
                 dto.setServices(service.getServices().stream().map(s -> convertToServiceWithCountsDTO(s, lang))
                                 .collect(Collectors.toList()));
                 return dto;
+        }
+
+        @Transactional
+        public List<ServiceDTO> getServicesByServiceId(Long serviceId, EthiopianLanguage lang) {
+                Services parentService = serviceRepository.findById(serviceId)
+                                .orElseThrow(() -> new EntityNotFoundException("Service not found"));
+                return parentService.getServices().stream()
+                                .map(service -> new ServiceDTO(service, lang))
+                                .collect(Collectors.toList());
         }
 }

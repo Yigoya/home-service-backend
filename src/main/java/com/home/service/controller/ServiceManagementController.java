@@ -85,7 +85,7 @@ public class ServiceManagementController {
 
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Test endpoint is working! 🎉 7");
+        return ResponseEntity.ok("Test endpoint is working! 🎉 8");
     }
 
     // Technician Endpoints
@@ -228,6 +228,13 @@ public class ServiceManagementController {
     @GetMapping("/districts")
     public List<District> getDistricts(@RequestParam Optional<String> language, @RequestParam Optional<String> query) {
         return districtService.getDistricts(language, query);
+    }
+
+    @GetMapping("/services/{serviceId}/subservices")
+    public ResponseEntity<List<ServiceDTO>> getServicesByServiceId(@PathVariable Long serviceId,
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+        List<ServiceDTO> services = serviceService.getServicesByServiceId(serviceId, lang);
+        return ResponseEntity.ok(services);
     }
 
 }

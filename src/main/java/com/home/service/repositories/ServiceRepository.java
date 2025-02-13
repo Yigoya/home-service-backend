@@ -23,4 +23,6 @@ public interface ServiceRepository extends JpaRepository<Services, Long> {
 
     List<Services> findByAgency_Id(Long agencyId);
 
+    List<Services> findByServiceIdIsNull();
+
 }

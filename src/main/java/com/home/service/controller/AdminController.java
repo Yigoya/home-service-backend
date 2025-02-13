@@ -365,10 +365,10 @@ public class AdminController {
                         ServiceImportDTO dto = new ServiceImportDTO();
                         dto.setLevel((int) row.getCell(0).getNumericCellValue());
                         dto.setNameEnglish(row.getCell(1).getStringCellValue());
-                        dto.setNameAmharic(row.getCell(2).getStringCellValue());
-                        dto.setNameOromo(row.getCell(3).getStringCellValue());
-                        dto.setDescriptionEnglish(row.getCell(4).getStringCellValue());
-                        dto.setDescriptionAmharic(row.getCell(5).getStringCellValue());
+                        dto.setDescriptionEnglish(row.getCell(2).getStringCellValue());
+                        dto.setNameAmharic(row.getCell(3).getStringCellValue());
+                        dto.setDescriptionAmharic(row.getCell(4).getStringCellValue());
+                        dto.setNameOromo(row.getCell(5).getStringCellValue());
                         dto.setDescriptionOromo(row.getCell(6).getStringCellValue());
                         services.add(dto);
                 }

@@ -20,6 +20,7 @@ public class ServiceDTO {
         private Long categoryId;
         private Long mobileCategoryId;
         private String icon;
+        private boolean isHasChild;
 
         public ServiceDTO(Services service, EthiopianLanguage language) {
 
@@ -51,6 +52,7 @@ public class ServiceDTO {
                 this.icon = service.getIcon();
                 this.mobileCategoryId = service.getMobileCategory() != null ? service.getMobileCategory().getId()
                                 : null;
+                this.isHasChild = service.getServices().size() > 0;
 
         }
 }

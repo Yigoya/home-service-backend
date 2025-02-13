@@ -39,10 +39,6 @@ public class Services extends BaseEntity {
     @JoinColumn(name = "service_id")
     private Set<Services> services = new HashSet<>();
 
-    public boolean hasParentService() {
-        return serviceId != null;
-    }
-
     @Transient
     private Long categoryId;
 
@@ -52,6 +48,10 @@ public class Services extends BaseEntity {
     private String icon;
 
     private String document;
+
+    public boolean hasParentService() {
+        return serviceId != null;
+    }
 
     @ManyToOne
     @JoinColumn(name = "mobile_category_id", nullable = true)
