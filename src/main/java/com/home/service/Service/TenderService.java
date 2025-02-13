@@ -50,8 +50,6 @@ public class TenderService {
     @Autowired
     private ServiceRepository serviceRepository;
 
-    private static final String UPLOAD_DIR = "uploads/";
-
     public String addTender(TenderRequest tenderDTO) throws IOException {
         Services category = servicesRepository.findById(tenderDTO.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -69,7 +67,6 @@ public class TenderService {
         if (tenderDTO.getFile() != null) {
             String filePath = fileStorageService.storeFile(tenderDTO.getFile());
             tender.setDocumentPath(filePath);
-
         }
 
         tenderRepository.save(tender);

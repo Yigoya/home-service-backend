@@ -1,8 +1,15 @@
 package com.home.service.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +37,7 @@ import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.OperatorProfileDTO;
 import com.home.service.dto.ServiceCatagoryRequest;
+import com.home.service.dto.ServiceImportDTO;
 import com.home.service.dto.ServiceLangRequest;
 import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.TechnicianProfileDTO;
@@ -333,5 +341,39 @@ public class AdminController {
         @PostMapping("/question")
         public ResponseEntity<String> createQuestion(@Valid @RequestBody QuestionRequest request) {
                 return ResponseEntity.status(201).body(questionService.createQuestion(request));
+        }
+
+        @PostMapping("/import")
+        public String importServices(@RequestParam("file") MultipartFile file) throws IOException {
+                List<ServiceImportDTO> servicesToImport = readExcelFile(file.getInputStream());
+                serviceService.importServices(servicesToImport);
+                return "Services imported successfully";
+        }
+
+        private List<ServiceImportDTO> readExcelFile(InputStream inputStream) throws IOException {
+                List<ServiceImportDTO> services = new ArrayList<>();
+                Workbook workbook = new XSSFWorkbook(inputStream);
+                Sheet sheet = workbook.getSheetAt(0);
+
+                for (Row row : sheet) {
+                        if (row.getRowNum() == 0)
+                                continue; // Skip header row
+
+                        if (row.getCell(0) == null)
+                                break; // Break if the row is empty
+
+                        ServiceImportDTO dto = new ServiceImportDTO();
+                        dto.setLevel((int) row.getCell(0).getNumericCellValue());
+                        dto.setNameEnglish(row.getCell(1).getStringCellValue());
+                        dto.setNameAmharic(row.getCell(2).getStringCellValue());
+                        dto.setNameOromo(row.getCell(3).getStringCellValue());
+                        dto.setDescriptionEnglish(row.getCell(4).getStringCellValue());
+                        dto.setDescriptionAmharic(row.getCell(5).getStringCellValue());
+                        dto.setDescriptionOromo(row.getCell(6).getStringCellValue());
+                        services.add(dto);
+                }
+
+                workbook.close();
+                return services;
         }
 }
