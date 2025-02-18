@@ -61,7 +61,7 @@ public class AgencyProfileService {
     @Autowired
     private ServiceCategoryRepository serviceCategoryRepository;
 
-    public AgencyProfile createAgencyProfile(AgencyProfileRequest agencyProfileDTO) throws IOException {
+    public AgencyProfileDTO createAgencyProfile(AgencyProfileRequest agencyProfileDTO) throws IOException {
         // Create User
         User user = new User();
         user.setName(agencyProfileDTO.getName());
@@ -88,11 +88,14 @@ public class AgencyProfileService {
 
         agencyProfile.setDocument(documentPath); // Save document
 
-        return agencyProfileRepository.save(agencyProfile);
+        return new AgencyProfileDTO(agencyProfileRepository.save(agencyProfile));
     }
 
-    public List<AgencyProfile> getAllPendingAgencies() {
-        return agencyProfileRepository.findByVerificationStatus(VerificationStatus.PENDING);
+    public List<AgencyProfileDTO> getAllPendingAgencies() {
+        return agencyProfileRepository.findByVerificationStatus(VerificationStatus.PENDING)
+                .stream()
+                .map(AgencyProfileDTO::new)
+                .collect(Collectors.toList());
     }
 
     public void verifyAgency(Long agencyId, VerificationStatus status) {
@@ -109,16 +112,20 @@ public class AgencyProfileService {
         }
     }
 
-    public List<AgencyProfile> getAllAgencies() {
-        return agencyProfileRepository.findAll();
+    public List<AgencyProfileDTO> getAllAgencies() {
+        return agencyProfileRepository.findAll()
+                .stream()
+                .map(AgencyProfileDTO::new)
+                .collect(Collectors.toList());
     }
 
-    public AgencyProfile getAgencyById(Long id) {
-        return agencyProfileRepository.findById(id)
+    public AgencyProfileDTO getAgencyById(Long id) {
+        AgencyProfile agencyProfile = agencyProfileRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
+        return new AgencyProfileDTO(agencyProfile);
     }
 
-    public AgencyProfile updateAgencyProfile(Long id, AgencyProfileRequest agencyProfileRequest) {
+    public AgencyProfileDTO updateAgencyProfile(Long id, AgencyProfileRequest agencyProfileRequest) {
         AgencyProfile agencyProfile = agencyProfileRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
 
@@ -132,7 +139,8 @@ public class AgencyProfileService {
         agencyProfile.setPhone(agencyProfileRequest.getPhone());
         agencyProfile.setWebsite(agencyProfileRequest.getWebsite());
 
-        return agencyProfileRepository.save(agencyProfile);
+        AgencyProfile updatedAgencyProfile = agencyProfileRepository.save(agencyProfile);
+        return new AgencyProfileDTO(updatedAgencyProfile);
     }
 
     public void deleteAgencyProfile(Long id) {
@@ -141,8 +149,11 @@ public class AgencyProfileService {
         agencyProfileRepository.delete(agencyProfile);
     }
 
-    public List<AgencyProfile> searchAgencies(AgencySearchCriteria criteria) {
-        return agencyProfileRepository.searchAgencies(criteria);
+    public List<AgencyProfileDTO> searchAgencies(AgencySearchCriteria criteria) {
+        return agencyProfileRepository.searchAgencies(criteria)
+                .stream()
+                .map(AgencyProfileDTO::new)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -205,11 +216,14 @@ public class AgencyProfileService {
     }
 
     // Get all bookings for an agency
-    public List<AgencyBooking> getAgencyBookings(Long agencyId) {
+    public List<AgencyBookingDTO> getAgencyBookings(Long agencyId) {
         AgencyProfile agencyProfile = agencyProfileRepository.findById(agencyId)
                 .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
 
-        return bookingRepository.findByAgency_Id(agencyProfile.getId());
+        return bookingRepository.findByAgency_Id(agencyProfile.getId())
+                .stream()
+                .map(AgencyBookingDTO::new)
+                .collect(Collectors.toList());
     }
 
     public AgencyDashboardDTO getAgencyDashboard(Long agencyId) {
@@ -251,7 +265,10 @@ public class AgencyProfileService {
         return dashboardDTO;
     }
 
-    public List<AgencyProfile> findByServiceId(Long serviceId) {
-        return agencyProfileRepository.findByServiceId(serviceId);
+    public List<AgencyProfileDTO> findByServiceId(Long serviceId) {
+        return agencyProfileRepository.findByServiceId(serviceId)
+                .stream()
+                .map(AgencyProfileDTO::new)
+                .collect(Collectors.toList());
     }
 }

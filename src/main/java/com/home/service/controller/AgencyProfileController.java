@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.home.service.Service.AgencyProfileService;
 import com.home.service.Service.BookingService;
+import com.home.service.dto.AgencyBookingDTO;
 import com.home.service.dto.AgencyBookingRequest;
 import com.home.service.dto.AgencyDashboardDTO;
+import com.home.service.dto.AgencyProfileDTO;
 import com.home.service.dto.AgencyProfileRequest;
 import com.home.service.dto.AgencySearchCriteria;
 import com.home.service.dto.AgencyServiceRequest;
@@ -32,15 +34,16 @@ public class AgencyProfileController {
     private BookingService bookingService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AgencyProfile> createAgencyProfile(@ModelAttribute AgencyProfileRequest agencyProfileRequest)
+    public ResponseEntity<AgencyProfileDTO> createAgencyProfile(
+            @ModelAttribute AgencyProfileRequest agencyProfileRequest)
             throws IOException {
-        AgencyProfile agencyProfile = agencyProfileService.createAgencyProfile(agencyProfileRequest);
+        AgencyProfileDTO agencyProfile = agencyProfileService.createAgencyProfile(agencyProfileRequest);
         return ResponseEntity.ok(agencyProfile);
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<AgencyProfile>> getPendingAgencies() {
-        List<AgencyProfile> agencies = agencyProfileService.getAllPendingAgencies();
+    public ResponseEntity<List<AgencyProfileDTO>> getPendingAgencies() {
+        List<AgencyProfileDTO> agencies = agencyProfileService.getAllPendingAgencies();
         return ResponseEntity.ok(agencies);
     }
 
@@ -58,21 +61,21 @@ public class AgencyProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AgencyProfile>> getAllAgencies() {
-        List<AgencyProfile> agencies = agencyProfileService.getAllAgencies();
+    public ResponseEntity<List<AgencyProfileDTO>> getAllAgencies() {
+        List<AgencyProfileDTO> agencies = agencyProfileService.getAllAgencies();
         return ResponseEntity.ok(agencies);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AgencyProfile> getAgencyById(@PathVariable Long id) {
-        AgencyProfile agencyProfile = agencyProfileService.getAgencyById(id);
+    public ResponseEntity<AgencyProfileDTO> getAgencyById(@PathVariable Long id) {
+        AgencyProfileDTO agencyProfile = agencyProfileService.getAgencyById(id);
         return ResponseEntity.ok(agencyProfile);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AgencyProfile> updateAgencyProfile(@PathVariable Long id,
+    public ResponseEntity<AgencyProfileDTO> updateAgencyProfile(@PathVariable Long id,
             @RequestBody AgencyProfileRequest agencyProfileRequest) {
-        AgencyProfile agencyProfile = agencyProfileService.updateAgencyProfile(id, agencyProfileRequest);
+        AgencyProfileDTO agencyProfile = agencyProfileService.updateAgencyProfile(id, agencyProfileRequest);
         return ResponseEntity.ok(agencyProfile);
     }
 
@@ -83,8 +86,8 @@ public class AgencyProfileController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<AgencyProfile>> searchAgencies(@ModelAttribute AgencySearchCriteria criteria) {
-        List<AgencyProfile> agencies = agencyProfileService.searchAgencies(criteria);
+    public ResponseEntity<List<AgencyProfileDTO>> searchAgencies(@ModelAttribute AgencySearchCriteria criteria) {
+        List<AgencyProfileDTO> agencies = agencyProfileService.searchAgencies(criteria);
         return ResponseEntity.ok(agencies);
     }
 
@@ -110,8 +113,8 @@ public class AgencyProfileController {
 
     // Get all bookings for an agency
     @GetMapping("/{id}/bookings")
-    public ResponseEntity<List<AgencyBooking>> getAgencyBookings(@PathVariable Long id) {
-        List<AgencyBooking> bookings = agencyProfileService.getAgencyBookings(id);
+    public ResponseEntity<List<AgencyBookingDTO>> getAgencyBookings(@PathVariable Long id) {
+        List<AgencyBookingDTO> bookings = agencyProfileService.getAgencyBookings(id);
         return ResponseEntity.ok(bookings);
     }
 
@@ -123,7 +126,7 @@ public class AgencyProfileController {
     }
 
     @GetMapping("/service/{serviceId}")
-    public List<AgencyProfile> getAgencyProfilesByServiceId(@PathVariable Long serviceId) {
+    public List<AgencyProfileDTO> getAgencyProfilesByServiceId(@PathVariable Long serviceId) {
         return agencyProfileService.findByServiceId(serviceId);
     }
 }
