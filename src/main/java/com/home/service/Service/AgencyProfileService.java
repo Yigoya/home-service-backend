@@ -175,6 +175,20 @@ public class AgencyProfileService {
         return "Service added successfully with ID: " + service.getId();
     }
 
+    @Transactional
+    public String addExistingServiceToAgency(Long agencyId, Long serviceId) {
+        AgencyProfile agencyProfile = agencyProfileRepository.findById(agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
+
+        Services service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new EntityNotFoundException("Service not found"));
+
+        service.setAgency(agencyProfile);
+        serviceRepository.save(service);
+
+        return "Service added to agency successfully with ID: " + service.getId();
+    }
+
     // Remove a service from an agency
     public void removeService(Long agencyId, Long serviceId) {
         agencyProfileRepository.findById(agencyId)

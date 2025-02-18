@@ -94,6 +94,13 @@ public class AgencyProfileController {
         return ResponseEntity.ok(agencyProfileService.addService(id, service));
     }
 
+    @PostMapping("/{agencyId}/service/{serviceId}")
+    public ResponseEntity<String> addExistingServiceToAgency(@PathVariable Long agencyId,
+            @PathVariable Long serviceId) {
+        String response = agencyProfileService.addExistingServiceToAgency(agencyId, serviceId);
+        return ResponseEntity.ok(response);
+    }
+
     // Remove a service from an agency
     @DeleteMapping("/{id}/services/{serviceId}")
     public ResponseEntity<Void> removeService(@PathVariable Long id, @PathVariable Long serviceId) {
