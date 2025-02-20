@@ -31,6 +31,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class TenderService {
@@ -60,7 +61,7 @@ public class TenderService {
         tender.setLocation(tenderDTO.getLocation());
         tender.setClosingDate(tenderDTO.getClosingDate());
         tender.setContactInfo(tenderDTO.getContactInfo());
-        tender.setCategory(category);
+        tender.setService(category);
         tender.setStatus(tenderDTO.getStatus() != null ? tenderDTO.getStatus() : TenderStatus.OPEN);
         tender.setDatePosted(LocalDateTime.now());
 
@@ -94,7 +95,7 @@ public class TenderService {
         if (tenderDTO.getCategoryId() != null) {
             Services category = servicesRepository.findById(tenderDTO.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("Category not found"));
-            tender.setCategory(category);
+            tender.setService(category);
         }
 
         if (file != null && !file.isEmpty()) {
@@ -191,5 +192,25 @@ public class TenderService {
     public Page<TenderDTO> getTendersByLocation(String location, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return tenderRepository.findByLocation(location, pageable).map(TenderDTO::createWithoutSensitiveDetails);
+    }
+
+    public Page<TenderDTO> searchTenders(String keyword, TenderStatus status, String location, Long serviceId,
+            LocalDateTime datePosted, LocalDateTime closingDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Long> serviceIds = new ArrayList<>();
+
+        if (serviceId != null) {
+            Services service = servicesRepository.findById(serviceId)
+                    .orElseThrow(() -> new RuntimeException("Service not found"));
+            collectServiceIdsRecursively(service, serviceIds);
+        }
+
+        if (serviceIds.isEmpty()) {
+            serviceIds = null; // Handle empty list case
+        }
+        System.out.println(
+                keyword + " " + status + " " + location + " " + serviceId + " " + datePosted + " " + closingDate);
+        return tenderRepository.advancedSearch(keyword, status, location, serviceIds, datePosted, closingDate, pageable)
+                .map(TenderDTO::createWithoutSensitiveDetails);
     }
 }

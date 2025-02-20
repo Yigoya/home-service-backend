@@ -1,6 +1,5 @@
 package com.home.service.controller;
 
-import org.checkerframework.checker.units.qual.s;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -8,14 +7,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.home.service.Service.TenderService;
-import com.home.service.dto.AgencyServiceRequest;
 import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.TenderDTO;
 import com.home.service.dto.TenderRequest;
+import com.home.service.dto.TenderSearchCriteria;
 import com.home.service.models.enums.TenderStatus;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/tenders")
@@ -90,5 +88,18 @@ public class TenderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(tenderService.getTendersByLocation(location, page, size));
+    }
+
+    @PostMapping("/search")
+    public Page<TenderDTO> searchTenders(@RequestBody TenderSearchCriteria criteria) {
+        return tenderService.searchTenders(
+                criteria.getKeyword(),
+                criteria.getStatus(),
+                criteria.getLocation(),
+                criteria.getServiceId(),
+                criteria.getDatePosted(),
+                criteria.getClosingDate(),
+                criteria.getPage(),
+                criteria.getSize());
     }
 }

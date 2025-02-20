@@ -13,11 +13,7 @@ import org.checkerframework.checker.units.qual.C;
 @Entity
 @Getter
 @Setter
-public class Tender {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Tender extends BaseEntity {
     private String title;
     private String description;
     private String location;
@@ -30,10 +26,11 @@ public class Tender {
 
     @ManyToOne
     @JoinColumn(name = "service_id")
-    private Services category;
+    private Services service;
 
     @Column(name = "service_id", insertable = false, updatable = false)
     private Long serviceId;
 
     private String documentPath;
+    private LocalDateTime questionDeadline = LocalDateTime.now().plusWeeks(2);
 }

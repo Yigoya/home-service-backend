@@ -19,6 +19,9 @@ public class TenderDTO {
     private TenderStatus status;
     private Long serviceId;
     private String document;
+    private LocalDateTime datePosted;
+    private String categoryName;
+    private LocalDateTime questionDeadline;
 
     public static TenderDTO createWithFullDetails(Tender tender) {
         TenderDTO tenderDTO = new TenderDTO();
@@ -29,8 +32,11 @@ public class TenderDTO {
         tenderDTO.setClosingDate(tender.getClosingDate());
         tenderDTO.setContactInfo(tender.getContactInfo());
         tenderDTO.setStatus(tender.getStatus());
-        tenderDTO.setServiceId(tender.getCategory().getId());
+        tenderDTO.setServiceId(tender.getService().getId());
         tenderDTO.setDocument(tender.getDocumentPath());
+        tenderDTO.setDatePosted(tender.getDatePosted());
+        tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
+        tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
 
         return tenderDTO;
     }
@@ -43,7 +49,10 @@ public class TenderDTO {
         tenderDTO.setLocation(tender.getLocation());
         tenderDTO.setClosingDate(tender.getClosingDate());
         tenderDTO.setStatus(tender.getStatus());
-        tenderDTO.setServiceId(tender.getCategory().getId());
+        tenderDTO.setServiceId(tender.getService().getId());
+        tenderDTO.setDatePosted(tender.getDatePosted());
+        tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
+        tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
         return tenderDTO;
     }
 }

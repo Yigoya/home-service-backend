@@ -49,6 +49,17 @@ public class Services extends BaseEntity {
 
     private String document;
 
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AgencyProfileServices> agencyProfileServices;
+
+    public Set<AgencyProfileServices> getAgencyProfileServices() {
+        return agencyProfileServices;
+    }
+
+    public void setAgencyProfileServices(Set<AgencyProfileServices> agencyProfileServices) {
+        this.agencyProfileServices = agencyProfileServices;
+    }
+
     public boolean hasParentService() {
         return serviceId != null;
     }

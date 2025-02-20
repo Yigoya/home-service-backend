@@ -42,7 +42,7 @@ public interface AgencyProfileRepository
 
     default List<AgencyProfile> findByServiceId(Long serviceId) {
         return findAll((root, query, cb) -> {
-            return cb.equal(root.join("services").get("id"), serviceId);
+            return cb.equal(root.join("service").get("id"), serviceId);
         });
     }
 

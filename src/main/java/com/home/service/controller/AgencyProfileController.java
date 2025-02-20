@@ -15,9 +15,6 @@ import com.home.service.dto.AgencyProfileRequest;
 import com.home.service.dto.AgencySearchCriteria;
 import com.home.service.dto.AgencyServiceRequest;
 import com.home.service.models.AgencyBooking;
-import com.home.service.models.AgencyProfile;
-import com.home.service.models.Booking;
-import com.home.service.models.Services;
 import com.home.service.models.enums.VerificationStatus;
 
 import java.io.IOException;
@@ -33,7 +30,7 @@ public class AgencyProfileController {
     @Autowired
     private BookingService bookingService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping()
     public ResponseEntity<AgencyProfileDTO> createAgencyProfile(
             @ModelAttribute AgencyProfileRequest agencyProfileRequest)
             throws IOException {
@@ -55,7 +52,7 @@ public class AgencyProfileController {
 
     @PostMapping("/booking-request")
     public ResponseEntity<String> createBooking(@RequestBody AgencyBookingRequest agencyBookingRequest) {
-        AgencyBooking booking = bookingService.createAgencyBooking(agencyBookingRequest.getCustomerId(),
+        bookingService.createAgencyBooking(agencyBookingRequest.getCustomerId(),
                 agencyBookingRequest.getAgencyId(), agencyBookingRequest.getServiceId(), agencyBookingRequest);
         return ResponseEntity.ok("Booking created successfully");
     }

@@ -70,7 +70,7 @@ public class ServiceManagementController {
     @GetMapping("/home")
     public ResponseEntity<Map<String, Object>> getDataForHome(
             @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
-            @RequestParam(defaultValue = "false") boolean isForMobile) {
+            @RequestParam(defaultValue = "true") boolean isForMobile) {
         List<ServiceDTO> service = serviceService.getAllServices(lang);
         List<ServiceCategoryDTO> serviceCategory = serviceCategoryService.getAllServiceCategories(lang, isForMobile);
         List<TechnicianDTO> topFiveTechnician = technicianService.getTopFiveTechniciansByRating(lang);

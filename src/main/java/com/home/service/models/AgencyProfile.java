@@ -4,10 +4,12 @@ import java.util.Set;
 
 import com.home.service.models.enums.VerificationStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -44,24 +46,48 @@ public class AgencyProfile extends BaseEntity {
     @NotBlank(message = "Phone is required")
     private String phone;
 
+    @ManyToOne
+    @JoinColumn(name = "service_id", nullable = true)
+    private Services service;
+
+    private double averageRating;
+
+    @OneToMany(mappedBy = "agencyProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AgencyProfileServices> agencyProfileServices;
+
+    public Set<AgencyProfileServices> getAgencyProfileServices() {
+        return agencyProfileServices;
+    }
+
+    public void setAgencyProfileServices(Set<AgencyProfileServices> agencyProfileServices) {
+        this.agencyProfileServices = agencyProfileServices;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+
     private String website;
 
     @NotBlank(message = "Document is required")
     private String document;
 
-    @OneToMany(mappedBy = "agency")
-    private Set<Services> services;
-
-    public Set<Services> getServices() {
-        return services;
-    }
-
-    public void setServices(Set<Services> services) {
-        this.services = services;
-    }
+    private String image;
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus = VerificationStatus.PENDING;
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     public String getDocument() {
         return document;
@@ -157,5 +183,13 @@ public class AgencyProfile extends BaseEntity {
 
     public void setWebsite(String website) {
         this.website = website;
+    }
+
+    public Services getService() {
+        return service;
+    }
+
+    public void setService(Services service) {
+        this.service = service;
     }
 }

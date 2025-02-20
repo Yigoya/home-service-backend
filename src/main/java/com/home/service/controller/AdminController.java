@@ -363,13 +363,27 @@ public class AdminController {
                                 break; // Break if the row is empty
 
                         ServiceImportDTO dto = new ServiceImportDTO();
-                        dto.setLevel((int) row.getCell(0).getNumericCellValue());
-                        dto.setNameEnglish(row.getCell(1).getStringCellValue());
-                        dto.setDescriptionEnglish(row.getCell(2).getStringCellValue());
-                        dto.setNameAmharic(row.getCell(3).getStringCellValue());
-                        dto.setDescriptionAmharic(row.getCell(4).getStringCellValue());
-                        dto.setNameOromo(row.getCell(5).getStringCellValue());
-                        dto.setDescriptionOromo(row.getCell(6).getStringCellValue());
+                        if (row.getCell(0) != null) {
+                                dto.setLevel((int) row.getCell(0).getNumericCellValue());
+                        }
+                        if (row.getCell(1) != null) {
+                                dto.setNameEnglish(row.getCell(1).getStringCellValue());
+                        }
+                        if (row.getCell(2) != null) {
+                                dto.setDescriptionEnglish(row.getCell(2).getStringCellValue());
+                        }
+                        if (row.getCell(3) != null) {
+                                dto.setNameAmharic(row.getCell(3).getStringCellValue());
+                        }
+                        if (row.getCell(4) != null) {
+                                dto.setDescriptionAmharic(row.getCell(4).getStringCellValue());
+                        }
+                        if (row.getCell(5) != null) {
+                                dto.setNameOromo(row.getCell(5).getStringCellValue());
+                        }
+                        if (row.getCell(6) != null) {
+                                dto.setDescriptionOromo(row.getCell(6).getStringCellValue());
+                        }
                         services.add(dto);
                 }
 
