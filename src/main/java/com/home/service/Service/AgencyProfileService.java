@@ -268,7 +268,7 @@ public class AgencyProfileService {
                                 .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
                 AgencyProfileDTO agencyProfileDTO = new AgencyProfileDTO(agencyProfile);
 
-                List<Services> servicesList = serviceRepository.findByAgency_Id(agencyProfile.getId());
+                List<Services> servicesList = serviceRepository.findByAgency_IdOrderByIdAsc(agencyProfile.getId());
                 List<ServiceDTO> services = servicesList.stream()
                                 .map(service -> new ServiceDTO(service, EthiopianLanguage.ENGLISH))
                                 .collect(Collectors.toList());

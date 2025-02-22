@@ -12,7 +12,6 @@ com/home/service/config/WebSocketConfig.class
 com/home/service/models/TechnicianProofResponse.class
 com/home/service/dto/OperatorProfileDTO.class
 com/home/service/dto/DeductCoinsRequest.class
-com/home/service/Service/ServiceCategoryService.class
 com/home/service/repositories/AddressRepository.class
 com/home/service/dto/SetServicePriceDTO.class
 com/home/service/dto/CustomerResponse.class
@@ -155,13 +154,11 @@ com/home/service/repositories/TechnicianWeeklyScheduleRepository.class
 com/home/service/config/exceptions/PasswordException.class
 com/home/service/repositories/TechnicianServicePriceRepository.class
 com/home/service/dto/TenderRequest.class
-com/home/service/controller/AdminController.class
 com/home/service/dto/admin/ServiceCategoryWithServicesDTO.class
 com/home/service/models/Transaction.class
 com/home/service/Service/TenderService.class
 com/home/service/repositories/UserRepository.class
 com/home/service/controller/TransactionController.class
-com/home/service/controller/ServiceManagementController.class
 com/home/service/dto/ServiceCategoryWithServicesDTO.class
 com/home/service/dto/ServiceLangRequest.class
 com/home/service/Service/TechnicianSpecification.class
@@ -208,7 +205,6 @@ com/home/service/models/CustomDetails.class
 com/home/service/Service/AdminService.class
 com/home/service/models/Dispute.class
 com/home/service/dto/AnswerRequest$AnswerDTO.class
-com/home/service/Service/ServiceService.class
 com/home/service/repositories/AgencyProfileRepository.class
 com/home/service/repositories/BookingRepository.class
 com/home/service/dto/AgencyBookingDTO.class

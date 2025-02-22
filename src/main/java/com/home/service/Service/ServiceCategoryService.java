@@ -53,7 +53,7 @@ public class ServiceCategoryService {
             EthiopianLanguage lang) {
         ServiceCategory serviceCategory = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
-        List<ServiceDTO> services = serviceRepository.findByCategory(serviceCategory).stream()
+        List<ServiceDTO> services = serviceRepository.findByCategoryOrderByIdAsc(serviceCategory).stream()
                 .map(service -> new ServiceDTO(service, lang))
                 .toList();
 

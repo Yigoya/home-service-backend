@@ -11,7 +11,7 @@ import com.home.service.models.ServiceCategory;
 import com.home.service.models.Services;
 
 public interface ServiceRepository extends JpaRepository<Services, Long> {
-    List<Services> findByCategory(ServiceCategory category);
+    List<Services> findByCategoryOrderByIdAsc(ServiceCategory category);
 
     // List<Services> findByCategoryAndServiceIdIsNull(ServiceCategory category);
 
@@ -21,8 +21,7 @@ public interface ServiceRepository extends JpaRepository<Services, Long> {
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.service.id = :serviceId")
     int countBookingsByServiceId(@Param("serviceId") Long serviceId);
 
-    List<Services> findByAgency_Id(Long agencyId);
+    List<Services> findByAgency_IdOrderByIdAsc(Long agencyId);
 
-    List<Services> findByServiceIdIsNull();
-
+    List<Services> findByServiceIdIsNullOrderByIdAsc();
 }

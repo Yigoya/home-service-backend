@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -37,6 +38,7 @@ import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.OperatorProfileDTO;
 import com.home.service.dto.ServiceCatagoryRequest;
+import com.home.service.dto.ServiceIconRequest;
 import com.home.service.dto.ServiceImportDTO;
 import com.home.service.dto.ServiceLangRequest;
 import com.home.service.dto.ServiceRequest;
@@ -341,6 +343,16 @@ public class AdminController {
         @PostMapping("/question")
         public ResponseEntity<String> createQuestion(@Valid @RequestBody QuestionRequest request) {
                 return ResponseEntity.status(201).body(questionService.createQuestion(request));
+        }
+
+        @PostMapping("/icons")
+        public ResponseEntity<Void> addIconsToServices(@RequestParam Map<String, MultipartFile> serviceIcons) {
+                Map<Long, MultipartFile> iconsMap = serviceIcons.entrySet().stream()
+                                .collect(Collectors.toMap(
+                                                entry -> Long.parseLong(entry.getKey()),
+                                                Map.Entry::getValue));
+                serviceService.addIconsToServices(iconsMap);
+                return ResponseEntity.noContent().build();
         }
 
         @PostMapping("/import")

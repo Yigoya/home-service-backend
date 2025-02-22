@@ -142,7 +142,8 @@ public class ServiceService {
         }
 
         public List<ServiceDTO> getAllServices(EthiopianLanguage lang) {
-                return serviceRepository.findByServiceIdIsNull().stream().map(service -> new ServiceDTO(service, lang))
+                return serviceRepository.findByServiceIdIsNullOrderByIdAsc().stream()
+                                .map(service -> new ServiceDTO(service, lang))
                                 .collect(Collectors.toList());
         }
 
@@ -420,7 +421,7 @@ public class ServiceService {
                                                 .findFirst().get())
                                 .getDescription());
                 dto.setIcon(category.getIcon());
-                List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategory(category)
+                List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategoryOrderByIdAsc(category)
                                 .stream().filter(service -> service.getServiceId() == null)
                                 .map(service -> this.convertToServiceWithCountsDTO(service, lang))
                                 .collect(Collectors.toList());
@@ -467,5 +468,16 @@ public class ServiceService {
                 return parentService.getServices().stream()
                                 .map(service -> new ServiceDTO(service, lang))
                                 .collect(Collectors.toList());
+        }
+
+        public void addIconsToServices(Map<Long, MultipartFile> serviceIcons) {
+                serviceIcons.forEach((serviceId, iconFile) -> {
+                        Services service = serviceRepository.findById(serviceId)
+                                        .orElseThrow(() -> new EntityNotFoundException(
+                                                        "Service not found with id: " + serviceId));
+                        String iconPath = fileStorageService.storeFile(iconFile);
+                        service.setIcon(iconPath);
+                        serviceRepository.save(service);
+                });
         }
 }
