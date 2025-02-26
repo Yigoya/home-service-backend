@@ -26,22 +26,23 @@ public class FcmService {
 
   @PostConstruct
   public void initialize() throws IOException {
-    GoogleCredentials googleCredentials;
-    try {
-      googleCredentials = GoogleCredentials
-          .fromStream(new FileInputStream("/root/home-service-backend/serviceAccountKey.json"))
-          .createScoped(FCM_SCOPE);
+    // GoogleCredentials googleCredentials;
+    // try {
+    // googleCredentials = GoogleCredentials
+    // .fromStream(new
+    // FileInputStream("/root/home-service-backend/serviceAccountKey.json"))
+    // .createScoped(FCM_SCOPE);
 
-    } catch (IOException e) {
-      googleCredentials = GoogleCredentials
-          .fromStream(new FileInputStream("./serviceAccountKey.json"))
+    // } catch (IOException e) {
+    // googleCredentials = GoogleCredentials
+    // .fromStream(new FileInputStream("./serviceAccountKey.json"))
 
-          .createScoped(FCM_SCOPE);
-    }
+    // .createScoped(FCM_SCOPE);
+    // }
 
-    // Fetch and set the access token
-    googleCredentials.refreshIfExpired();
-    this.accessToken = googleCredentials.getAccessToken().getTokenValue();
+    // // Fetch and set the access token
+    // // googleCredentials.refreshIfExpired();
+    // this.accessToken = googleCredentials.getAccessToken().getTokenValue();
   }
 
   public void sendNotification(User user, String title, String body, String imageUrl, String targetPage, String value) {
