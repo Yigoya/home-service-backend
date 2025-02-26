@@ -345,13 +345,23 @@ public class AdminController {
                 return ResponseEntity.status(201).body(questionService.createQuestion(request));
         }
 
-        @PostMapping("/icons")
+        @PostMapping("/service-icons")
         public ResponseEntity<Void> addIconsToServices(@RequestParam Map<String, MultipartFile> serviceIcons) {
                 Map<Long, MultipartFile> iconsMap = serviceIcons.entrySet().stream()
                                 .collect(Collectors.toMap(
                                                 entry -> Long.parseLong(entry.getKey()),
                                                 Map.Entry::getValue));
                 serviceService.addIconsToServices(iconsMap);
+                return ResponseEntity.noContent().build();
+        }
+
+        @PostMapping("/category-icons")
+        public ResponseEntity<Void> addIconsToCategories(@RequestParam Map<String, MultipartFile> categoryIcons) {
+                Map<Long, MultipartFile> iconsMap = categoryIcons.entrySet().stream()
+                                .collect(Collectors.toMap(
+                                                entry -> Long.parseLong(entry.getKey()),
+                                                Map.Entry::getValue));
+                serviceCategoryService.addIconsToCategories(iconsMap);
                 return ResponseEntity.noContent().build();
         }
 

@@ -2,6 +2,7 @@ package com.home.service.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.home.service.dto.ServiceCatagoryRequest;
 import com.home.service.dto.ServiceCategoryDTO;
@@ -20,6 +21,7 @@ import com.home.service.services.FileStorageService;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -145,5 +147,15 @@ public class ServiceCategoryService {
 
     public void deleteServiceCategory(Long id) {
         serviceCategoryRepository.deleteById(id);
+    }
+
+    public void addIconsToCategories(Map<Long, MultipartFile> categoryIcons) {
+        categoryIcons.forEach((categoryId, iconFile) -> {
+            ServiceCategory category = serviceCategoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + categoryId));
+            String iconPath = fileStorageService.storeFile(iconFile);
+            category.setIcon(iconPath);
+            serviceCategoryRepository.save(category);
+        });
     }
 }
