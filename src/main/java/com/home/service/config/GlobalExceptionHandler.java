@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import com.home.service.config.exceptions.BadRequestException;
 import com.home.service.config.exceptions.EmailException;
 import com.home.service.config.exceptions.FileException;
 import com.home.service.config.exceptions.GeneralException;
@@ -165,6 +166,30 @@ public class GlobalExceptionHandler {
                                 "Invalid credentials or unauthorized access",
                                 request.getDescription(false));
                 return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
+
+        @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+                        org.springframework.security.access.AccessDeniedException ex, WebRequest request) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.FORBIDDEN.value(),
+                                "Access Denied",
+                                "You do not have permission to access this resource",
+                                request.getDescription(false),
+                                Collections.singletonList(ex.getMessage()));
+                return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+        }
+
+        @ExceptionHandler(BadRequestException.class)
+        public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Bad Request",
+                                ex.getMessage(),
+                                request.getDescription(false),
+                                Collections.singletonList(
+                                                "The request could not be understood or was missing required parameters."));
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
 }

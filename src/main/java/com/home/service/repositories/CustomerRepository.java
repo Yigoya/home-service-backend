@@ -9,4 +9,6 @@ import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSpecificationExecutor<Customer> {
     Optional<Customer> findByUser(User user);
+
+    Optional<Customer> findByUserId(Long userId);
 }

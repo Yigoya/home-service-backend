@@ -9,4 +9,6 @@ import com.home.service.models.User;
 
 public interface OperatorRepository extends JpaRepository<Operator, Long> {
     Optional<Operator> findByUser_Id(Long id);
+
+    Optional<Operator> findByUser(User user);
 }

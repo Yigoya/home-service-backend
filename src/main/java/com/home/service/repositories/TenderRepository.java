@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.home.service.models.Tender;
 import com.home.service.models.enums.TenderStatus;
@@ -16,6 +17,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.domain.Specification;
 
 public interface TenderRepository extends JpaRepository<Tender, Long>, JpaSpecificationExecutor<Tender> {
@@ -77,4 +80,32 @@ public interface TenderRepository extends JpaRepository<Tender, Long>, JpaSpecif
         };
         return findAll(spec, pageable);
     }
+
+    List<Tender> findByStatusAndDatePostedBefore(TenderStatus status, LocalDateTime datePosted);
+
+    long countByAgencyId(Long agencyId);
+
+    long countByAgencyIdAndStatus(Long agencyId, TenderStatus status);
+
+    // @Query("SELECT new com.home.service.dto.TenderStats(" +
+    // "FUNCTION('DATE', t.datePosted), " +
+    // "COUNT(t), " +
+    // "t.status) " +
+    // "FROM Tender t " +
+    // "WHERE t.agency.id = :agencyId " +
+    // "AND t.datePosted >= :startDate " +
+    // "GROUP BY FUNCTION('DATE', t.datePosted), t.status " +
+    // "ORDER BY FUNCTION('DATE', t.datePosted) DESC")
+    // List<TenderStats> findTenderStatsByAgencyId(
+    // @Param("agencyId") Long agencyId,
+    // @Param("startDate") LocalDateTime startDate);
+
+    @Query("SELECT t FROM Tender t " +
+            "WHERE t.agency.id = :agencyId " +
+            "AND t.datePosted >= :startDate")
+    List<Tender> findTendersByAgencyIdAndDate(
+            @Param("agencyId") Long agencyId,
+            @Param("startDate") LocalDateTime startDate);
+
+    Optional<Tender> findByIdAndAgencyId(Long id, Long agencyId);
 }

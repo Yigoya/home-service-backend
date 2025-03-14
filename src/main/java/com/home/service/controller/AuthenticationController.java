@@ -21,8 +21,10 @@ import com.home.service.Service.CustomerService;
 import com.home.service.Service.OperatorService;
 import com.home.service.Service.PaymentProofService;
 import com.home.service.Service.TechnicianService;
+import com.home.service.Service.TenderAgencyService;
 import com.home.service.Service.UserService;
 import com.home.service.dto.AdminLoginRequest;
+import com.home.service.dto.AgencyRegistrationRequest;
 import com.home.service.dto.AuthenticationResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
@@ -31,10 +33,13 @@ import com.home.service.dto.PasswordResetRequest;
 import com.home.service.dto.SocialLoginRequest;
 import com.home.service.dto.TechnicianSignupRequest;
 import com.home.service.dto.UploadPaymentProofRequest;
+import com.home.service.dto.UserRegistrationRequest;
 import com.home.service.dto.UserResponse;
 import com.home.service.config.JwtUtil;
+import com.home.service.models.AgencyProfile;
 import com.home.service.models.CustomDetails;
 import com.home.service.models.DeviceInfo;
+import com.home.service.models.TenderAgencyProfile;
 import com.home.service.models.User;
 import com.home.service.repositories.DeviceInfoRepository;
 import com.home.service.repositories.UserRepository;
@@ -58,11 +63,12 @@ public class AuthenticationController {
     private final UserRepository userRepository;
     private final DeviceInfoRepository deviceInfoRepository;
     private final SmsService smsService;
+    private final TenderAgencyService tenderAgencyService;
 
     public AuthenticationController(CustomerService customerService, TechnicianService technicianService,
             OperatorService operatorService, AdminService adminService, UserService userService, JwtUtil jwtUtil,
             PaymentProofService paymentProofService, UserRepository userRepository,
-            DeviceInfoRepository deviceInfoRepository, SmsService smsService) {
+            DeviceInfoRepository deviceInfoRepository, SmsService smsService, TenderAgencyService tenderAgencyService) {
         this.customerService = customerService;
         this.technicianService = technicianService;
         this.operatorService = operatorService;
@@ -73,6 +79,7 @@ public class AuthenticationController {
         this.userRepository = userRepository;
         this.deviceInfoRepository = deviceInfoRepository;
         this.smsService = smsService;
+        this.tenderAgencyService = tenderAgencyService;
     }
 
     @PostMapping("/login")
@@ -140,6 +147,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(userService.resetPassword(newPasswordRequest));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<User> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
+        User registeredUser = userService.registerUser(request);
+        return ResponseEntity.ok(registeredUser);
+    }
+
     @PostMapping("/customer/signup")
     public String signupCustomer(@Valid @RequestBody User user) {
         return customerService.signupCustomer(user);
@@ -153,6 +166,11 @@ public class AuthenticationController {
     @PostMapping("/operator/signup")
     public String signupOperator(@Valid @ModelAttribute OperatorSignupRequest signupRequest) {
         return operatorService.signupOperator(signupRequest);
+    }
+
+    @PostMapping("/agency/register")
+    public ResponseEntity<TenderAgencyProfile> register(@RequestBody AgencyRegistrationRequest request) {
+        return ResponseEntity.ok(tenderAgencyService.registerAgency(request));
     }
 
     @PostMapping("/admin/login")

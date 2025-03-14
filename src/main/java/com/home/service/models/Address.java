@@ -7,18 +7,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@Table(name = "addresses")
 public class Address extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Customer customer;
+
     private String street;
     private String city;
     private String subcity;

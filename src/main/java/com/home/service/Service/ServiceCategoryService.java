@@ -39,10 +39,9 @@ public class ServiceCategoryService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    public List<ServiceCategoryDTO> getAllServiceCategories(EthiopianLanguage lang, boolean isMobileCategory) {
+    public List<ServiceCategoryDTO> getAllServiceCategories(EthiopianLanguage lang) {
         return serviceCategoryRepository.findAll().stream()
-                .filter(serviceCategory -> Boolean.TRUE
-                        .equals(serviceCategory.getIsMobileCategory()) == isMobileCategory)
+
                 .map(serviceCategory -> new ServiceCategoryDTO(serviceCategory, lang))
                 .collect(Collectors.toList());
     }

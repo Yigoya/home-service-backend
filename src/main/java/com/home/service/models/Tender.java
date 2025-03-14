@@ -31,6 +31,13 @@ public class Tender extends BaseEntity {
     @Column(name = "service_id", insertable = false, updatable = false)
     private Long serviceId;
 
+    @ManyToOne
+    @JoinColumn(name = "agency_id")
+    private TenderAgencyProfile agency;
+
+    @Column(name = "agency_id", insertable = false, updatable = false)
+    private Long agencyId;
+
     private String documentPath;
     private LocalDateTime questionDeadline = LocalDateTime.now().plusWeeks(2);
 }

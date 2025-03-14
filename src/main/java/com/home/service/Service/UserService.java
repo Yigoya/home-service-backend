@@ -20,10 +20,13 @@ import com.home.service.dto.ChangeContactRequest;
 import com.home.service.dto.CustomerResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
+import com.home.service.dto.OperatorResponse;
 import com.home.service.dto.SignupRequest;
 import com.home.service.dto.SocialLoginRequest;
 import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.TechnicianResponse;
+import com.home.service.dto.TenderAgencyProfileResponse;
+import com.home.service.dto.UserRegistrationRequest;
 import com.home.service.dto.UserResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -34,16 +37,20 @@ import com.home.service.config.exceptions.UserNotFoundException;
 import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
 import com.home.service.models.DeviceInfo;
+import com.home.service.models.Operator;
 import com.home.service.models.PasswordResetToken;
 import com.home.service.models.Technician;
+import com.home.service.models.TenderAgencyProfile;
 import com.home.service.models.User;
 import com.home.service.models.VerificationToken;
 import com.home.service.models.enums.AccountStatus;
 import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.CustomerRepository;
+import com.home.service.repositories.OperatorRepository;
 import com.home.service.repositories.PasswordResetTokenRepository;
 import com.home.service.repositories.TechnicianRepository;
+import com.home.service.repositories.TenderAgencyProfileRepository;
 import com.home.service.repositories.UserRepository;
 import com.home.service.repositories.VerificationTokenRepository;
 import com.home.service.services.EmailService;
@@ -85,6 +92,32 @@ public class UserService {
 
     @Autowired
     private VerificationTokenRepository tokenRepository;
+
+    @Autowired
+    private OperatorRepository operatorRepository;
+
+    @Autowired
+    private TenderAgencyProfileRepository tenderAgencyRepository;
+
+    public User registerUser(UserRegistrationRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalStateException("Email already in use");
+        }
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new IllegalStateException("Phone number already in use");
+        }
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(UserRole.USER);
+        user.setStatus(AccountStatus.ACTIVE);
+        user.setCreatedAt(LocalDateTime.now());
+
+        return userRepository.save(user);
+    }
 
     public User signup(SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
@@ -210,6 +243,16 @@ public class UserService {
             CustomerResponse customerResponse = new CustomerResponse(
                     customer.getId(), customer.getServiceHistory(), customer.getSavedAddresses());
             authenticationResponse.setCustomer(customerResponse);
+        } else if (user.getRole() == UserRole.OPERATOR) {
+            Operator operator = operatorRepository.findByUser(user).orElseThrow(
+                    () -> new UserNotFoundException("Operator not found"));
+            OperatorResponse operatorResponse = new OperatorResponse(operator);
+            authenticationResponse.setOperator(operatorResponse);
+        } else if (user.getRole() == UserRole.AGENCY) {
+            TenderAgencyProfile agency = tenderAgencyRepository.findByUser(user).orElseThrow(
+                    () -> new UserNotFoundException("Agency not found"));
+            TenderAgencyProfileResponse agencyResponse = new TenderAgencyProfileResponse(agency);
+            authenticationResponse.setTenderAgencyProfile(agencyResponse);
         }
 
         return authenticationResponse;

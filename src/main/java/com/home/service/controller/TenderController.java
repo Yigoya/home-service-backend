@@ -1,7 +1,10 @@
 package com.home.service.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,9 +14,14 @@ import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.TenderDTO;
 import com.home.service.dto.TenderRequest;
 import com.home.service.dto.TenderSearchCriteria;
+import com.home.service.models.Tender;
 import com.home.service.models.enums.TenderStatus;
 
+import jakarta.validation.Valid;
+
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/tenders")
@@ -25,6 +33,14 @@ public class TenderController {
     @PostMapping
     public ResponseEntity<String> addTender(@ModelAttribute TenderRequest tenderRequest) throws IOException {
         return ResponseEntity.ok(tenderService.addTender(tenderRequest));
+    }
+
+    @PostMapping("/agency/add")
+    public ResponseEntity<String> addTender(
+            @Valid @ModelAttribute TenderRequest tenderDTO,
+            @RequestParam(required = false) Long agencyId) throws IOException {
+        String response = tenderService.addAgencyTender(tenderDTO, agencyId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping
@@ -101,5 +117,23 @@ public class TenderController {
                 criteria.getClosingDate(),
                 criteria.getPage(),
                 criteria.getSize());
+    }
+
+    @GetMapping("/tenders/search")
+    public ResponseEntity<Page<Tender>> searchTenders(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime dateTo,
+            @RequestParam(required = false) TenderStatus status,
+            Pageable pageable) {
+        return ResponseEntity.ok(tenderService.advancedSearch(
+                keyword, categoryId, location, dateFrom, dateTo, status, pageable));
+    }
+
+    @GetMapping("/tenders/archive")
+    public ResponseEntity<List<Tender>> getArchiveTenders(@RequestParam Long customerId) {
+        return ResponseEntity.ok(tenderService.getArchiveTenders(customerId));
     }
 }

@@ -22,9 +22,9 @@ public class PaymentMethod extends BaseEntity {
     private String cardholderName;
     private String expiryDate;
 
-    @ManyToOne
-    @JoinColumn(name = "billing_address_id")
-    private Address billingAddress;
+    // @ManyToOne
+    // @JoinColumn(name = "billing_address_id")
+    // private Address billingAddress;
 
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;

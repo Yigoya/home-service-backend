@@ -69,10 +69,9 @@ public class ServiceManagementController {
 
     @GetMapping("/home")
     public ResponseEntity<Map<String, Object>> getDataForHome(
-            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang,
-            @RequestParam(defaultValue = "true") boolean isForMobile) {
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
         List<ServiceDTO> service = serviceService.getAllServices(lang);
-        List<ServiceCategoryDTO> serviceCategory = serviceCategoryService.getAllServiceCategories(lang, isForMobile);
+        List<ServiceCategoryDTO> serviceCategory = serviceCategoryService.getAllServiceCategories(lang);
         List<TechnicianDTO> topFiveTechnician = technicianService.getTopFiveTechniciansByRating(lang);
         List<ReviewDTO> topFiveReviews = reviewService.getTop5ReviewsByRating();
         List<District> districts = districtService.getDistricts(Optional.of(lang.toString().toLowerCase()),
@@ -85,7 +84,7 @@ public class ServiceManagementController {
 
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Test endpoint is working! 🎉 11");
+        return ResponseEntity.ok("Test endpoint is working! 🎉 12");
     }
 
     // Technician Endpoints
@@ -131,7 +130,7 @@ public class ServiceManagementController {
     @GetMapping("/service-categories")
     public List<ServiceCategoryDTO> getAllServiceCategories(
             @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
-        return serviceCategoryService.getAllServiceCategories(lang, false);
+        return serviceCategoryService.getAllServiceCategories(lang);
     }
 
     @GetMapping("/service-categories/{id}")
