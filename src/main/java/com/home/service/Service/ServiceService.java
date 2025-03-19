@@ -59,7 +59,7 @@ public class ServiceService {
         @Autowired
         private FileStorageService fileStorageService;
 
-        public void importServices(List<ServiceImportDTO> services) {
+        public void importServices(List<ServiceImportDTO> services, Map<String, String> iconMap) {
                 Map<Integer, Services> levelToServiceMap = new HashMap<>();
                 ServiceCategory currentCategory = null;
 
@@ -68,6 +68,11 @@ public class ServiceService {
                                 // Handle category
                                 currentCategory = new ServiceCategory();
                                 currentCategory.setIsMobileCategory(false); // Default value
+
+                                // Set icon if available
+                                if (dto.getIconFileName() != null && iconMap.containsKey(dto.getIconFileName())) {
+                                        currentCategory.setIcon(iconMap.get(dto.getIconFileName()));
+                                }
 
                                 // Add translations
                                 ServiceCategoryTranslation translationEnglish = new ServiceCategoryTranslation();
@@ -85,7 +90,8 @@ public class ServiceService {
                                 translationOromo.setDescription(dto.getDescriptionOromo());
                                 translationOromo.setLang(EthiopianLanguage.OROMO);
 
-                                ServiceCategory savedCategory = serviceCategoryRepository.save(currentCategory);
+                                ServiceCategory savedCategory = serviceCategoryRepository
+                                                .save(currentCategory);
                                 translationEnglish.setCategory(savedCategory);
                                 translationAmharic.setCategory(savedCategory);
                                 translationOromo.setCategory(savedCategory);
@@ -101,6 +107,11 @@ public class ServiceService {
                                 // Handle service
                                 Services service = new Services();
                                 service.setCategory(currentCategory); // Link to the current category
+
+                                // Set icon if available
+                                if (dto.getIconFileName() != null && iconMap.containsKey(dto.getIconFileName())) {
+                                        service.setIcon(iconMap.get(dto.getIconFileName()));
+                                }
 
                                 // Add translations
                                 ServiceTranslation translationEnglish = new ServiceTranslation();
@@ -130,13 +141,13 @@ public class ServiceService {
                                 service.getTranslations()
                                                 .add(serviceTranslationRepository.save(translationOromo));
                                 serviceRepository.save(service);
+
                                 // Handle nested services
                                 if (dto.getLevel() > 1) {
                                         Services parentService = levelToServiceMap.get(dto.getLevel() - 1);
                                         parentService.getServices().add(service);
                                         serviceRepository.save(parentService);
                                 }
-
                         }
                 }
         }

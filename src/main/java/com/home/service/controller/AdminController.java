@@ -3,6 +3,7 @@ package com.home.service.controller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ import com.home.service.dto.admin.TechnicianDetailDTO;
 import com.home.service.repositories.DisputeRepository;
 import com.home.service.repositories.TechnicianRepository;
 import com.home.service.services.EmailService;
+import com.home.service.services.FileStorageService;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.DisputeStatus;
 import com.home.service.models.enums.EthiopianLanguage;
@@ -110,6 +112,9 @@ public class AdminController {
 
         @Autowired
         private QuestionService questionService;
+
+        @Autowired
+        private FileStorageService fileStorageService;
 
         @GetMapping("/unverified-technicians")
         public ResponseEntity<List<TechnicianProfileDTO>> listUnverifiedTechnicians() {
@@ -365,10 +370,25 @@ public class AdminController {
                 return ResponseEntity.noContent().build();
         }
 
-        @PostMapping("/import")
-        public String importServices(@RequestParam("file") MultipartFile file) throws IOException {
-                List<ServiceImportDTO> servicesToImport = readExcelFile(file.getInputStream());
-                serviceService.importServices(servicesToImport);
+        @PostMapping(value = "/import", consumes = { "multipart/form-data" })
+        public String importServices(
+                        @RequestParam("excelFile") MultipartFile excelFile,
+                        @RequestParam("iconFiles") MultipartFile[] iconFiles) throws IOException {
+
+                // Read Excel data
+                List<ServiceImportDTO> servicesToImport = readExcelFile(excelFile.getInputStream());
+
+                // Create a map of icon filenames to their stored paths
+                Map<String, String> iconMap = new HashMap<>();
+                for (MultipartFile iconFile : iconFiles) {
+                        if (!iconFile.isEmpty()) {
+                                String storedPath = fileStorageService.storeFile(iconFile);
+                                iconMap.put(iconFile.getOriginalFilename(), storedPath);
+                        }
+                }
+
+                // Pass both the services and icon map to the service layer
+                serviceService.importServices(servicesToImport, iconMap);
                 return "Services imported successfully";
         }
 
@@ -406,10 +426,14 @@ public class AdminController {
                         if (row.getCell(6) != null) {
                                 dto.setDescriptionOromo(row.getCell(6).getStringCellValue());
                         }
+                        if (row.getCell(7) != null) { // New column for icon filename
+                                dto.setIconFileName(row.getCell(7).getStringCellValue());
+                        }
                         services.add(dto);
                 }
 
                 workbook.close();
                 return services;
         }
+
 }

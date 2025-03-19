@@ -271,6 +271,7 @@ com/home/service/dto/ServiceLangRequest.class
 com/home/service/dto/TenderAgencyProfileResponse.class
 com/home/service/Service/TechnicianSpecification.class
 com/home/service/Service/BusinessReviewService$BusinessReviewDTO.class
+com/home/service/models/enums/ReviewStatus.class
 com/home/service/models/QuoteItem.class
 com/home/service/dto/admin/AddressDTO.class
 com/home/service/Service/PaymentProofService.class
@@ -310,6 +311,7 @@ com/home/service/dto/UploadPaymentProofRequest.class
 com/home/service/Service/BusinessService$BusinessDTO$1.class
 com/home/service/models/Customer.class
 com/home/service/repositories/ServiceTranslationRepository.class
+com/home/service/Service/B2BPartnerService$BusinessPartnersResponse.class
 com/home/service/repositories/TechnicianRepository.class
 com/home/service/repositories/EnquiryRepository.class
 com/home/service/Service/AnswerService.class
@@ -319,6 +321,7 @@ com/home/service/models/enums/OpeningHours.class
 com/home/service/models/enums/BookingStatus.class
 com/home/service/controller/ReviewController.class
 com/home/service/models/enums/B2BPartnerStatus.class
+com/home/service/Service/B2BPartnerService$PartnerRequestDTO.class
 com/home/service/models/ServiceTranslation.class
 com/home/service/dto/TechnicianSignupRequest.class
 com/home/service/repositories/ServiceCategoryRepository.class
@@ -347,6 +350,7 @@ com/home/service/repositories/BookingRepository.class
 com/home/service/dto/SocialMediaDTO.class
 com/home/service/dto/AgencyBookingDTO.class
 com/home/service/dto/BookingRequest.class
+com/home/service/controller/B2BController$ContractRequest.class
 com/home/service/dto/QuestionDTO.class
 com/home/service/dto/PaymentRequest.class
 com/home/service/dto/AgencyDashboardDTO.class

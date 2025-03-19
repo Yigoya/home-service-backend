@@ -11,4 +11,14 @@ public class ServiceImportDTO {
     private String descriptionEnglish;
     private String descriptionAmharic;
     private String descriptionOromo;
+    private String iconFileName; // New field for icon filename
+
+    // Add getter and setter for iconFileName
+    public String getIconFileName() {
+        return iconFileName;
+    }
+
+    public void setIconFileName(String iconFileName) {
+        this.iconFileName = iconFileName;
+    }
 }
