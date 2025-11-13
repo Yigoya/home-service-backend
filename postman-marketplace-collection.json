@@ -1,0 +1,377 @@
+{
+  "info": {
+    "name": "Home Service - Marketplace API",
+    "description": "Postman collection for testing Marketplace-related endpoints (businesses, products, inquiries, orders, dashboard, services). Uses {{baseUrl}} and optional {{token}} variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Businesses",
+      "item": [
+        {
+          "name": "Create Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/marketplace/businesses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": 1001,\n  \"name\": \"Sample Business\",\n  \"description\": \"We sell and service appliances\",\n  \"categoryIds\": [1,2],\n  \"locationJson\": \"{\\\"latitude\\\":9.01,\\\"longitude\\\":38.74,\\\"address\\\":\\\"Addis Ababa\\\"}\",\n  \"phoneNumber\": \"+251900000000\",\n  \"email\": \"contact@sample.biz\",\n  \"website\": \"https://sample.biz\",\n  \"openingHoursJson\": \"{\\\"monday\\\":{\\\"open\\\":\\\"09:00\\\",\\\"close\\\":\\\"18:00\\\"}}\",\n  \"socialMediaJson\": \"{\\\"facebook\\\":\\\"fb.com/sample\\\"}\",\n  \"isVerified\": false,\n  \"isFeatured\": false,\n  \"serviceIdsJson\": \"[101,102]\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Business",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/marketplace/businesses/{{businessId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": 1001,\n  \"name\": \"Updated Business Name\",\n  \"description\": \"Updated description\",\n  \"categoryIds\": [1,3],\n  \"locationJson\": \"{\\\"latitude\\\":9.02,\\\"longitude\\\":38.75,\\\"address\\\":\\\"Bole\\\"}\",\n  \"phoneNumber\": \"+251911111111\",\n  \"email\": \"hello@sample.biz\",\n  \"website\": \"https://sample.biz\",\n  \"openingHoursJson\": \"{\\\"tuesday\\\":{\\\"open\\\":\\\"10:00\\\",\\\"close\\\":\\\"17:00\\\"}}\",\n  \"socialMediaJson\": \"{\\\"instagram\\\":\\\"instagram.com/sample\\\"}\",\n  \"isVerified\": true,\n  \"isFeatured\": true,\n  \"serviceIdsJson\": \"[103,104]\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Business",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplace/businesses/{{businessId}}"
+          }
+        },
+        {
+          "name": "Get All Businesses",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/businesses?page=0&size=10&industry=&location=",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","businesses"],
+              "query": [
+                {"key":"page","value":"0"},
+                {"key":"size","value":"10"},
+                {"key":"industry","value":""},
+                {"key":"location","value":""}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Business",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/marketplace/businesses/{{businessId}}/verify"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "multipart/form-data" }
+            ],
+            "url": "{{baseUrl}}/marketplace/products",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key":"name","value":"Sample Product","type":"text"},
+                {"key":"description","value":"High quality sample","type":"text"},
+                {"key":"price","value":"99.99","type":"text"},
+                {"key":"currency","value":"ETB","type":"text"},
+                {"key":"stockQuantity","value":"50","type":"text"},
+                {"key":"minOrderQuantity","value":"1","type":"text"},
+                {"key":"category","value":"Appliances","type":"text"},
+                {"key":"sku","value":"SKU-001","type":"text"},
+                {"key":"isActive","value":"true","type":"text"},
+                {"key":"businessId","value":"{{businessId}}","type":"text"},
+                {"key":"specifications","value":"Color: White; Voltage: 220V","type":"text"},
+                {"key":"serviceIdsJson","value":"[101,102]","type":"text"},
+                {"key":"images","type":"file","src":""}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Product (multipart)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "multipart/form-data" }
+            ],
+            "url": "{{baseUrl}}/marketplace/products/{{productId}}",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key":"name","value":"Updated Product","type":"text"},
+                {"key":"description","value":"Updated desc","type":"text"},
+                {"key":"price","value":"79.99","type":"text"},
+                {"key":"currency","value":"ETB","type":"text"},
+                {"key":"stockQuantity","value":"40","type":"text"},
+                {"key":"minOrderQuantity","value":"1","type":"text"},
+                {"key":"category","value":"Appliances","type":"text"},
+                {"key":"sku","value":"SKU-001-UPD","type":"text"},
+                {"key":"isActive","value":"true","type":"text"},
+                {"key":"businessId","value":"{{businessId}}","type":"text"},
+                {"key":"specifications","value":"Color: Black","type":"text"},
+                {"key":"serviceIdsJson","value":"[101]","type":"text"},
+                {"key":"images","type":"file","src":""}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplace/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/products?page=0&size=10&keyword=&category=&minPrice=&maxPrice=",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","products"],
+              "query": [
+                {"key":"page","value":"0"},
+                {"key":"size","value":"10"},
+                {"key":"keyword","value":""},
+                {"key":"category","value":""},
+                {"key":"minPrice","value":""},
+                {"key":"maxPrice","value":""}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/marketplace/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Get Products by Service",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/products/by-service/{{serviceId}}?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","products","by-service","{{serviceId}}"],
+              "query": [
+                {"key":"page","value":"0"},
+                {"key":"size","value":"10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Products by Service & Name",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/products/search-by-service?serviceId={{serviceId}}&name=&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","products","search-by-service"],
+              "query": [
+                {"key":"serviceId","value":"{{serviceId}}"},
+                {"key":"name","value":""},
+                {"key":"page","value":"0"},
+                {"key":"size","value":"10"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inquiries",
+      "item": [
+        {
+          "name": "Create Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/marketplace/inquiries",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Availability Inquiry\",\n  \"message\": \"Is this item available in bulk?\",\n  \"senderId\": 2001,\n  \"recipientId\": {{businessId}},\n  \"productId\": {{productId}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Inquiry",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplace/inquiries/{{inquiryId}}"
+          }
+        },
+        {
+          "name": "Get Inquiries by Business",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/inquiries?businessId={{businessId}}&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","inquiries"],
+              "query": [
+                {"key":"businessId","value":"{{businessId}}"},
+                {"key":"page","value":"0"},
+                {"key":"size","value":"10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Respond to Inquiry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/marketplace/inquiries/{{inquiryId}}/respond",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responseMessage\": \"We can supply 100 units next week.\",\n  \"status\": \"RESPONDED\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/marketplace/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyerId\": 3001,\n  \"sellerId\": {{businessId}},\n  \"productId\": {{productId}},\n  \"quantity\": 5,\n  \"totalAmount\": 499.95,\n  \"status\": \"PENDING\",\n  \"shippingDetails\": \"Deliver to Addis Ababa\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Orders by Business",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/orders?businessId={{businessId}}&page=0&size=10&status=",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","orders"],
+              "query": [
+                {"key":"businessId","value":"{{businessId}}"},
+                {"key":"page","value":"0"},
+                {"key":"size","value":"10"},
+                {"key":"status","value":""}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/marketplace/orders/{{orderId}}/status?status=CONFIRMED",
+              "host": ["{{baseUrl}}"],
+              "path": ["marketplace","orders","{{orderId}}","status"],
+              "query": [
+                {"key":"status","value":"CONFIRMED"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Product Performance",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplace/dashboard/{{businessId}}/product-performance"
+          }
+        },
+        {
+          "name": "Inquiry Analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplace/dashboard/{{businessId}}/inquiry-analytics"
+          }
+        },
+        {
+          "name": "Profile Views",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplace/dashboard/{{businessId}}/profile-views"
+          }
+        },
+        {
+          "name": "Bulk Upload Products",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/marketplace/dashboard/{{businessId}}/bulk-products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"products\": [\n    {\n      \"name\": \"Bulk Product A\",\n      \"description\": \"Desc A\",\n      \"price\": 10.5,\n      \"currency\": \"ETB\",\n      \"stockQuantity\": 100,\n      \"minOrderQuantity\": 1,\n      \"category\": \"Category A\",\n      \"sku\": \"BULK-A\",\n      \"active\": true,\n      \"businessId\": {{businessId}},\n      \"specifications\": \"Spec A\",\n      \"serviceIds\": [{{serviceId}}]\n    },\n    {\n      \"name\": \"Bulk Product B\",\n      \"description\": \"Desc B\",\n      \"price\": 20.0,\n      \"currency\": \"ETB\",\n      \"stockQuantity\": 200,\n      \"minOrderQuantity\": 2,\n      \"category\": \"Category B\",\n      \"sku\": \"BULK-B\",\n      \"active\": false,\n      \"businessId\": {{businessId}},\n      \"specifications\": \"Spec B\",\n      \"serviceIds\": [{{serviceId}}]\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Get Max Products Per Service",
+          "request": { "method": "GET", "url": "{{baseUrl}}/marketplace/services/max-products" }
+        },
+        {
+          "name": "Get Max Products Per Service With Details",
+          "request": { "method": "GET", "url": "{{baseUrl}}/marketplace/services/max-products-with-details" }
+        },
+        {
+          "name": "Get Services With Products",
+          "request": { "method": "GET", "url": "{{baseUrl}}/marketplace/services/with-products" }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "businessId", "value": "1" },
+    { "key": "productId", "value": "1" },
+    { "key": "inquiryId", "value": "1" },
+    { "key": "orderId", "value": "1" },
+    { "key": "serviceId", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  }
+}

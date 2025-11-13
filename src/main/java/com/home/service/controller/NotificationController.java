@@ -3,6 +3,7 @@ package com.home.service.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,12 +76,14 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/{id}/mark-as-read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
         notificationService.markAsRead(id);
         return ResponseEntity.noContent().build();
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/mark-all-as-read/{userId}")
     public ResponseEntity<Void> markAllAsRead(@PathVariable Long userId) {
         notificationService.markAllAsRead(userId);

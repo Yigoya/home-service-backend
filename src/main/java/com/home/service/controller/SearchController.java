@@ -88,7 +88,7 @@ public class SearchController {
                         @RequestParam(required = false) String name,
                         @RequestParam(required = false) Double minPrice,
                         @RequestParam(required = false) Double maxPrice,
-                        @RequestParam(required = false) String city,
+                        @RequestParam(required = false) String locationQuery,
                         @RequestParam(required = false) String subcity,
                         @RequestParam(required = false) String wereda,
                         @RequestParam(required = false) Double minLatitude,
@@ -98,7 +98,7 @@ public class SearchController {
                         Pageable pageable) {
 
                 Page<Technician> technicians = technicianService.filterTechnicians(
-                                serviceId, name, minPrice, maxPrice, city, subcity, wereda,
+                                serviceId, name, minPrice, maxPrice, locationQuery, subcity, wereda,
                                 minLatitude, maxLatitude, minLongitude, maxLongitude, pageable);
 
                 Page<TechnicianDTO> technicianDTOs = technicians.map(technician -> new TechnicianDTO(technician, lang));

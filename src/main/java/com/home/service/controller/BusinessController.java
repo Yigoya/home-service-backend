@@ -3,13 +3,13 @@ package com.home.service.controller;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,13 +21,12 @@ import com.home.service.Service.BusinessPromotionService;
 import com.home.service.Service.BusinessReviewService;
 import com.home.service.Service.BusinessReviewService.BusinessReviewDTO;
 import com.home.service.Service.BusinessService;
-import com.home.service.Service.BusinessService.BusinessDTO;
 import com.home.service.Service.BusinessServiceService;
 import com.home.service.Service.BusinessServiceService.BusinessServiceDTO;
 import com.home.service.Service.EnquiryService.EnquiryDTO;
-import com.home.service.Service.ProductService.ProductDTO;
 import com.home.service.Service.ProductService;
 import com.home.service.Service.EnquiryService;
+import com.home.service.Service.SavedContentService;
 import com.home.service.Service.SearchLogService;
 import com.home.service.Service.BusinessClaimService.BusinessClaimDTO;
 import com.home.service.dto.SearchLogAnalyticsDTO;
@@ -41,10 +40,15 @@ import com.home.service.models.Enquiry;
 import com.home.service.models.SearchLog;
 import com.home.service.models.enums.ClaimStatus;
 import com.home.service.models.enums.EnquiryStatus;
+import com.home.service.models.enums.PromotionType;
+import java.util.Set;
+import com.home.service.dto.BusinessDTO;
 import com.home.service.dto.BusinessRequest;
 import com.home.service.dto.ReviewRequest;
 import com.home.service.dto.BusinessServiceRequest;
+import com.home.service.dto.PromotionRequest;
 import com.home.service.models.enums.ReviewStatus;
+import com.home.service.services.FileStorageService;
 
 @RestController
 @RequestMapping("/businesses")
@@ -58,13 +62,16 @@ public class BusinessController {
     private final BusinessServiceService businessServiceService;
     private final BusinessPromotionService businessPromotionService;
     private final SearchLogService searchLogService;
-    private final ProductService productService;
+    // private final ProductService productService; // Removed unused field
+    private final SavedContentService savedContentService;
+    private final FileStorageService fileStorageService;
 
     public BusinessController(BusinessService businessService, BusinessReviewService businessReviewService,
             BusinessLocationService businessLocationService, EnquiryService enquiryService,
             BusinessClaimService businessClaimService, BusinessServiceService businessServiceService,
             BusinessPromotionService businessPromotionService, SearchLogService searchLogService,
-            ProductService productService) {
+            ProductService productService, SavedContentService savedContentService,
+            FileStorageService fileStorageService) {
         this.searchLogService = searchLogService;
         this.businessPromotionService = businessPromotionService;
         this.businessServiceService = businessServiceService;
@@ -73,7 +80,9 @@ public class BusinessController {
         this.businessLocationService = businessLocationService;
         this.businessReviewService = businessReviewService;
         this.businessService = businessService;
-        this.productService = productService;
+    // this.productService = productService;
+        this.savedContentService = savedContentService;
+        this.fileStorageService = fileStorageService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -93,26 +102,18 @@ public class BusinessController {
     @CrossOrigin(originPatterns = "*")
     @PutMapping("/{id}")
     public ResponseEntity<BusinessDTO> updateBusiness(@PathVariable Long id,
-            @RequestBody BusinessService.BusinessDTO businessDTO) {
+            @RequestBody BusinessRequest businessRequest) {
         Long currentUserId = 4L; // Replace with actual user ID retrieval logic
-        BusinessDTO business = businessService.updateBusiness(id, businessDTO, currentUserId);
+        BusinessDTO business = businessService.updateBusiness(id, businessRequest, currentUserId);
         return ResponseEntity.ok(business);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
         Long currentUserId = 4L; // Replace with actual user ID retrieval logic
         businessService.deleteBusiness(id, currentUserId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    public ResponseEntity<Page<BusinessDTO>> getAllBusinesses(
-            @RequestParam(required = false) Long locationId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<BusinessDTO> businesses = businessService.getAllBusinesses(locationId, page, size);
-        return ResponseEntity.ok(businesses);
     }
 
     @GetMapping("/{id}/details")
@@ -123,7 +124,7 @@ public class BusinessController {
         BusinessDTO businessDTO = new BusinessDTO(business);
 
         // Get reviews
-        Page<BusinessReviewDTO> reviews = businessReviewService.getReviewsByBusiness(id, 0, 100);
+        Page<BusinessReviewDTO> reviews = businessReviewService.getReviewDTOsByBusiness(id, 0, 100);
 
         // Get services
         Page<BusinessServiceDTO> services = businessServiceService.getServicesByBusiness(id, 0, 100);
@@ -132,6 +133,7 @@ public class BusinessController {
         response.put("business", businessDTO);
         response.put("reviews", reviews.getContent());
         response.put("services", services.getContent());
+        response.put("gallery", businessDTO.getImages());
 
         return ResponseEntity.ok(response);
     }
@@ -139,10 +141,11 @@ public class BusinessController {
     @GetMapping("/search")
     public ResponseEntity<Page<BusinessDTO>> searchBusinesses(
             @RequestParam String query,
-            @RequestParam(required = false) Long locationId,
+            @RequestParam(required = false) String locationQuery,
+            @RequestParam(required = false, name = "serviceIds") List<Long> serviceIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<Business> businesses = businessService.searchBusinesses(query, locationId, page, size);
+        Page<Business> businesses = businessService.searchBusinesses(query, locationQuery, serviceIds, page, size);
         Page<BusinessDTO> businessDTOs = businesses.map(BusinessDTO::new);
         return ResponseEntity.ok(businessDTOs);
     }
@@ -163,15 +166,15 @@ public class BusinessController {
         return ResponseEntity.ok(services);
     }
 
-    // @GetMapping("/{id}/reviews")
-    // public ResponseEntity<Page<BusinessReview>> getBusinessReviews(
-    // @PathVariable Long id,
-    // @RequestParam(defaultValue = "0") int page,
-    // @RequestParam(defaultValue = "10") int size) {
-    // Page<BusinessReview> reviews = businessReviewService.getBusinessReviews(id,
-    // page, size);
-    // return ResponseEntity.ok(reviews);
-    // }
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<Page<BusinessReview>> getBusinessReviews(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<BusinessReview> reviews = businessReviewService.getReviewsByBusiness(id,
+        page, size);
+        return ResponseEntity.ok(reviews);
+    }
 
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<Page<BusinessDTO>> getBusinessesByOwner(
@@ -216,7 +219,7 @@ public class BusinessController {
     }
 
     @CrossOrigin(originPatterns = "*")
-    @DeleteMapping("/services/{id}")
+@DeleteMapping("/services/{id}")
     public ResponseEntity<Void> deleteBusinessService(@PathVariable Long id) {
         businessServiceService.deleteBusinessService(id);
         return ResponseEntity.noContent().build();
@@ -246,6 +249,7 @@ public class BusinessController {
         return ResponseEntity.ok(new BusinessReviewDTO(review));
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/reviews/{id}")
     public ResponseEntity<BusinessReviewDTO> updateReview(@PathVariable Long id,
             @RequestBody BusinessReviewService.BusinessReviewDTO reviewDTO) {
@@ -256,7 +260,8 @@ public class BusinessController {
         return ResponseEntity.ok(review);
     }
 
-    @DeleteMapping("/reviews/{id}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/reviews/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         // Long currentUserId =
         // SecurityContextHolder.getContext().getAuthentication().getName();
@@ -273,7 +278,7 @@ public class BusinessController {
             @RequestParam(required = false, defaultValue = "all") String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<BusinessReviewDTO> reviews = businessReviewService.getReviewsByBusiness(businessId, dateRange, rating,
+    Page<BusinessReviewDTO> reviews = businessReviewService.getReviewsByBusiness(businessId, dateRange, rating,
                 status, page, size);
         return ResponseEntity.ok(reviews);
     }
@@ -315,6 +320,7 @@ public class BusinessController {
         return ResponseEntity.ok(location);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/locations/{id}")
     public ResponseEntity<BusinessLocationDTO> updateLocation(@PathVariable Long id,
             @RequestBody BusinessLocationService.BusinessLocationDTO locationDTO) {
@@ -322,7 +328,8 @@ public class BusinessController {
         return ResponseEntity.ok(location);
     }
 
-    @DeleteMapping("/locations/{id}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/locations/{id}")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
         businessLocationService.deleteLocation(id);
         return ResponseEntity.noContent().build();
@@ -370,6 +377,7 @@ public class BusinessController {
         return ResponseEntity.ok(new EnquiryDTO(enquiry));
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/enquiries/{id}/status")
     public ResponseEntity<EnquiryDTO> updateEnquiryStatus(
             @PathVariable Long id,
@@ -402,13 +410,34 @@ public class BusinessController {
         return ResponseEntity.ok(enquiries);
     }
 
-    @PostMapping("/promotions")
-    public ResponseEntity<BusinessPromotionDTO> createPromotion(
-            @RequestBody BusinessPromotionDTO promotionDTO) {
-        // Long currentUserId =
-        // SecurityContextHolder.getContext().getAuthentication().getName();
-        Long currentUserId = 4L;
-        BusinessPromotionDTO promotion = businessPromotionService.createPromotion(promotionDTO, currentUserId);
+    @PostMapping(value = "/promotions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BusinessPromotionDTO> createPromotion(@ModelAttribute PromotionRequest request) {
+        Long currentUserId = 4L; // TODO replace with authenticated user id
+
+        // Map request to service DTO
+        BusinessPromotionDTO dto = new BusinessPromotionDTO();
+        dto.businessId = request.getBusinessId();
+        dto.title = request.getTitle();
+        dto.description = request.getDescription();
+        dto.startDate = request.getStartDate();
+        dto.endDate = request.getEndDate();
+        dto.type = request.getType();
+        dto.discountPercentage = request.getDiscountPercentage();
+        dto.isFeatured = request.getIsFeatured() != null ? request.getIsFeatured() : false;
+        dto.serviceIds = request.getServiceIds();
+        dto.termsAndConditions = request.getTermsAndConditions();
+
+        // Handle image upload via storage service if present
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            try {
+                String storedFileName = fileStorageService.storeFile(request.getImage());
+                dto.imageUrl = storedFileName; // Assuming static handler maps /uploads/** to /opt/uploads/
+            } catch (RuntimeException ex) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
+        BusinessPromotionDTO promotion = businessPromotionService.createPromotion(dto, currentUserId);
         return new ResponseEntity<>(promotion, HttpStatus.CREATED);
     }
 
@@ -430,7 +459,7 @@ public class BusinessController {
     }
 
     @CrossOrigin(originPatterns = "*")
-    @DeleteMapping("/promotions/{id}")
+@DeleteMapping("/promotions/{id}")
     public ResponseEntity<Void> deletePromotion(@PathVariable Long id) {
         // Long currentUserId =
         // SecurityContextHolder.getContext().getAuthentication().getName();
@@ -522,6 +551,7 @@ public class BusinessController {
         return ResponseEntity.ok(new BusinessClaimDTO(claim));
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/claims/{id}/status")
     public ResponseEntity<BusinessClaimDTO> updateClaimStatus(
             @PathVariable Long id,
@@ -551,42 +581,51 @@ public class BusinessController {
         return ResponseEntity.ok(claims);
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<Page<ProductDTO>> getProducts(
-            @PathVariable Long companyId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort,
-            @RequestParam(required = false) String search) {
-        // String currentUserId =
-        // SecurityContextHolder.getContext().getAuthentication().getName();
-        Long currentUserId = 4L;
-        return ResponseEntity.ok(productService.getProducts(companyId, page, size, sort, search, currentUserId));
-    }
+    // @GetMapping("/products")
+    // public ResponseEntity<Page<ProductDTO>> getProducts(
+    // @PathVariable Long companyId,
+    // @RequestParam(defaultValue = "0") int page,
+    // @RequestParam(defaultValue = "20") int size,
+    // @RequestParam(defaultValue = "createdAt,desc") String sort,
+    // @RequestParam(required = false) String search) {
+    // // String currentUserId =
+    // // SecurityContextHolder.getContext().getAuthentication().getName();
+    // Long currentUserId = 4L;
+    // return ResponseEntity.ok(productService.getProducts(companyId, page, size,
+    // sort, search, currentUserId));
+    // }
 
-    @PostMapping("/products")
-    public ResponseEntity<ProductDTO> createProduct(@PathVariable Long companyId, @RequestBody ProductDTO dto) {
-        // String currentUserId =
-        // SecurityContextHolder.getContext().getAuthentication().getName();
-        Long currentUserId = 4L;
-        return new ResponseEntity<>(productService.createProduct(companyId, dto, currentUserId), HttpStatus.CREATED);
-    }
+    // @PostMapping("/products")
+    // public ResponseEntity<ProductDTO> createProduct(@PathVariable Long companyId,
+    // @RequestBody ProductDTO dto) {
+    // // String currentUserId =
+    // // SecurityContextHolder.getContext().getAuthentication().getName();
+    // Long currentUserId = 4L;
+    // return new ResponseEntity<>(productService.createProduct(companyId, dto,
+    // currentUserId), HttpStatus.CREATED);
+    // }
 
-    @PutMapping("/products/{productId}")
-    public ResponseEntity<ProductDTO> updateProduct(
-            @PathVariable Long companyId,
-            @PathVariable Long productId,
-            @RequestBody ProductService.ProductDTO dto) {
-        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(productService.updateProduct(companyId, productId, dto, currentUserId));
-    }
+    // @CrossOrigin(originPatterns = "*")
+    // @PutMapping("/products/{productId}")
+    // public ResponseEntity<ProductDTO> updateProduct(
+    // @PathVariable Long companyId,
+    // @PathVariable Long productId,
+    // @RequestBody ProductService.ProductDTO dto) {
+    // String currentUserId =
+    // SecurityContextHolder.getContext().getAuthentication().getName();
+    // return ResponseEntity.ok(productService.updateProduct(companyId, productId,
+    // dto, currentUserId));
+    // }
 
-    @DeleteMapping("/products/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long companyId, @PathVariable Long productId) {
-        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
-        productService.deleteProduct(companyId, productId, currentUserId);
-        return ResponseEntity.noContent().build();
-    }
+    // @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/products/{productId}")
+    // public ResponseEntity<Void> deleteProduct(@PathVariable Long companyId,
+    // @PathVariable Long productId) {
+    // String currentUserId =
+    // SecurityContextHolder.getContext().getAuthentication().getName();
+    // productService.deleteProduct(companyId, productId, currentUserId);
+    // return ResponseEntity.noContent().build();
+    // }
 
     @PatchMapping("/reviews/{reviewId}/status")
     public ResponseEntity<BusinessReviewDTO> updateReviewStatus(
@@ -604,4 +643,157 @@ public class BusinessController {
         BusinessReviewDTO review = businessReviewService.updateReviewStatus(reviewId, status, currentUserId);
         return ResponseEntity.ok(review);
     }
+
+    // Saved Business Endpoints
+    @CrossOrigin(originPatterns = "*")
+    @PostMapping("/{businessId}/save")
+    public ResponseEntity<String> saveBusiness(@PathVariable Long businessId, @RequestParam Long customerId) {
+        savedContentService.saveBusiness(businessId, customerId);
+        return ResponseEntity.ok("Business saved successfully");
+    }
+
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/{businessId}/unsave")
+    public ResponseEntity<Void> unsaveBusiness(@PathVariable Long businessId, @RequestParam Long customerId) {
+        savedContentService.unsaveBusiness(businessId, customerId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{businessId}/is-saved")
+    public ResponseEntity<Boolean> isBusinessSaved(@PathVariable Long businessId, @RequestParam Long customerId) {
+        boolean isSaved = savedContentService.isBusinessSaved(businessId, customerId);
+        return ResponseEntity.ok(isSaved);
+    }
+
+    // Public Promotion Endpoints for Customers and Users
+    @GetMapping("/promotions/public")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPublicPromotions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPublicActivePromotions(page, size);
+        return ResponseEntity.ok(promotions);
+    }
+
+    @GetMapping("/promotions/public/{id}")
+    public ResponseEntity<BusinessPromotionService.PublicPromotionDTO> getPublicPromotionById(@PathVariable Long id) {
+        BusinessPromotionService.PublicPromotionDTO promotion = businessPromotionService.getPublicPromotionById(id);
+        return ResponseEntity.ok(promotion);
+    }
+
+    @GetMapping("/promotions/public/featured")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getFeaturedPublicPromotions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size) {
+        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getFeaturedPromotions(page, size);
+        return ResponseEntity.ok(promotions);
+    }
+
+    @GetMapping("/promotions/public/type/{type}")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByType(
+            @PathVariable String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        try {
+            PromotionType promotionType = PromotionType.valueOf(type.toUpperCase());
+            Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByType(promotionType, page, size);
+            return ResponseEntity.ok(promotions);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/promotions/public/industry/{industry}")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByIndustry(
+            @PathVariable String industry,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByIndustry(industry, page, size);
+        return ResponseEntity.ok(promotions);
+    }
+
+    @GetMapping("/promotions/public/business-type/{businessType}")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByBusinessType(
+            @PathVariable String businessType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        try {
+            com.home.service.models.enums.BusinessType type = com.home.service.models.enums.BusinessType.valueOf(businessType.toUpperCase());
+            Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByBusinessType(type, page, size);
+            return ResponseEntity.ok(promotions);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/promotions/public/search")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> searchPublicPromotions(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.searchPromotions(query.trim(), page, size);
+        return ResponseEntity.ok(promotions);
+    }
+
+    @GetMapping("/promotions/public/business/{businessId}")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPublicPromotionsByBusiness(
+            @PathVariable Long businessId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getActivePromotionsByBusiness(businessId, page, size);
+        return ResponseEntity.ok(promotions);
+    }
+
+    // Enhanced Promotion Management Endpoints
+    @CrossOrigin(originPatterns = "*")
+    @PatchMapping("/promotions/{id}/featured")
+    public ResponseEntity<BusinessPromotionService.BusinessPromotionDTO> makePromotionFeatured(
+            @PathVariable Long id) {
+        Long currentUserId = 4L; // Replace with actual user ID retrieval logic
+        BusinessPromotionService.BusinessPromotionDTO promotion = businessPromotionService.makePromotionFeatured(id, currentUserId);
+        return ResponseEntity.ok(promotion);
+    }
+
+    @CrossOrigin(originPatterns = "*")
+    @PatchMapping("/promotions/{id}/unfeatured")
+    public ResponseEntity<BusinessPromotionService.BusinessPromotionDTO> removePromotionFeatured(
+            @PathVariable Long id) {
+        Long currentUserId = 4L; // Replace with actual user ID retrieval logic
+        BusinessPromotionService.BusinessPromotionDTO promotion = businessPromotionService.removePromotionFeatured(id, currentUserId);
+        return ResponseEntity.ok(promotion);
+    }
+
+    @GetMapping("/promotions/{id}/details")
+    public ResponseEntity<BusinessPromotionService.BusinessPromotionDTO> getPromotionDetails(
+            @PathVariable Long id) {
+        Long currentUserId = 4L; // Replace with actual user ID retrieval logic
+        BusinessPromotionService.BusinessPromotionDTO promotion = businessPromotionService.getPromotionDetails(id, currentUserId);
+        return ResponseEntity.ok(promotion);
+    }
+
+    @GetMapping("/{businessId}/services/for-promotion")
+    public ResponseEntity<Set<BusinessPromotionService.ServiceInfo>> getBusinessServicesForPromotion(
+            @PathVariable Long businessId) {
+        Set<BusinessPromotionService.ServiceInfo> services = businessPromotionService.getBusinessServices(businessId);
+        return ResponseEntity.ok(services);
+    }
+
+    @GetMapping("/promotions/public/service/{serviceId}")
+    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByServiceId(
+            @PathVariable Long serviceId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByServiceId(serviceId, page, size);
+        return ResponseEntity.ok(promotions);
+    }
+
+    // @GetMapping("/promotions/public/service/{serviceId}/featured")
+    // public ResponseEntity<BusinessPromotionService.PromotionWithRelatedDTO> getFeaturedPromotionWithRelated(
+    //         @PathVariable Long serviceId,
+    //         @RequestParam(defaultValue = "5") int relatedCount) {
+    //     BusinessPromotionService.PromotionWithRelatedDTO result = businessPromotionService.getFeaturedPromotionWithRelated(serviceId, relatedCount);
+    //     return ResponseEntity.ok(result);
+    // }
 }

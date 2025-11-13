@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.home.service.Service.BusinessLocationService.BusinessLocationDTO;
+import com.home.service.dto.OrderRequest;
 import com.home.service.models.Address;
 import com.home.service.models.Business;
 import com.home.service.models.BusinessLocation;
@@ -86,6 +87,7 @@ public class OrderService {
     @Setter
     public static class OrderDTO {
         private Long id;
+        private Long customerId;
         private Long businessId;
         private List<OrderItemDTO> items;
         private Long serviceLocationId;
@@ -215,8 +217,8 @@ public class OrderService {
     }
 
     @Transactional
-    public DetailedOrderDTO createOrder(OrderDTO dto, Long currentUserId) {
-        Customer customer = customerRepository.findByUserId(currentUserId)
+    public DetailedOrderDTO createOrder(OrderRequest dto, Long currentUserId) {
+        Customer customer = customerRepository.findByUserId(dto.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 
         Business business = businessRepository.findById(dto.getBusinessId())
@@ -231,11 +233,20 @@ public class OrderService {
         order.setScheduledDate(dto.getScheduledDate());
         order.setSpecialInstructions(dto.getSpecialInstructions());
 
-        if (dto.getServiceLocationId() != null) {
-            BusinessLocation serviceLocation = businessLocationRepository.findById(dto.getServiceLocationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Service location not found"));
-            order.setServiceLocation(serviceLocation);
-        }
+        BusinessLocation serviceLocation = new BusinessLocation();
+        serviceLocation.setName(dto.getName());
+        serviceLocation.setType(dto.getType());
+        serviceLocation.setCoordinates(dto.getCoordinates());
+        serviceLocation.setStreet(dto.getStreet());
+        serviceLocation.setCity(dto.getCity());
+        serviceLocation.setState(dto.getState());
+        serviceLocation.setPostalCode(dto.getPostalCode());
+        serviceLocation.setCountry(dto.getCountry());
+        serviceLocation.setBusiness(business);
+
+        // Save the location to the database
+        BusinessLocation savedLocation = businessLocationRepository.save(serviceLocation);
+        order.setServiceLocation(savedLocation);
 
         if (dto.getPaymentMethodId() != null) {
             PaymentMethod paymentMethod = paymentMethodRepository.findById(dto.getPaymentMethodId())

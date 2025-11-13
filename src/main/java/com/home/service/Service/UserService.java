@@ -34,9 +34,11 @@ import com.google.firebase.auth.FirebaseToken;
 import com.home.service.config.JwtUtil;
 import com.home.service.config.MyUserDetailsService;
 import com.home.service.config.exceptions.UserNotFoundException;
+import com.home.service.models.CompanyProfile;
 import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
 import com.home.service.models.DeviceInfo;
+import com.home.service.models.JobSeekerProfile;
 import com.home.service.models.Operator;
 import com.home.service.models.PasswordResetToken;
 import com.home.service.models.Technician;
@@ -46,7 +48,9 @@ import com.home.service.models.VerificationToken;
 import com.home.service.models.enums.AccountStatus;
 import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.enums.UserRole;
+import com.home.service.repositories.CompanyProfileRepository;
 import com.home.service.repositories.CustomerRepository;
+import com.home.service.repositories.JobSeekerProfileRepository;
 import com.home.service.repositories.OperatorRepository;
 import com.home.service.repositories.PasswordResetTokenRepository;
 import com.home.service.repositories.TechnicianRepository;
@@ -99,6 +103,13 @@ public class UserService {
     @Autowired
     private TenderAgencyProfileRepository tenderAgencyRepository;
 
+    @Autowired
+    private CompanyProfileRepository companyProfileRepository;
+
+    @Autowired
+    private JobSeekerProfileRepository jobSeekerProfileRepository;
+
+    @Transactional
     public User registerUser(UserRegistrationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalStateException("Email already in use");
@@ -112,11 +123,28 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(UserRole.USER);
+        user.setRole(request.getRole() != null ? request.getRole() : UserRole.USER);
         user.setStatus(AccountStatus.ACTIVE);
         user.setCreatedAt(LocalDateTime.now());
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Automatically create profile based on user role
+        if (savedUser.getRole() == UserRole.JOB_SEEKER) {
+            JobSeekerProfile jobSeekerProfile = new JobSeekerProfile();
+            jobSeekerProfile.setUser(savedUser);
+            jobSeekerProfileRepository.save(jobSeekerProfile);
+        } else if (savedUser.getRole() == UserRole.JOB_COMPANY) {
+            CompanyProfile companyProfile = new CompanyProfile();
+            companyProfile.setUser(savedUser);
+            companyProfile.setName(savedUser.getName());
+            companyProfile.setCompanyName(savedUser.getName());
+            companyProfile.setEmail(savedUser.getEmail());
+            companyProfile.setPhone(savedUser.getPhoneNumber());
+            companyProfileRepository.save(companyProfile);
+        }
+
+        return savedUser;
     }
 
     public User signup(SignupRequest signupRequest) {
@@ -203,8 +231,7 @@ public class UserService {
                         loginRequest.getEmail(),
                         loginRequest.getPassword()));
 
-        CustomDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
-        String jwtToken = jwtUtil.generateToken(userDetails.getEmail());
+        // Load user and update device info
         User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
                 () -> new UserNotFoundException("User not found"));
         DeviceInfo deviceInfo = user.getDevices().stream()
@@ -225,37 +252,8 @@ public class UserService {
 
         userRepository.save(user);
 
-        UserResponse userResponse = new UserResponse(
-                user.getId(), user.getName(), user.getEmail(),
-                user.getPhoneNumber(), user.getRole().name(),
-                user.getStatus().name(), user.getProfileImage(), user.getPreferredLanguage());
-
-        AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
-
-        if (user.getRole() == UserRole.TECHNICIAN) {
-            Technician technician = technicianRepository.findByUser(user).orElseThrow(
-                    () -> new UserNotFoundException("Technician not found"));
-            TechnicianResponse technicianResponse = new TechnicianResponse(technician, user.getPreferredLanguage());
-            authenticationResponse.setTechnician(technicianResponse);
-        } else if (user.getRole() == UserRole.CUSTOMER) {
-            Customer customer = customerRepository.findByUser(user).orElseThrow(
-                    () -> new UserNotFoundException("Customer not found"));
-            CustomerResponse customerResponse = new CustomerResponse(
-                    customer.getId(), customer.getServiceHistory(), customer.getSavedAddresses());
-            authenticationResponse.setCustomer(customerResponse);
-        } else if (user.getRole() == UserRole.OPERATOR) {
-            Operator operator = operatorRepository.findByUser(user).orElseThrow(
-                    () -> new UserNotFoundException("Operator not found"));
-            OperatorResponse operatorResponse = new OperatorResponse(operator);
-            authenticationResponse.setOperator(operatorResponse);
-        } else if (user.getRole() == UserRole.AGENCY) {
-            TenderAgencyProfile agency = tenderAgencyRepository.findByUser(user).orElseThrow(
-                    () -> new UserNotFoundException("Agency not found"));
-            TenderAgencyProfileResponse agencyResponse = new TenderAgencyProfileResponse(agency);
-            authenticationResponse.setTenderAgencyProfile(agencyResponse);
-        }
-
-        return authenticationResponse;
+        // Build and return authentication response (includes fresh JWT)
+        return buildAuthenticationResponse(user);
     }
 
     @Transactional
@@ -309,25 +307,65 @@ public class UserService {
         }
 
         userRepository.save(user);
-        user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+        // Return unified authentication response
+        return buildAuthenticationResponse(
+                userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found")));
+    }
 
+    // Centralized builder for AuthenticationResponse to keep login/register consistent
+    public AuthenticationResponse buildAuthenticationResponse(User user) {
         final String jwtToken = jwtUtil.generateToken(user.getEmail());
-        UserResponse userResponse = new UserResponse(user.getId(), user.getName(), user.getEmail(),
-                user.getPhoneNumber(), user.getRole().name(), user.getStatus().name(), user.getProfileImage(),
+
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getRole().name(),
+                user.getStatus().name(),
+                user.getProfileImage(),
                 user.getPreferredLanguage());
+
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(jwtToken, userResponse);
+
         if (user.getRole() == UserRole.TECHNICIAN) {
-            Technician technician = technicianRepository.findByUser(user).orElseThrow(
-                    () -> new UserNotFoundException("Technician not found"));
+            Technician technician = technicianRepository.findByUser(user)
+                    .orElseThrow(() -> new UserNotFoundException("Technician not found"));
             TechnicianResponse technicianResponse = new TechnicianResponse(technician, user.getPreferredLanguage());
             authenticationResponse.setTechnician(technicianResponse);
+            authenticationResponse.setTechnicianId(technician.getId());
         } else if (user.getRole() == UserRole.CUSTOMER) {
-            Customer customer = customerRepository.findByUser(user).orElseThrow(
-                    () -> new UserNotFoundException("Customer not found"));
+            Customer customer = customerRepository.findByUser(user)
+                    .orElseThrow(() -> new UserNotFoundException("Customer not found"));
             CustomerResponse customerResponse = new CustomerResponse(
                     customer.getId(), customer.getServiceHistory(), customer.getSavedAddresses());
             authenticationResponse.setCustomer(customerResponse);
+            authenticationResponse.setCustomerId(customer.getId());
+        } else if (user.getRole() == UserRole.OPERATOR) {
+            Operator operator = operatorRepository.findByUser(user)
+                    .orElseThrow(() -> new UserNotFoundException("Operator not found"));
+            OperatorResponse operatorResponse = new OperatorResponse(operator);
+            authenticationResponse.setOperator(operatorResponse);
+            authenticationResponse.setOperatorId(operator.getId());
+        } else if (user.getRole() == UserRole.AGENCY) {
+            TenderAgencyProfile agency = tenderAgencyRepository.findByUser(user).orElse(null);
+            if (agency != null) {
+                TenderAgencyProfileResponse agencyResponse = new TenderAgencyProfileResponse(agency);
+                authenticationResponse.setTenderAgencyProfile(agencyResponse);
+                authenticationResponse.setAgencyId(agency.getId());
+            }
+        } else if (user.getRole() == UserRole.JOB_COMPANY) {
+            CompanyProfile companyProfile = companyProfileRepository.findById(user.getId()).orElse(null);
+            if (companyProfile != null) {
+                authenticationResponse.setCompanyId(companyProfile.getId());
+            }
+        } else if (user.getRole() == UserRole.JOB_SEEKER) {
+            JobSeekerProfile jobSeekerProfile = jobSeekerProfileRepository.findById(user.getId()).orElse(null);
+            if (jobSeekerProfile != null) {
+                authenticationResponse.setJobSeekerId(jobSeekerProfile.getId());
+            }
         }
+
         return authenticationResponse;
     }
 
@@ -340,7 +378,7 @@ public class UserService {
 
         return "User account suspended successfully.";
     }
-
+ 
     public String deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));

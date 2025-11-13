@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.home.service.models.enums.PromotionType;
 
@@ -30,6 +32,18 @@ public class BusinessPromotion extends BaseEntity {
     private PromotionType type;
 
     private Double discountPercentage;
+
+    private boolean isFeatured = false;
+
+    @ManyToMany
+    @JoinTable(name = "promotion_services",
+            joinColumns = @JoinColumn(name = "promotion_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id"))
+    private Set<Services> services = new HashSet<>();
+
+    private String imageUrl;
+
+    private String termsAndConditions;
 
     // Getters and Setters
 }

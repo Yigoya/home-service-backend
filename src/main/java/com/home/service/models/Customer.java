@@ -21,4 +21,8 @@ public class Customer extends BaseEntity {
     private List<String> serviceHistory;
 
     private Integer coinBalance = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan subscriptionPlan;
 }

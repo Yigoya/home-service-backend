@@ -57,6 +57,7 @@ public class PaymentMethodController {
         return ResponseEntity.ok(paymentMethod);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/{id}")
     public ResponseEntity<PaymentMethod> updatePaymentMethod(
             @PathVariable Long id,
@@ -68,6 +69,7 @@ public class PaymentMethodController {
         return ResponseEntity.ok(paymentMethod);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePaymentMethod(@PathVariable Long id) {
         // String currentUserId =
@@ -77,6 +79,7 @@ public class PaymentMethodController {
         return ResponseEntity.noContent().build();
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/{id}/default")
     public ResponseEntity<PaymentMethod> setDefaultPaymentMethod(@PathVariable Long id) {
         // String currentUserId =

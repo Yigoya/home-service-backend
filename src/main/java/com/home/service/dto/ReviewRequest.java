@@ -16,6 +16,10 @@ public class ReviewRequest {
     @NotNull(message = "Business ID is required")
     private Long businessId;
 
+    private Long bookingId;
+
+    
+
     @NotNull(message = "User ID is required")
     private Long userId;
 

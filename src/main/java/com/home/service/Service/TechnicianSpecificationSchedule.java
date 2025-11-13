@@ -53,19 +53,19 @@ public class TechnicianSpecificationSchedule {
             }
             if (minLatitude != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.greaterThanOrEqualTo(root.get("latitude"), minLatitude));
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("technicianAddresses").get("latitude"), minLatitude));
             }
             if (maxLatitude != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.lessThanOrEqualTo(root.get("latitude"), maxLatitude));
+                        criteriaBuilder.lessThanOrEqualTo(root.get("technicianAddresses").get("latitude"), maxLatitude));
             }
             if (minLongitude != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.greaterThanOrEqualTo(root.get("longitude"), minLongitude));
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("technicianAddresses").get("longitude"), minLongitude));
             }
             if (maxLongitude != null) {
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.lessThanOrEqualTo(root.get("longitude"), maxLongitude));
+                        criteriaBuilder.lessThanOrEqualTo(root.get("technicianAddresses").get("longitude"), maxLongitude));
             }
 
             // Availability filter

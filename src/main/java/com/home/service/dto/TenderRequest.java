@@ -20,6 +20,7 @@ public class TenderRequest {
     private String contactInfo;
     private TenderStatus status;
     private Long categoryId;
+    private Boolean isFree; // optional, defaults to false when not provided
 
     private MultipartFile file;
 }

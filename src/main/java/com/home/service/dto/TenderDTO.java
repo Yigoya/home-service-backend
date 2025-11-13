@@ -6,6 +6,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import com.home.service.models.Tender;
 import com.home.service.models.enums.TenderStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @Setter
@@ -22,6 +23,8 @@ public class TenderDTO {
     private LocalDateTime datePosted;
     private String categoryName;
     private LocalDateTime questionDeadline;
+    @JsonProperty("isFree")
+    private boolean free;
 
     public static TenderDTO createWithFullDetails(Tender tender) {
         TenderDTO tenderDTO = new TenderDTO();
@@ -37,6 +40,7 @@ public class TenderDTO {
         tenderDTO.setDatePosted(tender.getDatePosted());
         tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
         tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
+    tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
 
         return tenderDTO;
     }
@@ -53,6 +57,7 @@ public class TenderDTO {
         tenderDTO.setDatePosted(tender.getDatePosted());
         tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
         tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
+    tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
         return tenderDTO;
     }
 }

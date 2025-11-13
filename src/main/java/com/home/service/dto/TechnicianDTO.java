@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +11,6 @@ import lombok.NoArgsConstructor;
 
 import com.home.service.models.Technician;
 import com.home.service.models.enums.EthiopianLanguage;
-import com.home.service.repositories.TechnicianAddressRepository;
 
 @Data
 @AllArgsConstructor
@@ -21,6 +19,9 @@ public class TechnicianDTO {
 
     private Long id;
     private String name;
+    private String businessName;
+    private Integer yearsExperience;
+    private String serviceArea;
     private String bio;
     private String availability;
     private Double rating;
@@ -39,6 +40,9 @@ public class TechnicianDTO {
     public TechnicianDTO(Technician technician, EthiopianLanguage language) {
         this.id = technician.getId();
         this.name = technician.getUser().getName();
+        this.businessName = technician.getBusinessName();
+        this.yearsExperience = technician.getYearsExperience();
+        this.serviceArea = technician.getServiceArea();
         this.bio = technician.getBio();
         this.availability = technician.getAvailability();
         this.rating = technician.getRating();

@@ -1,15 +1,20 @@
 package com.home.service.models;
 
+import java.util.HashSet;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.AccessLevel;
 
 import java.util.List;
+import java.util.Set;
 
 import com.home.service.models.enums.BusinessType;
 import com.home.service.models.enums.OpeningHours;
 import com.home.service.models.enums.SocialMedia;
+
 
 @Entity
 @Table(name = "businesses")
@@ -41,15 +46,29 @@ public class Business extends BaseEntity {
 
     private Integer employeeCount;
 
-    private boolean verified;
+    // Primary verified flag mapped to new column
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified;
+
+    // Temporary bridge for legacy schema: keep old `verified` column in sync to satisfy NOT NULL constraints.
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "verified", nullable = false)
+    private boolean legacyVerified;
 
     private String industry;
 
     private String taxId;
 
+    private String certifications;
+    private Integer minOrderQuantity;
+    private String tradeTerms;
+
     @ManyToMany
-    @JoinTable(name = "company_categories", joinColumns = @JoinColumn(name = "company_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
-    private List<Services> categories;
+    @JoinTable(name = "company_services",
+            joinColumns = @JoinColumn(name = "company_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id"))
+    private Set<Services> services = new HashSet<>();
 
     @OneToOne
     @JoinColumn(name = "location_id")
@@ -68,9 +87,26 @@ public class Business extends BaseEntity {
     @ElementCollection
     private List<String> images;
 
-    private boolean isVerified;
-
     private boolean isFeatured;
 
-    // Getters and Setters
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan subscriptionPlan;
+
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products;
+
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<B2BOrder> orders;
+
+    @PrePersist
+    private void syncVerifiedOnPersist() {
+        // Ensure both columns are written consistently
+        this.legacyVerified = this.isVerified;
+    }
+
+    @PreUpdate
+    private void syncVerifiedOnUpdate() {
+        this.legacyVerified = this.isVerified;
+    }
 }

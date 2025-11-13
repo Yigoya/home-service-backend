@@ -12,7 +12,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +52,7 @@ import com.home.service.repositories.DisputeRepository;
 import com.home.service.repositories.TechnicianRepository;
 import com.home.service.services.EmailService;
 import com.home.service.services.FileStorageService;
+import com.home.service.models.enums.AccountStatus;
 import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.DisputeStatus;
 import com.home.service.models.enums.EthiopianLanguage;
@@ -60,6 +60,21 @@ import com.home.service.Service.OperatorService;
 import com.home.service.Service.PaymentProofService;
 import com.home.service.Service.QuestionService;
 import com.home.service.Service.ServiceCategoryService;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.tool.schema.TargetType;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.EnumSet;
+import java.util.List;
+import jakarta.persistence.EntityManagerFactory;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -68,6 +83,7 @@ import com.home.service.models.Dispute;
 import com.home.service.models.QuestionRequest;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianProofResponse;
+import com.home.service.models.User;
 
 @CrossOrigin(originPatterns = "*")
 @RestController
@@ -116,6 +132,48 @@ public class AdminController {
         @Autowired
         private FileStorageService fileStorageService;
 
+        @Autowired
+        private JdbcTemplate jdbcTemplate;
+
+        @Autowired
+        private EntityManagerFactory entityManagerFactory;
+
+        private List<ServiceCategoryWithServicesDTO> categoriesEnglish;
+        private List<ServiceCategoryWithServicesDTO> categoriesAmharic;
+        private List<ServiceCategoryWithServicesDTO> categoriesOromo;
+
+        private boolean isUpdated = false;
+
+        // Expose a light cache invalidation hook so other flows (e.g., bulk import)
+        // can refresh the cached categories/services view.
+        public void invalidateServicesCache() {
+                this.isUpdated = true;
+                this.categoriesEnglish = null;
+                this.categoriesAmharic = null;
+                this.categoriesOromo = null;
+        }
+
+        @GetMapping("/services")
+        public ResponseEntity<List<ServiceCategoryWithServicesDTO>> getAllServicesCategorized(
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+                if (lang == EthiopianLanguage.AMHARIC) {
+                        if (categoriesAmharic == null || isUpdated) {
+                                categoriesAmharic = serviceService.getAllServicesCategorized(lang);
+                        }
+                        return ResponseEntity.ok(categoriesAmharic);
+                } else if (lang == EthiopianLanguage.OROMO) {
+                        if (categoriesOromo == null || isUpdated) {
+                                categoriesOromo = serviceService.getAllServicesCategorized(lang);
+                        }
+                        return ResponseEntity.ok(categoriesOromo);
+                } else {
+                        if (categoriesEnglish == null || isUpdated) {
+                                categoriesEnglish = serviceService.getAllServicesCategorized(lang);
+                        }
+                        return ResponseEntity.ok(categoriesEnglish);
+                }
+        }
+
         @GetMapping("/unverified-technicians")
         public ResponseEntity<List<TechnicianProfileDTO>> listUnverifiedTechnicians() {
                 List<TechnicianProfileDTO> technicianDTOs = technicianService.listUnverifiedTechnicians();
@@ -134,7 +192,10 @@ public class AdminController {
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
 
                 technician.setVerified(true); // Mark technician as verified
+                User user = technician.getUser();
+                user.setStatus(AccountStatus.ACTIVE);
                 technicianRepository.save(technician);
+
 
                 emailService.sendTechnicianVerificationEmail(technician.getUser());
                 return ResponseEntity.ok("Technician verified and verification email sent");
@@ -182,6 +243,7 @@ public class AdminController {
         }
 
         // Update the status of a specific dispute
+        @CrossOrigin(originPatterns = "*")
         @PutMapping("/disputes/{disputeId}")
         public ResponseEntity<String> updateDisputeStatus(
                         @PathVariable Long disputeId,
@@ -203,6 +265,7 @@ public class AdminController {
                 return ResponseEntity.ok("Service updated successfully");
         }
 
+        @CrossOrigin(originPatterns = "*")
         @PutMapping("/services/{id}/language")
         public ResponseEntity<String> addServiceLanguage(@PathVariable Long id,
                         @Valid @RequestBody ServiceLangRequest updatedService) {
@@ -247,7 +310,8 @@ public class AdminController {
                 return ResponseEntity.ok(customers);
         }
 
-        @DeleteMapping("/customer/{id}")
+        @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/customer/{id}")
         public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
                 customerService.deleteCustomer(id);
                 return ResponseEntity.ok("Customer deleted successfully");
@@ -261,13 +325,15 @@ public class AdminController {
         // return ResponseEntity.ok(technicians);
         // }
 
-        @DeleteMapping("/technician/{id}")
+        @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/technician/{id}")
         public ResponseEntity<String> deleteTechnician(@PathVariable Long id) {
                 technicianService.deleteTechnician(id);
                 return ResponseEntity.ok("Technician deleted successfully");
         }
 
-        @DeleteMapping("/service/{id}")
+        @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/service/{id}")
         public ResponseEntity<String> deleteService(@PathVariable Long id) {
                 serviceService.deleteService(id);
                 return ResponseEntity.ok("Service deleted successfully");
@@ -279,7 +345,8 @@ public class AdminController {
                 return ResponseEntity.ok(operators);
         }
 
-        @DeleteMapping("/operator/{id}")
+        @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/operator/{id}")
         public ResponseEntity<String> deleteOperator(@PathVariable Long id) {
                 operatorService.deleteOperator(id);
                 return ResponseEntity.ok("Operator deleted successfully");
@@ -326,13 +393,6 @@ public class AdminController {
                 return ResponseEntity.ok(technicians);
         }
 
-        @GetMapping("/services")
-        public ResponseEntity<List<ServiceCategoryWithServicesDTO>> getAllServicesCategorized(
-                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
-                List<ServiceCategoryWithServicesDTO> categories = serviceService.getAllServicesCategorized(lang);
-                return ResponseEntity.ok(categories);
-        }
-
         @PostMapping("/suspend/{userId}")
         public ResponseEntity<String> suspendUser(@PathVariable Long userId) {
                 String message = userService.suspendUser(userId);
@@ -357,6 +417,7 @@ public class AdminController {
                                                 entry -> Long.parseLong(entry.getKey()),
                                                 Map.Entry::getValue));
                 serviceService.addIconsToServices(iconsMap);
+                isUpdated = true;
                 return ResponseEntity.noContent().build();
         }
 
@@ -367,6 +428,7 @@ public class AdminController {
                                                 entry -> Long.parseLong(entry.getKey()),
                                                 Map.Entry::getValue));
                 serviceCategoryService.addIconsToCategories(iconsMap);
+                isUpdated = true;
                 return ResponseEntity.noContent().build();
         }
 
@@ -389,6 +451,7 @@ public class AdminController {
 
                 // Pass both the services and icon map to the service layer
                 serviceService.importServices(servicesToImport, iconMap);
+                isUpdated = true;
                 return "Services imported successfully";
         }
 
@@ -434,6 +497,58 @@ public class AdminController {
 
                 workbook.close();
                 return services;
+        }
+
+        @PostMapping("/reset-db")
+        public ResponseEntity<String> resetDatabase() {
+                try {
+                        // Get all table names from PostgreSQL's public schema
+                        List<String> tableNames = jdbcTemplate.queryForList(
+                                        "SELECT tablename FROM pg_tables WHERE schemaname = 'public'", String.class);
+
+                        // Disable foreign key constraints temporarily
+                        jdbcTemplate.execute("SET session_replication_role = 'replica'");
+
+                        // Drop all tables
+                        for (String tableName : tableNames) {
+                                jdbcTemplate.execute("DROP TABLE IF EXISTS " + tableName + " CASCADE");
+                        }
+
+                        // Re-enable foreign key constraints
+                        jdbcTemplate.execute("SET session_replication_role = 'origin'");
+
+                        // Recreate schema using Hibernate
+                        recreateSchema();
+
+                        return ResponseEntity.ok("Database reset successfully!");
+                } catch (Exception e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body("Error resetting database: " + e.getMessage());
+                }
+        }
+
+        private void recreateSchema() {
+                // Create Hibernate StandardServiceRegistry
+                StandardServiceRegistry standardRegistry = new StandardServiceRegistryBuilder()
+                                .applySettings(entityManagerFactory.getProperties()) // Apply JPA properties
+                                .build();
+
+                // Add entity classes manually if MetadataSources is empty
+                MetadataSources metadataSources = new MetadataSources(standardRegistry);
+
+                // Automatically scan for all entity classes
+                entityManagerFactory.getMetamodel().getEntities().forEach(entityType -> {
+                        metadataSources.addAnnotatedClass(entityType.getJavaType());
+                });
+
+                // Build Metadata
+                Metadata metadata = metadataSources.buildMetadata();
+
+                // Drop and recreate schema
+                new SchemaExport()
+                                .setHaltOnError(true)
+                                .setFormat(true)
+                                .create(EnumSet.of(TargetType.DATABASE), metadata);
         }
 
 }

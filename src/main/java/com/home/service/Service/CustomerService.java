@@ -24,8 +24,10 @@ import com.home.service.models.Booking;
 import com.home.service.models.Customer;
 import com.home.service.models.CustomerAddress;
 import com.home.service.models.Services;
+import com.home.service.models.SubscriptionPlan;
 import com.home.service.models.User;
 import com.home.service.models.enums.AccountStatus;
+import com.home.service.models.enums.PlanType;
 import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.AddressRepository;
 import com.home.service.repositories.BookingRepository;
@@ -46,10 +48,13 @@ public class CustomerService {
     private final JwtUtil jwtUtil;
     private final AddressRepository addressRepository;
     private final BookingRepository bookingRepository;
+    private final SubscriptionService subscriptionService;
 
     public CustomerService(UserService userService, CustomerRepository customerRepository,
             UserRepository userRepository, EmailService emailService, JwtUtil jwtUtil,
-            AddressRepository addressRepository, BookingRepository bookingRepository) {
+            AddressRepository addressRepository, BookingRepository bookingRepository,
+            SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
         this.userService = userService;
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
@@ -60,7 +65,7 @@ public class CustomerService {
     }
 
     @Transactional
-    public String signupCustomer(User user) {
+    public AuthenticationResponse signupCustomer(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new EmailException("Email already in use");
         }
@@ -79,11 +84,17 @@ public class CustomerService {
             emailService.sendVerifyEmail(user);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new EmailException("Email not sent but account created");
+            // Email failure shouldn't block successful signup response
         }
         System.out.println("Email sent");
 
-        return "Account created successfully";
+        // Return the same structure as /auth/login
+        return userService.buildAuthenticationResponse(user);
+    }
+
+    public Customer getCustomer(Long id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found: " + id));
     }
 
     public CustomerProfileDTO getCustomerProfile(Long customerId) {
@@ -208,4 +219,27 @@ public class CustomerService {
         addressRepository.delete(address);
     }
 
+    public Customer createSubscription(Long id, Long planId) {
+        Customer customer = getCustomer(id);
+        if (customer.getSubscriptionPlan() != null) {
+            throw new IllegalStateException("Customer is already subscribed to a tender plan. Use update instead.");
+        }
+        SubscriptionPlan plan = subscriptionService.getPlanById(planId);
+        if (plan.getPlanType() != PlanType.CUSTOMER_TENDER) {
+            throw new IllegalArgumentException("Invalid plan type for customer tender");
+        }
+        customer.setSubscriptionPlan(plan);
+        return customerRepository.save(customer);
+    }
+
+    public Customer updateSubscription(Long id, Long planId) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        SubscriptionPlan plan = subscriptionService.getPlanById(planId);
+        if (plan.getPlanType() != PlanType.CUSTOMER_TENDER) {
+            throw new IllegalArgumentException("Invalid plan type for customer tender");
+        }
+        customer.setSubscriptionPlan(plan);
+        return customerRepository.save(customer);
+    }
 }

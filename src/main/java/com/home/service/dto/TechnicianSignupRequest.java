@@ -33,11 +33,35 @@ public class TechnicianSignupRequest {
     @NotBlank(message = "Bio is required")
     private String bio;
 
+    // Optional business identity
+    private String businessName; // optional
+
+    // Years of experience
+    private Integer yearsExperience;
+
+    // Public service area description
+    private String serviceArea;
+
+    // National ID (stored for verification, not exposed publicly)
+    @NotBlank(message = "National ID is required")
+    private String nationalIdNumber;
+
     private MultipartFile profileImage;
 
     private MultipartFile idCardImage;
 
     private List<MultipartFile> documents;
+
+    // Professional licenses upload
+    private List<MultipartFile> licenses;
+
+    // Social media and website (optional)
+    private String website;
+    private String facebook;
+    private String twitter;
+    private String instagram;
+    private String linkedin;
+    private String whatsapp;
 
     // TechnicianAddress fields
     private String street;

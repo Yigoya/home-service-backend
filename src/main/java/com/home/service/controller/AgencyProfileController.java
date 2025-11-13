@@ -69,6 +69,7 @@ public class AgencyProfileController {
         return ResponseEntity.ok(agencyProfile);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/{id}")
     public ResponseEntity<AgencyProfileDTO> updateAgencyProfile(@PathVariable Long id,
             @RequestBody AgencyProfileRequest agencyProfileRequest) {
@@ -76,7 +77,8 @@ public class AgencyProfileController {
         return ResponseEntity.ok(agencyProfile);
     }
 
-    @DeleteMapping("/{id}")
+    @CrossOrigin(originPatterns = "*")
+        @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAgencyProfile(@PathVariable Long id) {
         agencyProfileService.deleteAgencyProfile(id);
         return ResponseEntity.noContent().build();
@@ -102,7 +104,8 @@ public class AgencyProfileController {
     }
 
     // Remove a service from an agency
-    @DeleteMapping("/{id}/services/{serviceId}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/{id}/services/{serviceId}")
     public ResponseEntity<Void> removeService(@PathVariable Long id, @PathVariable Long serviceId) {
         agencyProfileService.removeService(id, serviceId);
         return ResponseEntity.noContent().build();

@@ -15,8 +15,6 @@ import com.home.service.dto.ServiceDTO;
 import com.home.service.dto.SetServicePriceDTO;
 import com.home.service.dto.TechnicianDTO;
 import com.home.service.dto.TechnicianProfileDTO;
-import com.home.service.dto.TechnicianResponse;
-import com.home.service.dto.TechnicianSearchFilterDTO;
 import com.home.service.dto.TechnicianSignupRequest;
 import com.home.service.dto.TechnicianWeeklyScheduleResponse;
 import com.home.service.dto.admin.TechnicianAddressDTO;
@@ -27,20 +25,19 @@ import com.home.service.config.JwtUtil;
 import com.home.service.config.exceptions.EmailException;
 import com.home.service.config.exceptions.GeneralException;
 import com.home.service.models.Services;
+import com.home.service.models.SubscriptionPlan;
 import com.home.service.models.Technician;
 import com.home.service.models.TechnicianAddress;
 import com.home.service.models.TechnicianServicePrice;
 import com.home.service.models.TechnicianWeeklySchedule;
 import com.home.service.models.User;
 import com.home.service.repositories.ReviewRepository;
-import com.home.service.models.Address;
+import com.home.service.repositories.TechnicianPortfolioRepository;
 import com.home.service.models.Booking;
-import com.home.service.models.CustomDetails;
-import com.home.service.models.Operator;
 import com.home.service.models.Review;
 import com.home.service.models.enums.AccountStatus;
-import com.home.service.models.enums.BookingStatus;
 import com.home.service.models.enums.EthiopianLanguage;
+import com.home.service.models.enums.PlanType;
 import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.TechnicianAddressRepository;
@@ -54,6 +51,7 @@ import com.home.service.services.FileStorageService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Locale;
@@ -75,14 +73,18 @@ public class TechnicianService {
         private final TechnicianRepository technicianRepository;
         private final UserRepository userRepository;
         private final TechnicianAddressRepository technicianAddressRepository;
+        @SuppressWarnings("unused")
         private final JwtUtil jwtUtil;
         private ServiceRepository serviceRepository;
         private TechnicianWeeklyScheduleRepository technicianWeeklyScheduleRepository;
         private TechnicianServicePriceRepository technicianServicePriceRepository;
         private ReviewRepository reviewRepository;
         private BookingRepository bookingRepository;
+        @SuppressWarnings("unused")
         private OperatorRepository operatorRepository;
         private final BookingService bookingService;
+        private final SubscriptionService subscriptionService;
+        private final TechnicianPortfolioRepository technicianPortfolioRepository;
 
         public TechnicianService(UserService userService, FileStorageService fileStorageService,
                         TechnicianRepository technicianRepository, UserRepository userRepository,
@@ -91,7 +93,11 @@ public class TechnicianService {
                         TechnicianWeeklyScheduleRepository technicianWeeklyScheduleRepository,
                         TechnicianServicePriceRepository technicianServicePriceRepository,
                         ReviewRepository reviewRepository, BookingRepository bookingRepository,
-                        OperatorRepository operatorRepository, BookingService bookingService) {
+                        OperatorRepository operatorRepository, BookingService bookingService,
+                        SubscriptionService subscriptionService,
+                        TechnicianPortfolioRepository technicianPortfolioRepository) {
+                this.subscriptionService = subscriptionService;
+                this.operatorRepository = operatorRepository;
                 this.userService = userService;
                 this.fileStorageService = fileStorageService;
                 this.technicianRepository = technicianRepository;
@@ -105,11 +111,50 @@ public class TechnicianService {
                 this.bookingRepository = bookingRepository;
                 this.operatorRepository = operatorRepository;
                 this.bookingService = bookingService;
+                this.technicianPortfolioRepository = technicianPortfolioRepository;
 
         }
 
         public List<Technician> getAllTechnicians() {
                 return technicianRepository.findAll();
+        }
+
+        public List<com.home.service.dto.TechnicianPortfolioDTO> getPortfolio(Long technicianId) {
+                // Ensure technician exists
+                technicianRepository.findById(technicianId)
+                                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+                return technicianPortfolioRepository.findByTechnician_Id(technicianId)
+                                .stream()
+                                .map(com.home.service.dto.TechnicianPortfolioDTO::new)
+                                .collect(Collectors.toList());
+        }
+
+        @Transactional
+        public void addPortfolioItem(Long technicianId, String description, MultipartFile beforeImage,
+                        MultipartFile afterImage) {
+                Technician technician = technicianRepository.findById(technicianId)
+                                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+
+                com.home.service.models.TechnicianPortfolio item = new com.home.service.models.TechnicianPortfolio();
+                item.setTechnician(technician);
+                item.setDescription(description);
+                if (beforeImage != null && !beforeImage.isEmpty()) {
+                        item.setBeforeImage(fileStorageService.storeFile(beforeImage));
+                }
+                if (afterImage != null && !afterImage.isEmpty()) {
+                        item.setAfterImage(fileStorageService.storeFile(afterImage));
+                }
+                technicianPortfolioRepository.save(item);
+        }
+
+        @Transactional
+        public void deletePortfolioItem(Long technicianId, Long portfolioId) {
+                var item = technicianPortfolioRepository.findById(portfolioId)
+                                .orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+                if (!item.getTechnician().getId().equals(technicianId)) {
+                        throw new GeneralException("Portfolio item does not belong to this technician");
+                }
+                technicianPortfolioRepository.delete(item);
         }
 
         public SingleTechnician getTechnicianById(Long id) {
@@ -132,6 +177,14 @@ public class TechnicianService {
                 List<Review> reviews = reviewRepository.findAllByTechnicianId(id);
                 List<ReviewDTO> reviewDTOs = reviews.stream().map(review -> new ReviewDTO(review))
                                 .collect(Collectors.toList());
+                // Fetch portfolio items
+                List<com.home.service.models.TechnicianPortfolio> portfolio = technicianPortfolioRepository
+                                .findByTechnician_Id(id);
+
+                List<com.home.service.dto.TechnicianPortfolioDTO> portfolioDTOs = portfolio.stream()
+                                .map(com.home.service.dto.TechnicianPortfolioDTO::new)
+                                .collect(Collectors.toList());
+
                 // Construct and return the SingleTechnician record
                 return new SingleTechnician(
                                 technician.getId(),
@@ -151,7 +204,22 @@ public class TechnicianService {
                                 (schedule != null && schedule.getTechnician() != null)
                                                 ? new TechnicianWeeklyScheduleDTO(schedule)
                                                 : null,
-                                reviewDTOs);
+                                reviewDTOs,
+                                portfolioDTOs,
+                                technician.getYearsExperience(),
+                                technician.getBusinessName(),
+                                technician.getServiceArea(),
+                                technician.getWebsite(),
+                                technician.getFacebook(),
+                                technician.getTwitter(),
+                                technician.getInstagram(),
+                                technician.getLinkedin(),
+                                technician.getWhatsapp());
+        }
+
+        public Technician getTechnician(Long id) {
+                return technicianRepository.findById(id)
+                                .orElseThrow(() -> new EntityNotFoundException("Technician not found: " + id));
         }
 
         @Transactional
@@ -210,7 +278,7 @@ public class TechnicianService {
         }
 
         @Transactional
-        public String signupTechnician(TechnicianSignupRequest signupRequest) {
+        public AuthenticationResponse signupTechnician(TechnicianSignupRequest signupRequest) {
                 // Check if the email is already in use
                 if (userRepository.existsByEmail(signupRequest.getEmail())) {
                         throw new EmailException("Email already in use");
@@ -233,6 +301,16 @@ public class TechnicianService {
                 Technician technician = new Technician();
                 technician.setUser(user);
                 technician.setBio(signupRequest.getBio());
+                technician.setBusinessName(signupRequest.getBusinessName());
+                technician.setYearsExperience(signupRequest.getYearsExperience());
+                technician.setServiceArea(signupRequest.getServiceArea());
+                technician.setNationalIdNumber(signupRequest.getNationalIdNumber());
+                technician.setWebsite(signupRequest.getWebsite());
+                technician.setFacebook(signupRequest.getFacebook());
+                technician.setTwitter(signupRequest.getTwitter());
+                technician.setInstagram(signupRequest.getInstagram());
+                technician.setLinkedin(signupRequest.getLinkedin());
+                technician.setWhatsapp(signupRequest.getWhatsapp());
 
                 // Retrieve and associate services with Technician
                 technician.setServices(new HashSet<>(services));
@@ -246,6 +324,14 @@ public class TechnicianService {
                                 .map(fileStorageService::storeFile)
                                 .collect(Collectors.toList());
                 technician.setDocuments(documentPaths);
+
+                // Store licenses and set the paths if provided
+                if (signupRequest.getLicenses() != null && !signupRequest.getLicenses().isEmpty()) {
+                        List<String> licensePaths = signupRequest.getLicenses().stream()
+                                        .map(fileStorageService::storeFile)
+                                        .collect(Collectors.toList());
+                        technician.setLicenses(licensePaths);
+                }
 
                 // Save the Technician entity
                 Technician newTechnician = technicianRepository.save(technician);
@@ -263,7 +349,9 @@ public class TechnicianService {
                 technicianAddress.setLongitude(signupRequest.getLongitude());
 
                 newTechnician.getTechnicianAddresses().add(technicianAddressRepository.save(technicianAddress));
-                return "Technician created successfully";
+
+                // Return the same payload as /auth/login
+                return userService.buildAuthenticationResponse(user);
         }
 
         @Transactional
@@ -336,13 +424,13 @@ public class TechnicianService {
         @Transactional
         public Page<Technician> filterTechnicians(
                         Long serviceId,
-                        String name, Double minPrice, Double maxPrice, String city,
+                        String name, Double minPrice, Double maxPrice, String locationQuery,
                         String subcity, String wereda, Double minLatitude, Double maxLatitude,
                         Double minLongitude, Double maxLongitude, Pageable pageable) {
 
                 Specification<Technician> spec = TechnicianSpecification.getTechnicianFilter(
                                 serviceId,
-                                name, minPrice, maxPrice, city, subcity, wereda,
+                                name, minPrice, maxPrice, locationQuery, subcity, wereda,
                                 minLatitude, maxLatitude, minLongitude, maxLongitude);
 
                 return technicianRepository.findAll(spec, pageable);
@@ -391,6 +479,12 @@ public class TechnicianService {
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
                 technician.getUser().setName(updateDTO.getName());
                 technician.setBio(updateDTO.getBio());
+                technician.setWebsite(updateDTO.getWebsite());
+                technician.setFacebook(updateDTO.getFacebook());
+                technician.setTwitter(updateDTO.getTwitter());
+                technician.setInstagram(updateDTO.getInstagram());
+                technician.setLinkedin(updateDTO.getLinkedin());
+                technician.setWhatsapp(updateDTO.getWhatsapp());
                 technicianRepository.save(technician);
         }
 
@@ -455,7 +549,7 @@ public class TechnicianService {
                         String wereda,
                         Double minLatitude,
                         Double maxLatitude,
-                        Double minLongitude,
+                        Double minLongitude,         
                         Double maxLongitude,
                         Boolean availability,
                         LocalTime time,
@@ -463,7 +557,9 @@ public class TechnicianService {
                         Long serviceId,
                         Pageable pageable) {
 
-                String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
+                String dayOfWeek = (date != null)
+                                ? date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase()
+                                : null;
                 System.out.println("dayOfWeek = " + dayOfWeek);
                 Specification<Technician> specification = TechnicianSpecificationSchedule.filterTechnicians(
                                 name, minPrice, maxPrice, city, subcity, wereda, minLatitude, maxLatitude, minLongitude,
@@ -545,6 +641,31 @@ public class TechnicianService {
                 return technician.getTechnicianAddresses().stream()
                                 .map(address -> new AddressDTO(address))
                                 .collect(Collectors.toList());
+        }
+
+        public Technician createSubscription(Long id, Long planId) {
+                Technician technician = getTechnician(id);
+                if (technician.getSubscriptionPlan() != null) {
+                        throw new IllegalStateException(
+                                        "Technician is already subscribed to a plan. Use update instead.");
+                }
+                SubscriptionPlan plan = subscriptionService.getPlanById(planId);
+                if (plan.getPlanType() != PlanType.TECHNICIAN) {
+                        throw new IllegalArgumentException("Invalid plan type for technician");
+                }
+                technician.setSubscriptionPlan(plan);
+                return technicianRepository.save(technician);
+        }
+
+        public Technician updateSubscription(Long id, Long planId) {
+                Technician technician = technicianRepository.findById(id)
+                                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+                SubscriptionPlan plan = subscriptionService.getPlanById(planId);
+                if (plan.getPlanType() != PlanType.TECHNICIAN) {
+                        throw new IllegalArgumentException("Invalid plan type for technician");
+                }
+                technician.setSubscriptionPlan(plan);
+                return technicianRepository.save(technician);
         }
 
 }

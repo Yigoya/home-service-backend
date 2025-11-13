@@ -1,0 +1,577 @@
+{
+  "info": {
+    "name": "Company Profile API - Bulk Test Collection",
+    "description": "Collection for testing Company Profile endpoints with mock data - Updated for multipart support",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Company Profiles",
+      "item": [
+        {
+          "name": "Create Tech Startup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "TechFlow Solutions",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "San Francisco, CA",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Innovative software solutions for modern businesses. We specialize in cloud computing, AI, and mobile applications.",
+                  "type": "text"
+                },
+                {
+                  "key": "industry",
+                  "value": "Technology",
+                  "type": "text"
+                },
+                {
+                  "key": "size",
+                  "value": "50-200",
+                  "type": "text"
+                },
+                {
+                  "key": "founded",
+                  "value": "2020",
+                  "type": "text"
+                },
+                {
+                  "key": "website",
+                  "value": "https://techflow.com",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "contact@techflow.com",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1-555-0123",
+                  "type": "text"
+                },
+                {
+                  "key": "rating",
+                  "value": "4.5",
+                  "type": "text"
+                },
+                {
+                  "key": "totalReviews",
+                  "value": "150",
+                  "type": "text"
+                },
+                {
+                  "key": "openJobs",
+                  "value": "25",
+                  "type": "text"
+                },
+                {
+                  "key": "totalHires",
+                  "value": "300",
+                  "type": "text"
+                },
+                {
+                  "key": "benefits",
+                  "value": "Health Insurance,Remote Work,Flexible Hours,Stock Options",
+                  "type": "text"
+                },
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "coverImage",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        },
+        {
+          "name": "Create Healthcare Company",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyName",
+                  "value": "MedCare Plus",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLocation",
+                  "value": "Boston, MA",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Leading healthcare technology company providing digital health solutions and telemedicine platforms.",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLogo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        },
+        {
+          "name": "Create Finance Corp",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyName",
+                  "value": "FinanceFlow Corp",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLocation",
+                  "value": "New York, NY",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Financial technology company specializing in digital banking, investment platforms, and cryptocurrency solutions.",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLogo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        },
+        {
+          "name": "Create E-commerce Platform",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyName",
+                  "value": "ShopSmart Digital",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLocation",
+                  "value": "Seattle, WA",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Next-generation e-commerce platform with AI-powered recommendations and seamless shopping experiences.",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLogo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        },
+        {
+          "name": "Create Education Tech",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyName",
+                  "value": "EduTech Innovations",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLocation",
+                  "value": "Austin, TX",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Educational technology company creating interactive learning platforms and virtual classroom solutions.",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLogo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Company Profiles",
+      "item": [
+        {
+          "name": "Update Tech Startup",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "companyName",
+                  "value": "TechFlow Solutions Pro",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLocation",
+                  "value": "San Francisco, CA - Silicon Valley",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Premium innovative software solutions for enterprise businesses. We specialize in cloud computing, AI, machine learning, and mobile applications.",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLogo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        },
+        {
+          "name": "Update Healthcare Company",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyId",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "companyName",
+                  "value": "MedCare Plus Advanced",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLocation",
+                  "value": "Boston, MA - Medical District",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Leading healthcare technology company providing comprehensive digital health solutions, telemedicine platforms, and AI-powered diagnostics.",
+                  "type": "text"
+                },
+                {
+                  "key": "companyLogo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Company Profiles",
+      "item": [
+        {
+          "name": "Get Company by User ID 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Company by User ID 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "2"]
+            }
+          }
+        },
+        {
+          "name": "Get Company by User ID 3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search Companies",
+      "item": [
+        {
+          "name": "Search by Name - Tech",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/search?name=Tech&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "search"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Tech"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by Industry - Healthcare",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/search?industry=Healthcare&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "search"],
+              "query": [
+                {
+                  "key": "industry",
+                  "value": "Healthcare"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by Location - California",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/search?location=CA&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "search"],
+              "query": [
+                {
+                  "key": "location",
+                  "value": "CA"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Combined - Tech in NY",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/search?name=Tech&location=NY&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "search"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Tech"
+                },
+                {
+                  "key": "location",
+                  "value": "NY"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search All Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/search?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "search"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Company Details",
+      "item": [
+        {
+          "name": "Get Company Detail ID 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/detail/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "detail", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Company Detail ID 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/detail/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "detail", "2"]
+            }
+          }
+        },
+        {
+          "name": "Get Company Detail ID 3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/company/detail/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["profiles", "company", "detail", "3"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

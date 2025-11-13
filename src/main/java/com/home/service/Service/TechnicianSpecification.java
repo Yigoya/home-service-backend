@@ -4,22 +4,15 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.home.service.models.Services;
 import com.home.service.models.Technician;
-import com.home.service.models.TechnicianServicePrice;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.JoinType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TechnicianSpecification {
 
     public static Specification<Technician> getTechnicianFilter(
-            Long serviceId, String name, Double minPrice, Double maxPrice, String city,
+            Long serviceId, String name, Double minPrice, Double maxPrice, String locationQuery,
             String subcity, String wereda, Double minLatitude, Double maxLatitude,
             Double minLongitude, Double maxLongitude) {
 
@@ -41,18 +34,28 @@ public class TechnicianSpecification {
             }
 
             // Location filters
-            if (city != null) {
+            if (locationQuery != null) {
+                Predicate cityPredicate = criteriaBuilder.equal(root.get("technicianAddresses").get("city"),
+                        locationQuery);
+                Predicate subcityPredicate = criteriaBuilder.equal(root.get("technicianAddresses").get("subcity"),
+                        locationQuery);
+                Predicate weredaPredicate = criteriaBuilder.equal(root.get("technicianAddresses").get("wereda"),
+                        locationQuery);
+
                 predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("technicianAddresses").get("city"), city));
+                        criteriaBuilder.or(cityPredicate, subcityPredicate, weredaPredicate));
+
             }
-            if (subcity != null) {
-                predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("technicianAddresses").get("subcity"), subcity));
-            }
-            if (wereda != null) {
-                predicate = criteriaBuilder.and(predicate,
-                        criteriaBuilder.equal(root.get("technicianAddresses").get("wereda"), wereda));
-            }
+            // if (subcity != null) {
+            // predicate = criteriaBuilder.and(predicate,
+            // criteriaBuilder.equal(root.get("technicianAddresses").get("subcity"),
+            // subcity));
+            // }
+            // if (wereda != null) {
+            // predicate = criteriaBuilder.and(predicate,
+            // criteriaBuilder.equal(root.get("technicianAddresses").get("wereda"),
+            // wereda));
+            // }
             if (minLatitude != null) {
                 predicate = criteriaBuilder.and(predicate,
                         criteriaBuilder.greaterThanOrEqualTo(root.get("latitude"), minLatitude));

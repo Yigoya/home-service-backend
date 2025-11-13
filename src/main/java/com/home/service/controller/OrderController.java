@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.home.service.Service.OrderService;
 import com.home.service.Service.OrderService.OrderDTO;
+import com.home.service.dto.OrderRequest;
 import com.home.service.Service.OrderService.DetailedOrderDTO;
 import com.home.service.models.Order;
 import com.home.service.models.enums.OrderStatus;
@@ -23,7 +24,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<DetailedOrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<DetailedOrderDTO> createOrder(@RequestBody OrderRequest orderDTO) {
         // String currentUserId =
         // SecurityContextHolder.getContext().getAuthentication().getName();
         Long currentUserId = 5L;
@@ -40,14 +41,12 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
-    @GetMapping("/customer")
+    @GetMapping("/customer/{userId}")
     public ResponseEntity<Page<DetailedOrderDTO>> getCustomerOrders(
+            @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        // String currentUserId =
-        // SecurityContextHolder.getContext().getAuthentication().getName();
-        Long currentUserId = 5L;
-        Page<DetailedOrderDTO> orders = orderService.getCustomerOrders(currentUserId, page, size);
+        Page<DetailedOrderDTO> orders = orderService.getCustomerOrders(userId, page, size);
         return ResponseEntity.ok(orders);
     }
 

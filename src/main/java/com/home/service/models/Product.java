@@ -5,8 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.firebase.database.annotations.NotNull;
 
 @Entity
 @Table(name = "products")
@@ -20,33 +24,36 @@ public class Product extends BaseEntity {
     @Column(length = 5000)
     private String description;
 
-    private double price;
+    @NotNull
+    private Double price;
+
+    private String currency = "USD";
+
+    private Integer stockQuantity;
+
+    private Integer minOrderQuantity;
+
+    @ElementCollection
+    private List<String> images;
 
     private String category;
 
-    private String image;
-
-    private boolean inStock;
-
     private String sku;
 
-    private int inventory;
+    private boolean isActive = true;
 
-    private int minimumOrderQuantity;
-
-    private int leadTime;
-
-    private String unitOfMeasure;
-
-    @ElementCollection
-    private Map<String, String> specifications;
-
-    @ElementCollection
-    private List<String> certifications;
+    @NotNull
+    private Boolean inStock = true; // Added field
 
     @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Business company;
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
 
-    // Getters and Setters
+    private String specifications;
+
+    @ManyToMany
+    @JoinTable(name = "product_services",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id"))
+    private Set<Services> services = new HashSet<>();
 }

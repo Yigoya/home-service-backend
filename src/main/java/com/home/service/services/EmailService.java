@@ -111,13 +111,9 @@ public class EmailService {
 
         String subject = "Technician Account Verification";
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
-                + "<h2 style='color: #2E86C1;'>Technician Account Verification</h2>"
-                + "<p>Congratulations! Your application has been accepted. Please verify your account by clicking the link below or copy if you using mobile app:</p>"
-                + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>"
-                + token
-                + "</pre>"
-                + "<a href='http://188.245.43.110/verify?token=" + token
-                + "' style='color: #2E86C1;'>Verify Account</a>"
+                + "<h2 style='color: #2E86C1;'>Technician Account is Verified</h2>"
+                + "<p>Congratulations! Your application has been accepted.</p>"
+                
                 + "</body></html>";
 
         sendHtmlEmail(user.getEmail(), subject, htmlContent);

@@ -49,6 +49,8 @@ public class Services extends BaseEntity {
 
     private String document;
 
+    private Long displayOrder = 100L;
+
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AgencyProfileServices> agencyProfileServices;
 
@@ -174,5 +176,13 @@ public class Services extends BaseEntity {
 
     public void setAgency(AgencyProfile agency) {
         this.agency = agency;
+    }
+
+    public Long getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Long displayOrder) {
+        this.displayOrder = displayOrder;
     }
 }

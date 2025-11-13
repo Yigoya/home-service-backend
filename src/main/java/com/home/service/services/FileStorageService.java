@@ -12,7 +12,8 @@ import java.nio.file.Paths;
 @Service
 public class FileStorageService {
 
-    private final String uploadDir = System.getProperty("user.dir") + "/uploads/";
+    private final String uploadDir = "/opt/uploads/";
+    // private final String uploadDir = "uploads/";
 
     public FileStorageService() {
         File directory = new File(uploadDir);

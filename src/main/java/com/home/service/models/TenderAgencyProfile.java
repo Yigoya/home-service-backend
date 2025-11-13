@@ -34,5 +34,4 @@ public class TenderAgencyProfile extends BaseEntity {
     private String contactPerson;
     private String verifiedStatus = "PENDING";
 
-    // Getters, Setters, Constructors
 }

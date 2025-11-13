@@ -1,0 +1,70 @@
+{
+  "info": {
+    "_postman_id": "8f6c1a6f-8b2d-4b1b-9f2c-0c7c6e2e2a9a",
+    "name": "Home-Service: Combined Import",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Upload a CSV/XLSX to create Services (CATEGORY/SUBCATAGORY) and Company users + profiles in one request."
+  },
+  "item": [
+    {
+      "name": "POST /import/excel (CSV/XLSX)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "defaultCategoryId",
+              "type": "text",
+              "value": "1"
+            },
+            {
+              "key": "commonPassword",
+              "type": "text",
+              "value": "ChangeMe!123"
+            },
+            {
+              "key": "sheetIndex",
+              "type": "text",
+              "value": "0",
+              "disabled": true
+            },
+            {
+              "key": "sheetIndices",
+              "type": "text",
+              "value": "0,1",
+              "disabled": true
+            },
+            {
+              "key": "processAllSheets",
+              "type": "text",
+              "value": "false",
+              "disabled": true
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/import/excel",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "import",
+            "excel"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ]
+}

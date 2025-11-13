@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.home.service.Service.BookingService;
 import com.home.service.Service.ContactUsService;
+import com.home.service.Service.CustomerService;
 import com.home.service.Service.DisputeService;
 import com.home.service.Service.ReviewService;
 import com.home.service.Service.ServiceCategoryService;
@@ -84,7 +85,8 @@ public class ServiceManagementController {
 
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Test endpoint is working! 🎉 12");
+        String baseUrl = "/opt/uploads/";
+        return ResponseEntity.ok("file:" + baseUrl);
     }
 
     // Technician Endpoints
@@ -116,12 +118,14 @@ public class ServiceManagementController {
         return serviceService.getServiceById(id, lang);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/services/{id}")
     public String updateService(@PathVariable Long id, @Valid @RequestBody ServiceRequest serviceRequest) {
         return serviceService.updateService(id, serviceRequest);
     }
 
-    @DeleteMapping("/services/{id}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/services/{id}")
     public void deleteService(@PathVariable Long id) {
         serviceService.deleteService(id);
     }
@@ -172,13 +176,15 @@ public class ServiceManagementController {
         return bookingService.saveBooking(booking);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/bookings/{id}")
     public Booking updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
         booking.setId(id);
         return bookingService.saveBooking(booking);
     }
 
-    @DeleteMapping("/bookings/{id}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/bookings/{id}")
     public void deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
     }
@@ -196,7 +202,8 @@ public class ServiceManagementController {
     }
 
     // Remove a service from a technician
-    @DeleteMapping("/{technicianId}/services/{serviceId}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/{technicianId}/services/{serviceId}")
     public Technician removeServiceFromTechnician(@PathVariable Long technicianId, @PathVariable Long serviceId) {
         return technicianService.removeServiceFromTechnician(technicianId, serviceId);
     }
@@ -216,8 +223,21 @@ public class ServiceManagementController {
     }
 
     @GetMapping("/disputes/customer/{customerId}")
-    public ResponseEntity<List<DisputeDTO>> getDisputesByCustomerId(@PathVariable Long customerId) {
-        List<DisputeDTO> disputes = disputeService.getDisputesByCustomerId(customerId);
+    public ResponseEntity<org.springframework.data.domain.Page<DisputeDTO>> getDisputesByCustomerId(
+            @PathVariable Long customerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase("desc") 
+            ? org.springframework.data.domain.Sort.by(sortBy).descending()
+            : org.springframework.data.domain.Sort.by(sortBy).ascending();
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        
+        org.springframework.data.domain.Page<DisputeDTO> disputes = disputeService.getDisputesByCustomerId(customerId, pageable);
+        
         if (disputes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -234,6 +254,38 @@ public class ServiceManagementController {
             @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
         List<ServiceDTO> services = serviceService.getServicesByServiceId(serviceId, lang);
         return ResponseEntity.ok(services);
+    }
+
+    @GetMapping("/disputes")
+    public ResponseEntity<org.springframework.data.domain.Page<com.home.service.dto.admin.DisputeDetailDTO>> getAllDisputes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) String technicianName,
+            @RequestParam(required = false) com.home.service.models.enums.DisputeStatus status) {
+        
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase("desc") 
+            ? org.springframework.data.domain.Sort.by(sortBy).descending()
+            : org.springframework.data.domain.Sort.by(sortBy).ascending();
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        
+        org.springframework.data.domain.Page<com.home.service.dto.admin.DisputeDetailDTO> disputes = 
+            disputeService.getFilteredDisputes(customerName, technicianName, status, pageable);
+        
+        return ResponseEntity.ok(disputes);
+    }
+
+    @CrossOrigin(originPatterns = "*")
+    @PutMapping("/disputes/{disputeId}/status")
+    public ResponseEntity<String> updateDisputeStatus(
+            @PathVariable Long disputeId,
+            @RequestParam com.home.service.models.enums.DisputeStatus status) {
+        
+        disputeService.updateDisputeStatus(disputeId, status);
+        return ResponseEntity.ok("Dispute status updated successfully");
     }
 
 }

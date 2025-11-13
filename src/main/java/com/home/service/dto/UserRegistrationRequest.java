@@ -1,5 +1,7 @@
 package com.home.service.dto;
 
+import com.home.service.models.enums.UserRole;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -14,10 +16,14 @@ public class UserRegistrationRequest {
     @Email(message = "Invalid email format")
     private String email;
 
+    private UserRole role;
+
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\+?[0-9]{10,13}$", message = "Invalid phone number format")
     private String phoneNumber;
 
     @NotBlank(message = "Password is required")
     private String password;
+
+
 }

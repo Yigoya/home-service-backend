@@ -13,4 +13,6 @@ public interface TenderAgencyProfileRepository extends JpaRepository<TenderAgenc
     boolean existsByCompanyName(String companyName);
 
     Optional<TenderAgencyProfile> findByUser(User user);
+
+    Optional<TenderAgencyProfile> findByUserId(Long userId);
 }

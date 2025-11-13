@@ -77,6 +77,19 @@ public class DisputeService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public Page<DisputeDTO> getDisputesByCustomerId(Long customerId, Pageable pageable) {
+        Page<Dispute> disputes = disputeRepository.findByCustomerId(customerId, pageable);
+        return disputes.map(dispute -> new DisputeDTO(
+                dispute.getId(), 
+                dispute.getTechnician().getUser().getName(),
+                dispute.getReason(), 
+                dispute.getDescription(), 
+                dispute.getStatus(), 
+                dispute.getCreatedAt(),
+                dispute.getUpdatedAt()));
+    }
+
     public Page<DisputeDetailDTO> getFilteredDisputes(String customerName, String technicianName, DisputeStatus status,
             Pageable pageable) {
 
@@ -167,5 +180,14 @@ public class DisputeService {
         dto.setEmail(technician.getUser().getEmail());
         dto.setPhoneNumber(technician.getUser().getPhoneNumber());
         return dto;
+    }
+
+    @Transactional
+    public void updateDisputeStatus(Long disputeId, DisputeStatus status) {
+        Dispute dispute = disputeRepository.findById(disputeId)
+                .orElseThrow(() -> new EntityNotFoundException("Dispute not found with id: " + disputeId));
+        
+        dispute.setStatus(status);
+        disputeRepository.save(dispute);
     }
 }

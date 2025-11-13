@@ -32,6 +32,7 @@ import com.home.service.models.enums.EthiopianLanguage;
 import java.io.InputStream;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -408,7 +409,12 @@ public class ServiceService {
         }
 
         public List<ServiceCategoryWithServicesDTO> getAllServicesCategorized(EthiopianLanguage lang) {
-                List<ServiceCategory> categories = serviceCategoryRepository.findAll();
+                List<ServiceCategory> categories = serviceCategoryRepository.findAll()
+                                                .stream()
+                                                .filter(category -> !category.getId().equals(5L)
+                                                                && !category.getId().equals(7L)
+                                                                && !category.getId().equals(8L))
+                                                .collect(Collectors.toList());
                 return categories.stream().map(category -> convertToServiceCategoryWithServicesDTO(category, lang))
                                 .collect(Collectors.toList());
         }
@@ -432,8 +438,14 @@ public class ServiceService {
                                                 .findFirst().get())
                                 .getDescription());
                 dto.setIcon(category.getIcon());
-                List<ServiceWithCountsDTO> serviceDTOs = serviceRepository.findByCategoryOrderByIdAsc(category)
-                                .stream().filter(service -> service.getServiceId() == null)
+                List<ServiceWithCountsDTO> serviceDTOs = serviceRepository
+                                .findByCategoryOrderByDisplayOrderAsc(category)
+                                .stream()
+                                .filter(service -> service.getServiceId() == null)
+                                .sorted(Comparator
+                                                .comparing(Services::getDisplayOrder,
+                                                                Comparator.nullsLast(Long::compareTo))
+                                                .thenComparing(Services::getId))
                                 .map(service -> this.convertToServiceWithCountsDTO(service, lang))
                                 .collect(Collectors.toList());
                 // serviceDTOs = serviceDTOs.stream()
@@ -467,7 +479,12 @@ public class ServiceService {
                 dto.setIcon(service.getIcon());
                 dto.setDocument(service.getDocument());
                 dto.setCategoryId(service.getCategory().getId());
-                dto.setServices(service.getServices().stream().map(s -> convertToServiceWithCountsDTO(s, lang))
+                dto.setServices(service.getServices().stream()
+                                .sorted(Comparator
+                                                .comparing(Services::getDisplayOrder,
+                                                                Comparator.nullsLast(Long::compareTo))
+                                                .thenComparing(Services::getId))
+                                .map(s -> convertToServiceWithCountsDTO(s, lang))
                                 .collect(Collectors.toList()));
                 return dto;
         }
@@ -491,4 +508,5 @@ public class ServiceService {
                         serviceRepository.save(service);
                 });
         }
+
 }

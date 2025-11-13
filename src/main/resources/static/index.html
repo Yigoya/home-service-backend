@@ -6,6 +6,33 @@
     <title>Document</title>
 </head>
 <body>
-    this is me 
+    <form id="tender-form">
+        <label>Title <input name="title"/></label><br/>
+        <label>Description <textarea name="description"></textarea></label><br/>
+        <label>Location <input name="location"/></label><br/>
+        <label>Closing Date <input type="datetime-local" name="closingDate"/></label><br/>
+        <label>Contact Info <input name="contactInfo"/></label><br/>
+        <label>Category IDs (comma separated) <input name="categoryIds"/></label><br/>
+        <label>Free? <input type="checkbox" name="isFree"/></label><br/>
+        <button type="submit">Create Tender</button>
+    </form>
+    <script>
+    document.getElementById('tender-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target;
+        const data = new FormData();
+        data.append('title', f.title.value);
+        data.append('description', f.description.value);
+        data.append('location', f.location.value);
+        if (f.closingDate.value) data.append('closingDate', f.closingDate.value);
+        data.append('contactInfo', f.contactInfo.value);
+        // Use first category id for backward compatibility
+        const catIds = f.categoryIds.value.split(',').map(s=>s.trim()).filter(Boolean);
+        if (catIds.length) data.append('categoryId', catIds[0]);
+        if (f.isFree.checked) data.append('isFree', 'true');
+        const resp = await fetch('/tenders', {method:'POST', body:data});
+        alert(await resp.text());
+    });
+    </script>
 </body>
 </html>

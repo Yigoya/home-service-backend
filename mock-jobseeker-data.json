@@ -1,0 +1,221 @@
+{
+    "createProfileMockData": {
+        "userId": 123,
+        "headline": "Senior Full Stack Developer | Java & React Specialist",
+        "summary": "Experienced software developer with 5+ years in building scalable web applications. Passionate about clean code, microservices architecture, and modern frontend frameworks. Strong background in Java Spring Boot, React, and cloud technologies.",
+        "skills": [
+            "Java",
+            "Spring Boot",
+            "React",
+            "JavaScript",
+            "TypeScript",
+            "MySQL",
+            "PostgreSQL",
+            "Docker",
+            "Kubernetes",
+            "AWS",
+            "Git",
+            "REST APIs",
+            "Microservices",
+            "Agile"
+        ],
+        "resumeUrl": null,
+        "experience": [
+            {
+                "jobTitle": "Senior Software Developer",
+                "companyName": "TechCorp Solutions",
+                "location": "Addis Ababa, Ethiopia",
+                "startDate": "2022-01-15",
+                "endDate": null,
+                "description": "Lead development of microservices architecture using Spring Boot. Mentored junior developers and implemented CI/CD pipelines. Improved application performance by 40% through code optimization."
+            },
+            {
+                "jobTitle": "Full Stack Developer",
+                "companyName": "Digital Innovations Ltd",
+                "location": "Addis Ababa, Ethiopia",
+                "startDate": "2020-03-01",
+                "endDate": "2021-12-31",
+                "description": "Developed responsive web applications using React and Spring Boot. Collaborated with cross-functional teams to deliver high-quality software solutions. Implemented automated testing strategies."
+            }
+        ],
+        "education": [
+            {
+                "institutionName": "Addis Ababa University",
+                "degree": "Bachelor of Science",
+                "fieldOfStudy": "Computer Science",
+                "startDate": "2016-09-01",
+                "endDate": "2020-06-30"
+            },
+            {
+                "institutionName": "Ethiopian Technical Institute",
+                "degree": "Certificate",
+                "fieldOfStudy": "Advanced Java Programming",
+                "startDate": "2021-01-15",
+                "endDate": "2021-04-30"
+            }
+        ]
+    },
+    "updateProfileMockData": {
+        "userId": 123,
+        "headline": "Lead Software Architect | Cloud & DevOps Expert",
+        "summary": "Senior software architect with 6+ years of experience in designing and implementing enterprise-level applications. Expert in cloud-native solutions, DevOps practices, and team leadership. Proven track record of delivering scalable systems that serve millions of users.",
+        "skills": [
+            "Java",
+            "Spring Boot",
+            "React",
+            "Angular",
+            "Node.js",
+            "Python",
+            "MySQL",
+            "PostgreSQL",
+            "MongoDB",
+            "Docker",
+            "Kubernetes",
+            "AWS",
+            "Azure",
+            "Jenkins",
+            "Git",
+            "REST APIs",
+            "GraphQL",
+            "Microservices",
+            "System Design",
+            "Team Leadership"
+        ],
+        "resumeUrl": "https://example.com/resume/john-doe-updated.pdf",
+        "experience": [
+            {
+                "jobTitle": "Lead Software Architect",
+                "companyName": "TechCorp Solutions",
+                "location": "Addis Ababa, Ethiopia",
+                "startDate": "2023-06-01",
+                "endDate": null,
+                "description": "Architect and oversee development of cloud-native applications. Lead a team of 8 developers. Designed microservices architecture serving 2M+ users. Implemented DevOps best practices reducing deployment time by 60%."
+            },
+            {
+                "jobTitle": "Senior Software Developer",
+                "companyName": "TechCorp Solutions",
+                "location": "Addis Ababa, Ethiopia",
+                "startDate": "2022-01-15",
+                "endDate": "2023-05-31",
+                "description": "Lead development of microservices architecture using Spring Boot. Mentored junior developers and implemented CI/CD pipelines. Improved application performance by 40% through code optimization."
+            },
+            {
+                "jobTitle": "Full Stack Developer",
+                "companyName": "Digital Innovations Ltd",
+                "location": "Addis Ababa, Ethiopia",
+                "startDate": "2020-03-01",
+                "endDate": "2021-12-31",
+                "description": "Developed responsive web applications using React and Spring Boot. Collaborated with cross-functional teams to deliver high-quality software solutions. Implemented automated testing strategies."
+            }
+        ],
+        "education": [
+            {
+                "institutionName": "Addis Ababa University",
+                "degree": "Bachelor of Science",
+                "fieldOfStudy": "Computer Science",
+                "startDate": "2016-09-01",
+                "endDate": "2020-06-30"
+            },
+            {
+                "institutionName": "Ethiopian Technical Institute",
+                "degree": "Certificate",
+                "fieldOfStudy": "Advanced Java Programming",
+                "startDate": "2021-01-15",
+                "endDate": "2021-04-30"
+            },
+            {
+                "institutionName": "AWS Training Center",
+                "degree": "Certification",
+                "fieldOfStudy": "AWS Solutions Architect",
+                "startDate": "2023-01-01",
+                "endDate": "2023-03-15"
+            }
+        ]
+    },
+    "additionalExperienceMockData": {
+        "jobTitle": "DevOps Engineer",
+        "companyName": "CloudTech Systems",
+        "location": "Remote",
+        "startDate": "2019-06-01",
+        "endDate": "2020-02-28",
+        "description": "Managed CI/CD pipelines and cloud infrastructure. Automated deployment processes using Docker and Kubernetes. Reduced infrastructure costs by 30% through optimization."
+    },
+    "additionalEducationMockData": {
+        "institutionName": "Coursera - Stanford University",
+        "degree": "Certificate",
+        "fieldOfStudy": "Machine Learning",
+        "startDate": "2023-09-01",
+        "endDate": "2023-12-15"
+    },
+    "minimalProfileMockData": {
+        "userId": 456,
+        "headline": "Junior Developer",
+        "summary": "Recent computer science graduate looking for opportunities to grow and learn.",
+        "skills": [
+            "Java",
+            "HTML",
+            "CSS",
+            "JavaScript"
+        ],
+        "resumeUrl": null,
+        "experience": [],
+        "education": [
+            {
+                "institutionName": "Local University",
+                "degree": "Bachelor of Science",
+                "fieldOfStudy": "Computer Science",
+                "startDate": "2020-09-01",
+                "endDate": "2024-06-30"
+            }
+        ]
+    }
+},
+"multipartFormDataExamples": {
+    "createProfileWithResume": {
+        "description": "Example of creating a profile with resume upload using multipart/form-data",
+        "endpoint": "POST /profiles/seeker",
+        "contentType": "multipart/form-data",
+        "formFields": {
+            "userId": "123",
+            "headline": "Senior Full Stack Developer | Java & React Specialist",
+            "summary": "Experienced software developer with 5+ years in building scalable web applications.",
+            "skills": "Java,Spring Boot,React,JavaScript,TypeScript,MySQL,Docker,AWS",
+            "experience[0].jobTitle": "Senior Software Developer",
+            "experience[0].companyName": "TechCorp Solutions",
+            "experience[0].location": "Addis Ababa, Ethiopia",
+            "experience[0].startDate": "2022-01-15",
+            "experience[0].description": "Lead development of microservices architecture using Spring Boot.",
+            "education[0].institutionName": "Addis Ababa University",
+            "education[0].degree": "Bachelor of Science",
+            "education[0].fieldOfStudy": "Computer Science",
+            "education[0].startDate": "2016-09-01",
+            "education[0].endDate": "2020-06-30"
+        },
+        "files": {
+            "resume": "john-doe-resume.pdf"
+        }
+    },
+    "updateProfileWithResume": {
+        "description": "Example of updating a profile with resume upload using multipart/form-data",
+        "endpoint": "PUT /profiles/seeker/1",
+        "contentType": "multipart/form-data",
+        "formFields": {
+            "headline": "Lead Software Architect | Cloud & DevOps Expert",
+            "summary": "Senior software architect with 6+ years of experience in designing enterprise applications.",
+            "skills": "Java,Spring Boot,React,Angular,Python,AWS,Azure,Kubernetes",
+            "experience[0].jobTitle": "Lead Software Architect",
+            "experience[0].companyName": "TechCorp Solutions",
+            "experience[0].location": "Addis Ababa, Ethiopia",
+            "experience[0].startDate": "2023-06-01",
+            "experience[0].description": "Architect and oversee development of cloud-native applications."
+        },
+        "files": {
+            "resume": "john-doe-updated-resume.pdf"
+        }
+    }
+},
+"curlExamples": {
+    "createProfile": "curl -X POST http://localhost:8080/profiles/seeker \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -F 'userId=123' \\\n  -F 'headline=Senior Full Stack Developer' \\\n  -F 'summary=Experienced software developer with 5+ years' \\\n  -F 'skills=Java,Spring Boot,React' \\\n  -F 'resume=@/path/to/resume.pdf'",
+    "updateProfile": "curl -X PUT http://localhost:8080/profiles/seeker/1 \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -F 'headline=Lead Software Architect' \\\n  -F 'summary=Senior software architect with 6+ years' \\\n  -F 'skills=Java,Spring Boot,React,AWS' \\\n  -F 'resume=@/path/to/updated-resume.pdf'"
+}
+}

@@ -1,0 +1,182 @@
+public enum UserRole {
+    CUSTOMER, TECHNICIAN, OPERATOR, ADMIN, USER
+}
+
+public abstract class BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}
+
+
+public class User extends BaseEntity {
+
+    @NotBlank(message = "Name is required")
+    private String name;
+
+    @NotBlank(message = "Phone number is required")
+    private String phoneNumber;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @Email(message = "Invalid email format")
+    private String pendingEmail;
+
+    @NotBlank(message = "Password is required")
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    private String profileImage;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status = AccountStatus.INACTIVE;
+}
+
+public class Booking extends BaseEntity {
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "technician_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Technician technician;
+
+    @ManyToOne
+    @JoinColumn(name = "service_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Services service;
+
+    private LocalDateTime scheduledDate;
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status;
+
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "service_location_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Address serviceLocation;
+
+    private Double totalCost;
+
+    @Transient
+    private Long customerId;
+
+    @Transient
+    private Long technicianId;
+
+    @Transient
+    private Long serviceId;
+
+    private String timeSchedule;
+}
+
+public class Customer extends BaseEntity {
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CustomerAddress> savedAddresses;
+
+    @ElementCollection
+    private List<String> serviceHistory;
+
+    private Integer coinBalance = 0;
+}
+
+public class Services extends BaseEntity {
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private ServiceCategory category;
+
+    private LocalTime estimatedDuration;
+    private Double serviceFee;
+
+	private String name;
+
+    @Column(length = 5000)
+    private String description;
+}
+
+public class ServiceCategory extends BaseEntity {
+	@Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, length = 5000)
+    private String description;
+}
+
+public class Review extends BaseEntity {
+    @ManyToOne
+    @JoinColumn(name = "booking_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Booking booking;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "technician_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Technician technician;
+
+    private Integer rating;
+    private String reviewText;
+}
+
+
+those are some of the models in my system i wanna add to my sysyem implementing a service provider platform—where agencies list and manage their services and customers can search, book, and interact with those agencies
+agencies registration and authentication (with role-based access).
+Search functionality (with filters like location, service type, ratings, etc.).
+Booking and scheduling system.
+Payment processing and invoicing.
+Review and rating system.
+Notifications (email, SMS, or in-app).
+Analytics and reporting dashboards.
+Agencies: Need a dashboard to manage their profiles, list and update services, handle bookings or appointments, view analytics, and interact with customers.
+AgencyProfile
+
+Since agencies are users with extra business-specific information, you can store their details in a separate table (one-to-one with the Users table where role = 'agency').
+
+    Attributes:
+        agency_id (Primary Key and also a Foreign Key referencing Users.user_id)
+        business_name
+        description
+        address
+        city
+        state
+        zip
+        country
+        phone
+        website
+        created_at
+        updated_at
+give me full spring boot code for agencies that i will add to the production and don't leave any thing behind

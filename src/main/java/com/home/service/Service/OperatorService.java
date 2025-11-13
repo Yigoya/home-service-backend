@@ -38,7 +38,7 @@ public class OperatorService {
         this.userRepository = userRepository;
     }
 
-    public String signupOperator(OperatorSignupRequest signupRequest) {
+    public AuthenticationResponse signupOperator(OperatorSignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             throw new EmailException("Email already in use");
         }
@@ -62,7 +62,9 @@ public class OperatorService {
         operator.setIdCardImage(idCardImagePath);
 
         operatorRepository.save(operator);
-        return "Operator signed up successfully!";
+
+        // Return the same payload as /auth/login
+        return userService.buildAuthenticationResponse(user);
     }
 
     public AuthenticationResponse loginOperator(LoginRequest loginRequest) {

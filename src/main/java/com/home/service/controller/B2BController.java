@@ -178,7 +178,8 @@ public class B2BController {
         return ResponseEntity.ok(partner);
     }
 
-    @DeleteMapping("/businesses/partners/{partnerId}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/businesses/partners/{partnerId}")
     public ResponseEntity<Void> deletePartner(@PathVariable Long partnerId) {
         // Long currentUserId =
         // SecurityContextHolder.getContext().getAuthentication().getName();
@@ -220,7 +221,8 @@ public class B2BController {
         return ResponseEntity.ok(contract);
     }
 
-    @DeleteMapping("/businesses/contracts/{contractId}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/businesses/contracts/{contractId}")
     public ResponseEntity<Void> deleteContract(@PathVariable Long contractId) {
         // Long currentUserId =
         // SecurityContextHolder.getContext().getAuthentication().getName();

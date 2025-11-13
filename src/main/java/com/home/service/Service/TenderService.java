@@ -6,8 +6,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.home.service.dto.ServiceRequest;
 import com.home.service.dto.SubscriptionRequest;
+import com.home.service.dto.TenderCreationRequest;
 import com.home.service.dto.TenderDTO;
 import com.home.service.dto.TenderRequest;
+import com.home.service.dto.TenderResponse;
+import com.home.service.dto.TenderStatusRequest;
+import com.home.service.dto.TenderUpdateRequest;
 import com.home.service.models.Customer;
 import com.home.service.models.CustomerSubscription;
 import com.home.service.models.ServiceCategory;
@@ -35,9 +39,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 @Service
@@ -83,6 +90,8 @@ public class TenderService {
         tender.setService(category);
         tender.setStatus(tenderDTO.getStatus() != null ? tenderDTO.getStatus() : TenderStatus.OPEN);
         tender.setDatePosted(LocalDateTime.now());
+    // default to false if not specified
+    tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
 
         if (tenderDTO.getFile() != null) {
             String filePath = fileStorageService.storeFile(tenderDTO.getFile());
@@ -94,33 +103,27 @@ public class TenderService {
     }
 
     @Transactional
-    public String addAgencyTender(TenderRequest tenderDTO, Long agencyId) throws IOException {
-        Services service = servicesRepository.findById(tenderDTO.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Service category not found"));
+    public TenderResponse addAgencyTender(TenderCreationRequest request, Long agencyId) {
+        TenderAgencyProfile agency = agencyRepository.findById(agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
 
-        TenderAgencyProfile agency = agencyId != null ? agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new RuntimeException("Agency not found"))
-                : null;
+        Services service = servicesRepository.findById(request.getServiceId())
+                .orElseThrow(() -> new EntityNotFoundException("Service not found"));
 
         Tender tender = new Tender();
-        tender.setTitle(tenderDTO.getTitle());
-        tender.setDescription(tenderDTO.getDescription());
-        tender.setLocation(tenderDTO.getLocation());
-        tender.setClosingDate(tenderDTO.getClosingDate());
-        tender.setContactInfo(tenderDTO.getContactInfo());
+        tender.setTitle(request.getTitle());
+        tender.setDescription(request.getDescription());
+        tender.setLocation(request.getLocation());
+        tender.setClosingDate(request.getClosingDate());
+        tender.setContactInfo(request.getContactInfo());
         tender.setService(service);
         tender.setAgency(agency);
-        tender.setStatus(tenderDTO.getStatus() != null ? tenderDTO.getStatus() : TenderStatus.OPEN);
-        tender.setDatePosted(LocalDateTime.now());
-        tender.setQuestionDeadline(LocalDateTime.now().plusWeeks(2));
+        tender.setQuestionDeadline(request.getQuestionDeadline());
+        tender.setStatus(TenderStatus.OPEN);
+    tender.setFree(Boolean.TRUE.equals(request.getIsFree()));
 
-        if (tenderDTO.getFile() != null && !tenderDTO.getFile().isEmpty()) {
-            String filePath = fileStorageService.storeFile(tenderDTO.getFile());
-            tender.setDocumentPath(filePath);
-        }
-
-        tenderRepository.save(tender);
-        return "Tender added successfully";
+        Tender savedTender = tenderRepository.save(tender);
+        return mapToTenderResponse(savedTender);
     }
 
     @Transactional
@@ -181,6 +184,9 @@ public class TenderService {
         tender.setClosingDate(tenderDTO.getClosingDate());
         tender.setContactInfo(tenderDTO.getContactInfo());
         tender.setStatus(tenderDTO.getStatus());
+        if (tenderDTO.getIsFree() != null) {
+            tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
+        }
 
         if (tenderDTO.getCategoryId() != null) {
             Services category = servicesRepository.findById(tenderDTO.getCategoryId())
@@ -252,6 +258,17 @@ public class TenderService {
         return tenderRepository.findByServiceIdIn(ids, pageable).map(TenderDTO::createWithoutSensitiveDetails);
     }
 
+    public Page<TenderDTO> getTendersByServices(List<Long> servicesIds, int page, int size) {
+        List<Long> allIds = new ArrayList<>();
+        for (Long id : servicesIds) {
+            Services service = servicesRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Service not found"));
+            collectServiceIdsRecursively(service, allIds);
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        return tenderRepository.findByServiceIdIn(allIds, pageable).map(TenderDTO::createWithoutSensitiveDetails);
+    }
+
     public Page<TenderDTO> getTendersByStatus(TenderStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return tenderRepository.findByStatus(status, pageable).map(TenderDTO::createWithoutSensitiveDetails);
@@ -284,33 +301,34 @@ public class TenderService {
         return tenderRepository.findByLocation(location, pageable).map(TenderDTO::createWithoutSensitiveDetails);
     }
 
-    public Page<TenderDTO> searchTenders(String keyword, TenderStatus status, String location, Long serviceId,
-            LocalDateTime datePosted, LocalDateTime closingDate, int page, int size) {
+    public Page<TenderDTO> searchTenders(String keyword, TenderStatus status, String location, List<Long> serviceIds,
+            Boolean isFree, LocalDateTime datePosted, LocalDateTime closingDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<Long> serviceIds = new ArrayList<>();
-
-        if (serviceId != null) {
-            Services service = servicesRepository.findById(serviceId)
-                    .orElseThrow(() -> new RuntimeException("Service not found"));
-            collectServiceIdsRecursively(service, serviceIds);
+        List<Long> expandedServiceIds = new ArrayList<>();
+        if (serviceIds != null) {
+            for (Long sid : serviceIds) {
+                Services service = servicesRepository.findById(sid)
+                        .orElseThrow(() -> new RuntimeException("Service not found"));
+                collectServiceIdsRecursively(service, expandedServiceIds);
+            }
         }
-
-        if (serviceIds.isEmpty()) {
-            serviceIds = null; // Handle empty list case
+        if (expandedServiceIds.isEmpty()) {
+            expandedServiceIds = null; // Handle empty list case
         }
         System.out.println(
-                keyword + " " + status + " " + location + " " + serviceId + " " + datePosted + " " + closingDate);
-        return tenderRepository.advancedSearch(keyword, status, location, serviceIds, datePosted, closingDate, pageable)
+                keyword + " " + status + " " + location + " " + serviceIds + " " + datePosted + " " + closingDate);
+        return tenderRepository.advancedSearch(keyword, status, location, expandedServiceIds, isFree, datePosted, closingDate, pageable)
                 .map(TenderDTO::createWithoutSensitiveDetails);
     }
 
     public Page<Tender> advancedSearch(
             String keyword,
-            String categoryId,
+            List<Long> categoryIds,
             String location,
             LocalDateTime dateFrom,
             LocalDateTime dateTo,
             TenderStatus status,
+        Boolean isFree,
             Pageable pageable) {
         Specification<Tender> spec = Specification.where(null);
 
@@ -320,8 +338,8 @@ public class TenderService {
                     cb.like(root.get("description"), "%" + keyword + "%")));
         }
 
-        if (categoryId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("id"), categoryId));
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and((root, query, cb) -> root.get("service").get("id").in(categoryIds));
         }
 
         if (location != null) {
@@ -340,6 +358,10 @@ public class TenderService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }
 
+        if (isFree != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("free"), isFree));
+        }
+
         return tenderRepository.findAll(spec, pageable);
     }
 
@@ -348,5 +370,98 @@ public class TenderService {
         return tenderRepository.findByStatusAndDatePostedBefore(
                 TenderStatus.CLOSED,
                 LocalDateTime.now().minusDays(30));
+    }
+
+    public List<TenderResponse> getAgencyTenders(Long agencyId, int page, int size, String sort) {
+        TenderAgencyProfile agency = agencyRepository.findById(agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
+
+        // Robust sort parsing with safe defaults
+        Sort.Direction direction = Sort.Direction.DESC;
+        String sortField = "datePosted";
+        if (sort != null && !sort.isBlank()) {
+            String[] sortParams = sort.split(",");
+            if (sortParams.length >= 1 && !sortParams[0].isBlank()) {
+                sortField = sortParams[0].trim();
+            }
+            if (sortParams.length >= 2 && !sortParams[1].isBlank()) {
+                try {
+                    direction = Sort.Direction.fromString(sortParams[1].trim());
+                } catch (IllegalArgumentException ex) {
+                    // accept common shorthand like 'des'
+                    String dir = sortParams[1].trim().toLowerCase();
+                    if (dir.startsWith("des")) direction = Sort.Direction.DESC;
+                    else if (dir.startsWith("asc")) direction = Sort.Direction.ASC;
+                }
+            }
+        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+        return tenderRepository.findByAgency(agency, pageable)
+                .stream()
+                .map(this::mapToTenderResponse)
+                .collect(Collectors.toList());
+    }
+
+    public TenderResponse getTender(Long agencyId, Long tenderId) {
+        Tender tender = tenderRepository.findByIdAndAgencyId(tenderId, agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Tender not found"));
+        return mapToTenderResponse(tender);
+    }
+
+    public TenderResponse updateTender(Long agencyId, Long tenderId, TenderUpdateRequest request) {
+        Tender tender = tenderRepository.findByIdAndAgencyId(tenderId, agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Tender not found"));
+
+        tender.setTitle(request.getTitle());
+        tender.setDescription(request.getDescription());
+        tender.setLocation(request.getLocation());
+        tender.setClosingDate(request.getClosingDate());
+        tender.setContactInfo(request.getContactInfo());
+        tender.setQuestionDeadline(request.getQuestionDeadline());
+
+        Tender updatedTender = tenderRepository.save(tender);
+        return mapToTenderResponse(updatedTender);
+    }
+
+    public String uploadTenderDocument(Long agencyId, Long tenderId, MultipartFile file) {
+        Tender tender = tenderRepository.findByIdAndAgencyId(tenderId, agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Tender not found"));
+
+        String filePath = fileStorageService.storeFile(file);
+        tender.setDocumentPath(filePath);
+        tenderRepository.save(tender);
+        return filePath;
+    }
+
+    public TenderResponse updateTenderStatus(Long agencyId, Long tenderId, TenderStatusRequest request) {
+        Tender tender = tenderRepository.findByIdAndAgencyId(tenderId, agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Tender not found"));
+
+        tender.setStatus(request.getStatus());
+        Tender updatedTender = tenderRepository.save(tender);
+        return mapToTenderResponse(updatedTender);
+    }
+
+    public void deleteTender(Long agencyId, Long tenderId) {
+        Tender tender = tenderRepository.findByIdAndAgencyId(tenderId, agencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Tender not found"));
+        tenderRepository.delete(tender);
+    }
+
+    private TenderResponse mapToTenderResponse(Tender tender) {
+        return new TenderResponse(
+                tender.getId(),
+                tender.getTitle(),
+                tender.getDescription(),
+                tender.getLocation(),
+                tender.getDatePosted(),
+                tender.getClosingDate(),
+                tender.getContactInfo(),
+                tender.getStatus(),
+                tender.getServiceId(),
+                tender.getDocumentPath(),
+                tender.getQuestionDeadline(),
+                Boolean.TRUE.equals(tender.getFree()));
     }
 }

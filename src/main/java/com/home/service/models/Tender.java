@@ -9,6 +9,7 @@ import com.home.service.models.enums.TenderStatus;
 import java.time.LocalDateTime;
 
 import org.checkerframework.checker.units.qual.C;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Getter
@@ -20,6 +21,10 @@ public class Tender extends BaseEntity {
     private LocalDateTime datePosted = LocalDateTime.now();
     private LocalDateTime closingDate;
     private String contactInfo;
+    
+    @Column(name = "is_free")
+    @JsonProperty("isFree")
+    private Boolean free = false;
 
     @Enumerated(EnumType.STRING)
     private TenderStatus status = TenderStatus.OPEN;

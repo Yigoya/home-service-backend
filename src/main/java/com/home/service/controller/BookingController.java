@@ -43,6 +43,7 @@ public class BookingController {
     @Autowired
     private AnswerService answerService;
 
+    @CrossOrigin(originPatterns = "*")
     @PostMapping("/request")
     public ResponseEntity<Map<String, Long>> requestBooking(@Valid @RequestBody BookingRequest bookingRequest) {
         Booking booking = bookingService.createBooking(bookingRequest);
@@ -51,6 +52,7 @@ public class BookingController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/{bookingId}")
     public ResponseEntity<String> updateBooking(
             @PathVariable Long bookingId,

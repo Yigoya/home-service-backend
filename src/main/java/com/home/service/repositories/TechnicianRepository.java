@@ -18,6 +18,8 @@ import java.util.Optional;
 public interface TechnicianRepository extends JpaRepository<Technician, Long>, JpaSpecificationExecutor<Technician> {
         Optional<Technician> findByUser(User user);
 
+        Optional<Technician> findByUserId(Long userId);
+
         List<Technician> findByVerifiedFalse();
 
         Optional<Technician> findByIdAndVerifiedFalse(Long id);

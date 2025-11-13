@@ -24,28 +24,43 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BusinessRequest {
     @NotNull(message = "Owner ID is required")
-    private Long ownerId;
+    public Long ownerId;
 
     @NotBlank(message = "Name is required")
-    private String name;
+    public String name;
 
     @NotBlank(message = "Description is required")
-    private String description;
+    public String description;
 
     @NotNull(message = "Category IDs are required")
-    private List<Long> categoryIds;
+    public List<Long> categoryIds;
 
-    private String locationJson;
-    private String phoneNumber;
-    private String email;
-    private String website;
-    private String openingHoursJson;
-    private String socialMediaJson;
-    private boolean isVerified;
-    private boolean isFeatured;
-    private MultipartFile[] images;
+    public String locationJson;
+    public String phoneNumber;
+    public String email;
+    public String website;
+    public String openingHoursJson;
+    public String socialMediaJson;
+    public boolean isVerified;
+    public boolean isFeatured;
+    public MultipartFile[] images;
 
-    private static final ObjectMapper mapper = new ObjectMapper()
+    public String serviceIdsJson;
+
+    public List<Long> getServiceIds() {
+        if (serviceIdsJson == null || serviceIdsJson.isEmpty()) {
+            return null;
+        }
+        try {
+            log.debug("Parsing service IDs JSON: {}", serviceIdsJson);
+            return mapper.readValue(serviceIdsJson, mapper.getTypeFactory().constructCollectionType(List.class, Long.class));
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing service IDs JSON: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid service IDs format: " + e.getMessage(), e);
+        }
+    }
+
+    public static final ObjectMapper mapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public BusinessLocationDTO getLocation() {

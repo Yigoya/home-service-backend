@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.home.service.models.Tender;
+import com.home.service.models.TenderAgencyProfile;
 import com.home.service.models.enums.TenderStatus;
 
 import jakarta.persistence.criteria.Predicate;
@@ -23,6 +24,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 public interface TenderRepository extends JpaRepository<Tender, Long>, JpaSpecificationExecutor<Tender> {
     List<Tender> findByServiceId(Long serviceId);
+
+    Page<Tender> findByAgency(TenderAgencyProfile agency, Pageable pageable);
 
     List<Tender> findByStatus(TenderStatus status);
 
@@ -47,6 +50,7 @@ public interface TenderRepository extends JpaRepository<Tender, Long>, JpaSpecif
             TenderStatus status,
             String location,
             List<Long> serviceIds,
+            Boolean isFree,
             LocalDateTime datePosted,
             LocalDateTime closingDate,
             Pageable pageable) {
@@ -66,6 +70,9 @@ public interface TenderRepository extends JpaRepository<Tender, Long>, JpaSpecif
             }
             if (serviceIds != null && !serviceIds.isEmpty()) {
                 p = cb.and(p, root.get("service").get("id").in(serviceIds));
+            }
+            if (isFree != null) {
+                p = cb.and(p, cb.equal(root.get("free"), isFree));
             }
             if (datePosted != null) {
                 p = cb.and(p,

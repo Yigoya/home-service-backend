@@ -17,7 +17,6 @@ import com.home.service.dto.TenderSearchCriteria;
 import com.home.service.models.Tender;
 import com.home.service.models.enums.TenderStatus;
 
-import jakarta.validation.Valid;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -35,20 +34,14 @@ public class TenderController {
         return ResponseEntity.ok(tenderService.addTender(tenderRequest));
     }
 
-    @PostMapping("/agency/add")
-    public ResponseEntity<String> addTender(
-            @Valid @ModelAttribute TenderRequest tenderDTO,
-            @RequestParam(required = false) Long agencyId) throws IOException {
-        String response = tenderService.addAgencyTender(tenderDTO, agencyId);
-        return ResponseEntity.ok(response);
-    }
-
+    @CrossOrigin(originPatterns = "*")
     @PutMapping
     public ResponseEntity<String> updateTender(@RequestPart TenderRequest tenderRequest,
             @RequestPart(required = false) MultipartFile file) throws IOException {
         return ResponseEntity.ok(tenderService.updateTender(tenderRequest, file));
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/{id}/status")
     public ResponseEntity<TenderDTO> changeStatus(@PathVariable Long id, @RequestParam TenderStatus status) {
         return ResponseEntity.ok(tenderService.changeTenderStatus(id, status));
@@ -60,7 +53,8 @@ public class TenderController {
         return ResponseEntity.ok(tenderService.addService(service));
     }
 
-    @DeleteMapping("/{id}")
+    @CrossOrigin(originPatterns = "*")
+        @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTender(@PathVariable Long id) {
         tenderService.deleteTender(id);
         return ResponseEntity.noContent().build();
@@ -75,8 +69,12 @@ public class TenderController {
 
     @GetMapping("/service/{serviceId}")
     public ResponseEntity<Page<TenderDTO>> getTendersByService(@PathVariable Long serviceId,
+            @RequestParam(required = false, name = "serviceIds") List<Long> serviceIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        if (serviceIds != null && !serviceIds.isEmpty()) {
+            return ResponseEntity.ok(tenderService.getTendersByServices(serviceIds, page, size));
+        }
         return ResponseEntity.ok(tenderService.getTendersByService(serviceId, page, size));
     }
 
@@ -108,11 +106,17 @@ public class TenderController {
 
     @PostMapping("/search")
     public Page<TenderDTO> searchTenders(@RequestBody TenderSearchCriteria criteria) {
+        // adapt single serviceId to list for backward compatibility
+        List<Long> serviceIds = null;
+        if (criteria.getServiceId() != null) {
+            serviceIds = List.of(criteria.getServiceId());
+        }
         return tenderService.searchTenders(
                 criteria.getKeyword(),
                 criteria.getStatus(),
                 criteria.getLocation(),
-                criteria.getServiceId(),
+                serviceIds,
+                criteria.getIsFree(),
                 criteria.getDatePosted(),
                 criteria.getClosingDate(),
                 criteria.getPage(),
@@ -120,16 +124,32 @@ public class TenderController {
     }
 
     @GetMapping("/tenders/search")
-    public ResponseEntity<Page<Tender>> searchTenders(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String categoryId,
+    public ResponseEntity<Page<Tender>> advancedSearch(
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false, name = "categoryIds") String categoryIdsRaw,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime dateTo,
             @RequestParam(required = false) TenderStatus status,
+            @RequestParam(required = false) Boolean isFree,
             Pageable pageable) {
-        return ResponseEntity.ok(tenderService.advancedSearch(
-                keyword, categoryId, location, dateFrom, dateTo, status, pageable));
+    List<Long> categoryIds = null;
+    if (categoryIdsRaw != null && !categoryIdsRaw.isBlank()) {
+        categoryIds = java.util.Arrays.stream(categoryIdsRaw.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .map(Long::valueOf)
+            .toList();
+    }
+    return ResponseEntity.ok(tenderService.advancedSearch(
+                keyword, categoryIds, location, dateFrom, dateTo, status, isFree, pageable));
+    }
+
+    @GetMapping("/service")
+    public ResponseEntity<Page<TenderDTO>> getTendersByServices(@RequestParam List<Long> serviceIds,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(tenderService.getTendersByServices(serviceIds, page, size));
     }
 
     @GetMapping("/tenders/archive")

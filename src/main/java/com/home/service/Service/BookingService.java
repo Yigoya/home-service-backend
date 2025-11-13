@@ -361,7 +361,7 @@ public class BookingService {
 
     // Convert Booking entity to BookingResponseDTO
     private BookingResponseDTO convertToDTO(Booking booking) {
-        ReviewDTO review = reviewRepository.findByBookingId(booking.getId())
+    ReviewDTO review = reviewRepository.findFirstByBookingIdOrderByCreatedAtDesc(booking.getId())
                 .map(ReviewDTO::new)
                 .orElse(null);
         return new BookingResponseDTO(
@@ -560,8 +560,8 @@ public class BookingService {
         dto.setServiceLocation(convertToAddressDTO(booking.getServiceLocation()));
         dto.setCustomer(convertToCustomerDTO(booking.getCustomer()));
         dto.setTechnician(convertToTechnicianDTO(booking.getTechnician()));
-        dto.setReview(
-                reviewRepository.findByBookingId(booking.getId()).map(this::convertToAdminReviewDTO).orElse(null));
+    dto.setReview(
+        reviewRepository.findFirstByBookingIdOrderByCreatedAtDesc(booking.getId()).map(this::convertToAdminReviewDTO).orElse(null));
         return dto;
     }
 

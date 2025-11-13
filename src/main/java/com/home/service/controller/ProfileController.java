@@ -15,6 +15,7 @@ import com.home.service.Service.BookingService;
 import com.home.service.Service.CustomerService;
 import com.home.service.Service.TechnicianService;
 import com.home.service.Service.UserService;
+import com.home.service.dto.TechnicianPortfolioDTO;
 import com.home.service.dto.AddressDTO;
 import com.home.service.dto.ChangeContactRequest;
 import com.home.service.dto.CustomerProfileDTO;
@@ -69,6 +70,7 @@ public class ProfileController {
         return ResponseEntity.ok(profile);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/technician/{id}")
     public ResponseEntity<String> updateTechnicianProfile(
             @PathVariable Long id,
@@ -77,6 +79,7 @@ public class ProfileController {
         return ResponseEntity.ok("Profile updated successfully");
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/customer/{id}")
     public ResponseEntity<String> updateCustomerProfile(
             @PathVariable Long id,
@@ -109,7 +112,8 @@ public class ProfileController {
         return ResponseEntity.ok(addresses);
     }
 
-    @DeleteMapping("/customer/{customerId}/address/{addressId}")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/customer/{customerId}/address/{addressId}")
     public ResponseEntity<String> deleteCustomerAddress(
             @PathVariable Long customerId,
             @PathVariable Long addressId) {
@@ -117,7 +121,8 @@ public class ProfileController {
         return ResponseEntity.ok("Address deleted successfully");
     }
 
-    // @DeleteMapping("/technician/{technicianId}/address/{addressId}")
+    // @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/technician/{technicianId}/address/{addressId}")
     // public ResponseEntity<String> deleteTechnicianAddress(
     // @PathVariable Long technicianId,
     // @PathVariable Long addressId) {
@@ -152,6 +157,7 @@ public class ProfileController {
         return ResponseEntity.ok(response);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/toggle-availability/{id}")
     public ResponseEntity<String> toggleAvailability(@PathVariable Long id) {
         boolean updatedStatus = technicianService.toggleAvailability(id);
@@ -165,6 +171,38 @@ public class ProfileController {
 
         List<Map<String, Object>> schedule = bookingService.getTechnicianSchedule(technicianId);
         return ResponseEntity.ok(schedule);
+    }
+
+    // Technician portfolio endpoints
+    @GetMapping("/technician/{technicianId}/portfolio")
+    public ResponseEntity<List<TechnicianPortfolioDTO>> getTechnicianPortfolio(@PathVariable Long technicianId) {
+        List<TechnicianPortfolioDTO> portfolio = technicianService.getPortfolio(technicianId);
+        return ResponseEntity.ok(portfolio);
+    }
+
+    @PostMapping(value = "/technician/{technicianId}/portfolio", consumes = { "multipart/form-data" })
+    public ResponseEntity<String> addPortfolioItem(
+        @PathVariable Long technicianId,
+        @ModelAttribute com.home.service.dto.TechnicianPortfolioRequest request) {
+
+    MultipartFile effectiveBefore = (request.getBeforeImage() != null)
+        ? request.getBeforeImage()
+        : request.getBefore();
+    MultipartFile effectiveAfter = (request.getAfterImage() != null)
+        ? request.getAfterImage()
+        : request.getAfter();
+
+    technicianService.addPortfolioItem(technicianId, request.getDescription(), effectiveBefore, effectiveAfter);
+    return ResponseEntity.ok("Portfolio item added successfully");
+    }
+
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/technician/{technicianId}/portfolio/{portfolioId}")
+    public ResponseEntity<String> deletePortfolioItem(
+            @PathVariable Long technicianId,
+            @PathVariable Long portfolioId) {
+        technicianService.deletePortfolioItem(technicianId, portfolioId);
+        return ResponseEntity.ok("Portfolio item deleted successfully");
     }
 
     @PatchMapping("/{userId}/preferred-language")

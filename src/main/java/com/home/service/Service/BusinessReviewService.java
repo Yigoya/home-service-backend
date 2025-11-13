@@ -136,8 +136,17 @@ public class BusinessReviewService {
         businessReviewRepository.delete(review);
     }
 
-    public Page<BusinessReviewDTO> getReviewsByBusiness(Long businessId, int page, int size) {
+    // Returns DTOs (kept for existing usages that expect mapped data)
+    public Page<BusinessReviewDTO> getReviewDTOsByBusiness(Long businessId, int page, int size) {
         return getReviewsByBusiness(businessId, null, null, null, page, size);
+    }
+
+    // Returns raw BusinessReview entities (for endpoints that need full entity details)
+    public Page<BusinessReview> getReviewsByBusiness(Long businessId, int page, int size) {
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new EntityNotFoundException("Business not found with ID: " + businessId));
+        Pageable pageable = PageRequest.of(page, size);
+        return businessReviewRepository.findByBusiness(business, pageable);
     }
 
     public Page<BusinessReviewDTO> getReviewsByBusiness(

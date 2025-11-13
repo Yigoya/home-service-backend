@@ -148,29 +148,29 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<AuthenticationResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
         User registeredUser = userService.registerUser(request);
-        return ResponseEntity.ok(registeredUser);
+        // Return same shape as /auth/login: JWT + user/role-specific payload
+        AuthenticationResponse response = userService.buildAuthenticationResponse(registeredUser);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/customer/signup")
-    public String signupCustomer(@Valid @RequestBody User user) {
-        return customerService.signupCustomer(user);
+    public ResponseEntity<AuthenticationResponse> signupCustomer(@Valid @RequestBody User user) {
+        AuthenticationResponse response = customerService.signupCustomer(user);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/technician/signup")
-    public String signupTechnician(@Valid @ModelAttribute TechnicianSignupRequest signupRequest) {
-        return technicianService.signupTechnician(signupRequest);
+    public ResponseEntity<AuthenticationResponse> signupTechnician(@Valid @ModelAttribute TechnicianSignupRequest signupRequest) {
+        AuthenticationResponse response = technicianService.signupTechnician(signupRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/operator/signup")
-    public String signupOperator(@Valid @ModelAttribute OperatorSignupRequest signupRequest) {
-        return operatorService.signupOperator(signupRequest);
-    }
-
-    @PostMapping("/agency/register")
-    public ResponseEntity<TenderAgencyProfile> register(@RequestBody AgencyRegistrationRequest request) {
-        return ResponseEntity.ok(tenderAgencyService.registerAgency(request));
+    public ResponseEntity<AuthenticationResponse> signupOperator(@Valid @ModelAttribute OperatorSignupRequest signupRequest) {
+        AuthenticationResponse response = operatorService.signupOperator(signupRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/admin/login")
@@ -204,6 +204,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(responseMessage);
     }
 
+    @CrossOrigin(originPatterns = "*")
     @PutMapping("/review-proof/{technicianId}")
     public ResponseEntity<String> reviewPaymentProof(
             @PathVariable Long technicianId,
@@ -216,7 +217,8 @@ public class AuthenticationController {
         return ResponseEntity.ok(responseMessage);
     }
 
-    @DeleteMapping("/logout")
+    @CrossOrigin(originPatterns = "*")
+@DeleteMapping("/logout")
     public ResponseEntity<String> deleteDevice(@RequestParam String firebaseToken,
             @AuthenticationPrincipal CustomDetails currentUser) {
         // Find the logged-in user
