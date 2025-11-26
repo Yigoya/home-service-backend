@@ -38,7 +38,6 @@ import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.DisputeDTO;
 import com.home.service.dto.OperatorProfileDTO;
 import com.home.service.dto.ServiceCatagoryRequest;
-import com.home.service.dto.ServiceIconRequest;
 import com.home.service.dto.ServiceImportDTO;
 import com.home.service.dto.ServiceLangRequest;
 import com.home.service.dto.ServiceRequest;
@@ -68,12 +67,9 @@ import org.hibernate.tool.schema.TargetType;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.EnumSet;
-import java.util.List;
 import jakarta.persistence.EntityManagerFactory;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -435,17 +431,19 @@ public class AdminController {
         @PostMapping(value = "/import", consumes = { "multipart/form-data" })
         public String importServices(
                         @RequestParam("excelFile") MultipartFile excelFile,
-                        @RequestParam("iconFiles") MultipartFile[] iconFiles) throws IOException {
+                        @RequestParam(value = "iconFiles", required = false) MultipartFile[] iconFiles) throws IOException {
 
                 // Read Excel data
                 List<ServiceImportDTO> servicesToImport = readExcelFile(excelFile.getInputStream());
 
-                // Create a map of icon filenames to their stored paths
+                // Create a map of icon filenames to their stored paths (optional)
                 Map<String, String> iconMap = new HashMap<>();
-                for (MultipartFile iconFile : iconFiles) {
-                        if (!iconFile.isEmpty()) {
-                                String storedPath = fileStorageService.storeFile(iconFile);
-                                iconMap.put(iconFile.getOriginalFilename(), storedPath);
+                if (iconFiles != null && iconFiles.length > 0) {
+                        for (MultipartFile iconFile : iconFiles) {
+                                if (iconFile != null && !iconFile.isEmpty()) {
+                                        String storedPath = fileStorageService.storeFile(iconFile);
+                                        iconMap.put(iconFile.getOriginalFilename(), storedPath);
+                                }
                         }
                 }
 
@@ -465,38 +463,57 @@ public class AdminController {
                                 continue; // Skip header row
 
                         if (row.getCell(0) == null)
-                                break; // Break if the row is empty
+                                continue; // Skip completely empty rows
 
                         ServiceImportDTO dto = new ServiceImportDTO();
+
+                        // Column indices per requirement:
+                        // 0 level, 1 EN name, 2 EN desc, 3 AM name, 4 AM desc,
+                        // 5 OM name, 6 OM desc, 7 TI name, 8 TI desc,
+                        // 9 SO name, 10 SO desc, 11 icon
                         if (row.getCell(0) != null) {
                                 dto.setLevel((int) row.getCell(0).getNumericCellValue());
+                        } else {
+                                dto.setLevel(0);
                         }
-                        if (row.getCell(1) != null) {
-                                dto.setNameEnglish(row.getCell(1).getStringCellValue());
-                        }
-                        if (row.getCell(2) != null) {
-                                dto.setDescriptionEnglish(row.getCell(2).getStringCellValue());
-                        }
-                        if (row.getCell(3) != null) {
-                                dto.setNameAmharic(row.getCell(3).getStringCellValue());
-                        }
-                        if (row.getCell(4) != null) {
-                                dto.setDescriptionAmharic(row.getCell(4).getStringCellValue());
-                        }
-                        if (row.getCell(5) != null) {
-                                dto.setNameOromo(row.getCell(5).getStringCellValue());
-                        }
-                        if (row.getCell(6) != null) {
-                                dto.setDescriptionOromo(row.getCell(6).getStringCellValue());
-                        }
-                        if (row.getCell(7) != null) { // New column for icon filename
-                                dto.setIconFileName(row.getCell(7).getStringCellValue());
-                        }
+
+                        dto.setNameEnglish(getCellString(row, 1));
+                        dto.setDescriptionEnglish(getCellString(row, 2));
+                        dto.setNameAmharic(getCellString(row, 3));
+                        dto.setDescriptionAmharic(getCellString(row, 4));
+                        dto.setNameOromo(getCellString(row, 5));
+                        dto.setDescriptionOromo(getCellString(row, 6));
+                        dto.setNameTigrinya(getCellString(row, 7));
+                        dto.setDescriptionTigrinya(getCellString(row, 8));
+                        dto.setNameSomali(getCellString(row, 9));
+                        dto.setDescriptionSomali(getCellString(row, 10));
+                        dto.setIconFileName(getCellString(row, 11));
+
                         services.add(dto);
                 }
 
                 workbook.close();
                 return services;
+        }
+
+        // Safe string fetch converting any cell to trimmed string
+        private String getCellString(Row row, int idx) {
+                if (row == null)
+                        return "";
+                if (row.getCell(idx) == null)
+                        return "";
+                switch (row.getCell(idx).getCellType()) {
+                        case STRING:
+                                return row.getCell(idx).getStringCellValue().trim();
+                        case NUMERIC:
+                                return String.valueOf(row.getCell(idx).getNumericCellValue());
+                        case BOOLEAN:
+                                return Boolean.toString(row.getCell(idx).getBooleanCellValue());
+                        case FORMULA:
+                                return row.getCell(idx).getCellFormula();
+                        default:
+                                return "";
+                }
         }
 
         @PostMapping("/reset-db")

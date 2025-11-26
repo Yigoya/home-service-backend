@@ -22,6 +22,9 @@ public class ServiceCategory extends BaseEntity {
 
     private Boolean isMobileCategory = false;
 
+    @Column(name = "\"order\"")
+    private Long order;
+
     public Boolean getIsMobileCategory() {
         return isMobileCategory;
     }
@@ -44,5 +47,13 @@ public class ServiceCategory extends BaseEntity {
 
     public void setTranslations(Set<ServiceCategoryTranslation> translations) {
         this.translations = translations;
+    }
+
+    public Long getOrder() {
+        return order;
+    }
+
+    public void setOrder(Long order) {
+        this.order = order;
     }
 }

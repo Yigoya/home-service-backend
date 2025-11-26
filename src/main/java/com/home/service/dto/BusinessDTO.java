@@ -42,6 +42,8 @@ public class BusinessDTO {
     public OpeningHours openingHours;
     public User owner;
     public List<String> images;
+    public List<String> telephoneNumbers;
+    public List<String> mobileNumbers;
     public boolean isFeatured;
     public SubscriptionPlan subscriptionPlan;
 
@@ -76,8 +78,11 @@ public class BusinessDTO {
         this.openingHours = business.getOpeningHours();
 
         this.images = business.getImages();
+        this.telephoneNumbers = business.getTelephoneNumbers();
+        this.mobileNumbers = business.getMobileNumbers();
         this.isFeatured = business.isFeatured();
         this.subscriptionPlan = business.getSubscriptionPlan();
+        this.owner = business.getOwner();
     }
 
     public static final ObjectMapper mapper = new ObjectMapper()

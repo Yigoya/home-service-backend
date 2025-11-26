@@ -77,6 +77,7 @@ public class ServiceCategoryService {
         String icon = fileStorageService.storeFile(serviceCategoryRequest.getIcon());
         category.setIcon(icon);
         category.setIsMobileCategory(serviceCategoryRequest.getIsMobileCategory());
+    category.setOrder(serviceCategoryRequest.getOrder());
 
         // Save the category (translations will be saved automatically due to cascading)
         serviceCategoryRepository.save(category);
@@ -108,6 +109,9 @@ public class ServiceCategoryService {
         category.setIcon(icon);
         category.setIsMobileCategory(serviceCategory.getIsMobileCategory() == null ? category.getIsMobileCategory()
                 : serviceCategory.getIsMobileCategory());
+        if (serviceCategory.getOrder() != null) {
+            category.setOrder(serviceCategory.getOrder());
+        }
         serviceCategoryRepository.save(category);
         return "Service Category updated successfully";
     }

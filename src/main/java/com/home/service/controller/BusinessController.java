@@ -140,7 +140,7 @@ public class BusinessController {
 
     @GetMapping("/search")
     public ResponseEntity<Page<BusinessDTO>> searchBusinesses(
-            @RequestParam String query,
+        @RequestParam(required = false) String query,
             @RequestParam(required = false) String locationQuery,
             @RequestParam(required = false, name = "serviceIds") List<Long> serviceIds,
             @RequestParam(defaultValue = "0") int page,

@@ -99,6 +99,18 @@ public class Business extends BaseEntity {
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<B2BOrder> orders;
 
+    // New: store multiple telephone numbers extracted from Excel (e.g., "0116180449/0116623916")
+    @ElementCollection
+    @CollectionTable(name = "business_telephone_numbers", joinColumns = @JoinColumn(name = "business_id"))
+    @Column(name = "telephone")
+    private List<String> telephoneNumbers;
+
+    // New: store multiple mobile numbers extracted from Excel
+    @ElementCollection
+    @CollectionTable(name = "business_mobile_numbers", joinColumns = @JoinColumn(name = "business_id"))
+    @Column(name = "mobile")
+    private List<String> mobileNumbers;
+
     @PrePersist
     private void syncVerifiedOnPersist() {
         // Ensure both columns are written consistently

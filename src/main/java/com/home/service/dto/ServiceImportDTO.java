@@ -8,9 +8,13 @@ public class ServiceImportDTO {
     private String nameEnglish;
     private String nameAmharic;
     private String nameOromo;
+    private String nameTigrinya;
+    private String nameSomali;
     private String descriptionEnglish;
     private String descriptionAmharic;
     private String descriptionOromo;
+    private String descriptionTigrinya;
+    private String descriptionSomali;
     private String iconFileName; // New field for icon filename
 
     // Add getter and setter for iconFileName

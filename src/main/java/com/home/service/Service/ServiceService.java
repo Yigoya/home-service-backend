@@ -65,37 +65,62 @@ public class ServiceService {
                 ServiceCategory currentCategory = null;
 
                 for (ServiceImportDTO dto : services) {
+                        // Provide safe placeholders to satisfy non-null constraints
+                        String enName = defaultIfBlank(dto.getNameEnglish(), "-");
+                        String enDesc = defaultIfBlank(dto.getDescriptionEnglish(), "-");
+                        String amName = defaultIfBlank(dto.getNameAmharic(), enName);
+                        String amDesc = defaultIfBlank(dto.getDescriptionAmharic(), enDesc);
+                        String omName = defaultIfBlank(dto.getNameOromo(), enName);
+                        String omDesc = defaultIfBlank(dto.getDescriptionOromo(), enDesc);
+                        String tiName = defaultIfBlank(dto.getNameTigrinya(), enName);
+                        String tiDesc = defaultIfBlank(dto.getDescriptionTigrinya(), enDesc);
+                        String soName = defaultIfBlank(dto.getNameSomali(), enName);
+                        String soDesc = defaultIfBlank(dto.getDescriptionSomali(), enDesc);
+
                         if (dto.getLevel() == 0) {
                                 // Handle category
                                 currentCategory = new ServiceCategory();
                                 currentCategory.setIsMobileCategory(false); // Default value
 
                                 // Set icon if available
-                                if (dto.getIconFileName() != null && iconMap.containsKey(dto.getIconFileName())) {
+                                if (iconMap != null && !iconMap.isEmpty() && dto.getIconFileName() != null
+                                                && iconMap.containsKey(dto.getIconFileName())) {
                                         currentCategory.setIcon(iconMap.get(dto.getIconFileName()));
                                 }
 
                                 // Add translations
                                 ServiceCategoryTranslation translationEnglish = new ServiceCategoryTranslation();
-                                translationEnglish.setName(dto.getNameEnglish());
-                                translationEnglish.setDescription(dto.getDescriptionEnglish());
+                                translationEnglish.setName(enName);
+                                translationEnglish.setDescription(enDesc);
                                 translationEnglish.setLang(EthiopianLanguage.ENGLISH);
 
                                 ServiceCategoryTranslation translationAmharic = new ServiceCategoryTranslation();
-                                translationAmharic.setName(dto.getNameAmharic());
-                                translationAmharic.setDescription(dto.getDescriptionAmharic());
+                                translationAmharic.setName(amName);
+                                translationAmharic.setDescription(amDesc);
                                 translationAmharic.setLang(EthiopianLanguage.AMHARIC);
 
                                 ServiceCategoryTranslation translationOromo = new ServiceCategoryTranslation();
-                                translationOromo.setName(dto.getNameOromo());
-                                translationOromo.setDescription(dto.getDescriptionOromo());
+                                translationOromo.setName(omName);
+                                translationOromo.setDescription(omDesc);
                                 translationOromo.setLang(EthiopianLanguage.OROMO);
+
+                                ServiceCategoryTranslation translationTigrinya = new ServiceCategoryTranslation();
+                                translationTigrinya.setName(tiName);
+                                translationTigrinya.setDescription(tiDesc);
+                                translationTigrinya.setLang(EthiopianLanguage.TIGRINYA);
+
+                                ServiceCategoryTranslation translationSomali = new ServiceCategoryTranslation();
+                                translationSomali.setName(soName);
+                                translationSomali.setDescription(soDesc);
+                                translationSomali.setLang(EthiopianLanguage.SOMALI);
 
                                 ServiceCategory savedCategory = serviceCategoryRepository
                                                 .save(currentCategory);
                                 translationEnglish.setCategory(savedCategory);
                                 translationAmharic.setCategory(savedCategory);
                                 translationOromo.setCategory(savedCategory);
+                                translationTigrinya.setCategory(savedCategory);
+                                translationSomali.setCategory(savedCategory);
 
                                 savedCategory.getTranslations()
                                                 .add(serviceCategoryTranslationRepository.save(translationEnglish));
@@ -103,6 +128,10 @@ public class ServiceService {
                                                 .add(serviceCategoryTranslationRepository.save(translationAmharic));
                                 savedCategory.getTranslations()
                                                 .add(serviceCategoryTranslationRepository.save(translationOromo));
+                                savedCategory.getTranslations()
+                                                .add(serviceCategoryTranslationRepository.save(translationTigrinya));
+                                savedCategory.getTranslations()
+                                                .add(serviceCategoryTranslationRepository.save(translationSomali));
 
                         } else {
                                 // Handle service
@@ -110,37 +139,54 @@ public class ServiceService {
                                 service.setCategory(currentCategory); // Link to the current category
 
                                 // Set icon if available
-                                if (dto.getIconFileName() != null && iconMap.containsKey(dto.getIconFileName())) {
+                                if (iconMap != null && !iconMap.isEmpty() && dto.getIconFileName() != null
+                                                && iconMap.containsKey(dto.getIconFileName())) {
                                         service.setIcon(iconMap.get(dto.getIconFileName()));
                                 }
 
                                 // Add translations
                                 ServiceTranslation translationEnglish = new ServiceTranslation();
-                                translationEnglish.setName(dto.getNameEnglish());
-                                translationEnglish.setDescription(dto.getDescriptionEnglish());
+                                translationEnglish.setName(enName);
+                                translationEnglish.setDescription(enDesc);
                                 translationEnglish.setLang(EthiopianLanguage.ENGLISH);
 
                                 ServiceTranslation translationAmharic = new ServiceTranslation();
-                                translationAmharic.setName(dto.getNameAmharic());
-                                translationAmharic.setDescription(dto.getDescriptionAmharic());
+                                translationAmharic.setName(amName);
+                                translationAmharic.setDescription(amDesc);
                                 translationAmharic.setLang(EthiopianLanguage.AMHARIC);
 
                                 ServiceTranslation translationOromo = new ServiceTranslation();
-                                translationOromo.setName(dto.getNameOromo());
-                                translationOromo.setDescription(dto.getDescriptionOromo());
+                                translationOromo.setName(omName);
+                                translationOromo.setDescription(omDesc);
                                 translationOromo.setLang(EthiopianLanguage.OROMO);
+
+                                ServiceTranslation translationTigrinya = new ServiceTranslation();
+                                translationTigrinya.setName(tiName);
+                                translationTigrinya.setDescription(tiDesc);
+                                translationTigrinya.setLang(EthiopianLanguage.TIGRINYA);
+
+                                ServiceTranslation translationSomali = new ServiceTranslation();
+                                translationSomali.setName(soName);
+                                translationSomali.setDescription(soDesc);
+                                translationSomali.setLang(EthiopianLanguage.SOMALI);
 
                                 service = serviceRepository.save(service);
                                 levelToServiceMap.put(dto.getLevel(), service);
                                 translationEnglish.setService(service);
                                 translationAmharic.setService(service);
                                 translationOromo.setService(service);
+                                translationTigrinya.setService(service);
+                                translationSomali.setService(service);
                                 service.getTranslations()
                                                 .add(serviceTranslationRepository.save(translationEnglish));
                                 service.getTranslations()
                                                 .add(serviceTranslationRepository.save(translationAmharic));
                                 service.getTranslations()
                                                 .add(serviceTranslationRepository.save(translationOromo));
+                                service.getTranslations()
+                                                .add(serviceTranslationRepository.save(translationTigrinya));
+                                service.getTranslations()
+                                                .add(serviceTranslationRepository.save(translationSomali));
                                 serviceRepository.save(service);
 
                                 // Handle nested services
@@ -151,6 +197,13 @@ public class ServiceService {
                                 }
                         }
                 }
+        }
+
+        private String defaultIfBlank(String value, String defaultValue) {
+                if (value == null)
+                        return defaultValue;
+                String trimmed = value.trim();
+                return trimmed.isEmpty() ? defaultValue : trimmed;
         }
 
         public List<ServiceDTO> getAllServices(EthiopianLanguage lang) {
@@ -411,9 +464,13 @@ public class ServiceService {
         public List<ServiceCategoryWithServicesDTO> getAllServicesCategorized(EthiopianLanguage lang) {
                 List<ServiceCategory> categories = serviceCategoryRepository.findAll()
                                                 .stream()
-                                                .filter(category -> !category.getId().equals(5L)
-                                                                && !category.getId().equals(7L)
-                                                                && !category.getId().equals(8L))
+                                                // .filter(category -> !category.getId().equals(5L)
+                                                //                 && !category.getId().equals(7L)
+                                                //                 && !category.getId().equals(8L))
+                                                .sorted(Comparator
+                                                                .comparing(ServiceCategory::getOrder,
+                                                                                Comparator.nullsLast(Long::compareTo))
+                                                                .thenComparing(ServiceCategory::getId))
                                                 .collect(Collectors.toList());
                 return categories.stream().map(category -> convertToServiceCategoryWithServicesDTO(category, lang))
                                 .collect(Collectors.toList());
@@ -422,7 +479,10 @@ public class ServiceService {
         private ServiceCategoryWithServicesDTO convertToServiceCategoryWithServicesDTO(ServiceCategory category,
                         EthiopianLanguage lang) {
                 ServiceCategoryWithServicesDTO dto = new ServiceCategoryWithServicesDTO();
-                dto.setCategoryId(category.getId());
+                Long categoryOrder = category.getOrder() != null ? category.getOrder() : category.getId();
+                // Downstream clients read the legacy categoryId field to obtain ordering info.
+                dto.setCategoryId(categoryOrder);
+                dto.setOrder(category.getOrder());
                 dto.setCategoryName(category.getTranslations().stream()
                                 .filter(t -> t.getLang().equals(lang))
                                 .findFirst()

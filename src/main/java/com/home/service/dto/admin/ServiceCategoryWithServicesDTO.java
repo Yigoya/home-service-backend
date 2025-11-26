@@ -16,5 +16,7 @@ public class ServiceCategoryWithServicesDTO {
     private String icon;
     private List<ServiceWithCountsDTO> services;
 
+    private Long order;
+
     // Getters and Setters
 }

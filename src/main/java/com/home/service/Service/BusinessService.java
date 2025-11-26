@@ -327,10 +327,13 @@ public class BusinessService {
 
     public Page<Business> searchBusinesses(String query, String locationQuery, List<Long> serviceIds, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        String normalizedQuery = (query == null || query.isBlank()) ? null : query.trim();
+        String normalizedLocation = (locationQuery == null || locationQuery.isBlank()) ? null : locationQuery.trim();
+
         if (serviceIds == null || serviceIds.isEmpty()) {
-            return businessRepository.searchByNameOrDescription(query, locationQuery, pageable);
+            return businessRepository.searchByNameOrDescription(normalizedQuery, normalizedLocation, pageable);
         }
-        return businessRepository.search(query, locationQuery, serviceIds, pageable);
+        return businessRepository.search(normalizedQuery, normalizedLocation, serviceIds, pageable);
     }
 
     public Page<BusinessDTO> getFeaturedBusinesses(int page, int size) {
@@ -425,6 +428,8 @@ public class BusinessService {
         dto.setImages(entity.getImages());
         dto.setFeatured(entity.isFeatured());
         dto.setOwner(entity.getOwner());
+        dto.setTelephoneNumbers(entity.getTelephoneNumbers());
+        dto.setMobileNumbers(entity.getMobileNumbers());
         // Note: Map relationships as needed
         return dto;
     }

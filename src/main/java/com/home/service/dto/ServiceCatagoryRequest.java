@@ -24,4 +24,6 @@ public class ServiceCatagoryRequest {
     private EthiopianLanguage lang;
 
     private MultipartFile icon;
+
+    private Long order;
 }
