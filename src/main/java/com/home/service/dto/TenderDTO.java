@@ -25,6 +25,7 @@ public class TenderDTO {
     private LocalDateTime questionDeadline;
     @JsonProperty("isFree")
     private boolean free;
+    private String extraJson;
 
     public static TenderDTO createWithFullDetails(Tender tender) {
         TenderDTO tenderDTO = new TenderDTO();
@@ -40,7 +41,8 @@ public class TenderDTO {
         tenderDTO.setDatePosted(tender.getDatePosted());
         tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
         tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
-    tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
+        tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
+        tenderDTO.setExtraJson(tender.getExtraJson());
 
         return tenderDTO;
     }
@@ -57,7 +59,8 @@ public class TenderDTO {
         tenderDTO.setDatePosted(tender.getDatePosted());
         tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
         tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
-    tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
+        tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
+        tenderDTO.setExtraJson(tender.getExtraJson());
         return tenderDTO;
     }
 }

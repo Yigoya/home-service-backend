@@ -1,0 +1,117 @@
+{
+  "info": {
+    "name": "Promotion Endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "c2f1a5a3-9b8e-4d3f-9f31-aaaa000promos"
+  },
+  "item": [
+    {
+      "name": "Create Promotion (multipart)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"}
+        ],
+        "url": {"raw": "{{baseUrl}}/promotions", "host": ["{{baseUrl}}"], "path": ["promotions"]},
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "businessId", "value": "1", "type": "text"},
+            {"key": "title", "value": "Holiday Discount", "type": "text"},
+            {"key": "description", "value": "10% off selected services", "type": "text"},
+            {"key": "startDate", "value": "2025-12-01T00:00:00", "type": "text"},
+            {"key": "endDate", "value": "2025-12-31T23:59:59", "type": "text"},
+            {"key": "type", "value": "DISCOUNT", "type": "text"},
+            {"key": "discountPercentage", "value": "10", "type": "text"},
+            {"key": "isFeatured", "value": "true", "type": "text"},
+            {"key": "serviceIds", "value": "[101,102]", "type": "text"},
+            {"key": "termsAndConditions", "value": "Limited time offer.", "type": "text"},
+            {"key": "image", "type": "file", "src": ""}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Promotion By Id",
+      "request": {
+        "method": "GET",
+        "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}"]}
+      }
+    },
+    {
+      "name": "Update Promotion",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}"]},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"businessId\": 1,\n  \"title\": \"Holiday Discount Updated\",\n  \"description\": \"15% off selected services\",\n  \"startDate\": \"2025-12-01T00:00:00\",\n  \"endDate\": \"2025-12-31T23:59:59\",\n  \"type\": \"DISCOUNT\",\n  \"discountPercentage\": 15,\n  \"isFeatured\": true,\n  \"serviceIds\": [101,102],\n  \"imageUrl\": \"/uploads/sample.jpg\",\n  \"termsAndConditions\": \"Limited time offer.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Delete Promotion",
+      "request": {
+        "method": "DELETE",
+        "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}"]}
+      }
+    },
+    {
+      "name": "List Promotions By Business",
+      "request": {
+        "method": "GET",
+        "url": {"raw": "{{baseUrl}}/promotions/business/{{businessId}}?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["promotions", "business", "{{businessId}}"], "query": [{"key":"page","value":"0"},{"key":"size","value":"10"}]}
+      }
+    },
+    {
+      "name": "List Active Promotions (Admin)",
+      "request": {
+        "method": "GET",
+        "url": {"raw": "{{baseUrl}}/promotions/active?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["promotions", "active"], "query": [{"key":"page","value":"0"},{"key":"size","value":"10"}]}
+      }
+    },
+    {
+      "name": "Feature Promotion",
+      "request": {
+        "method": "PATCH",
+        "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}/featured", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}", "featured"]}
+      }
+    },
+    {
+      "name": "Unfeature Promotion",
+      "request": {
+        "method": "PATCH",
+        "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}/unfeatured", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}", "unfeatured"]}
+      }
+    },
+    {
+      "name": "Promotion Details (Admin)",
+      "request": {
+        "method": "GET",
+        "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}/details", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}", "details"]}
+      }
+    },
+
+    {"name": "Public: Active Promotions", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public?page=0&size=12", "host": ["{{baseUrl}}"], "path": ["promotions","public"], "query": [{"key":"page","value":"0"},{"key":"size","value":"12"}]}}},
+    {"name": "Public: Promotion By Id", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/{{promotionId}}", "host": ["{{baseUrl}}"], "path": ["promotions","public","{{promotionId}}"]}}},
+    {"name": "Public: Featured Promotions", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/featured?page=0&size=8", "host": ["{{baseUrl}}"], "path": ["promotions","public","featured"], "query": [{"key":"page","value":"0"},{"key":"size","value":"8"}]}}},
+    {"name": "Public: Promotions By Type", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/type/DISCOUNT?page=0&size=12", "host": ["{{baseUrl}}"], "path": ["promotions","public","type","DISCOUNT"], "query": [{"key":"page","value":"0"},{"key":"size","value":"12"}]}}},
+    {"name": "Public: Promotions By Industry", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/industry/{{industry}}?page=0&size=12", "host": ["{{baseUrl}}"], "path": ["promotions","public","industry","{{industry}}"], "query": [{"key":"page","value":"0"},{"key":"size","value":"12"}]}}},
+    {"name": "Public: Promotions By Business Type", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/business-type/RETAIL?page=0&size=12", "host": ["{{baseUrl}}"], "path": ["promotions","public","business-type","RETAIL"], "query": [{"key":"page","value":"0"},{"key":"size","value":"12"}]}}},
+    {"name": "Public: Search Promotions", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/search?query=holiday&page=0&size=12", "host": ["{{baseUrl}}"], "path": ["promotions","public","search"], "query": [{"key":"query","value":"holiday"},{"key":"page","value":"0"},{"key":"size","value":"12"}]}}},
+    {"name": "Public: Promotions By Business", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/business/{{businessId}}?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["promotions","public","business","{{businessId}}"], "query": [{"key":"page","value":"0"},{"key":"size","value":"10"}]}}},
+    {"name": "Public: Promotions By Service", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/service/{{serviceId}}?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["promotions","public","service","{{serviceId}}"], "query": [{"key":"page","value":"0"},{"key":"size","value":"10"}]}}},
+    {"name": "Public: Promotions By Category", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/promotions/public/category/{{categoryId}}?page=0&size=12", "host": ["{{baseUrl}}"], "path": ["promotions","public","category","{{categoryId}}"], "query": [{"key":"page","value":"0"},{"key":"size","value":"12"}]}}}
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "promotionId", "value": "1"},
+    {"key": "businessId", "value": "1"},
+    {"key": "serviceId", "value": "101"},
+    {"key": "categoryId", "value": "5"},
+    {"key": "industry", "value": "Construction"}
+  ]
+}

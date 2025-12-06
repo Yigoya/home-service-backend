@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.home.service.Service.BookingService;
 import com.home.service.Service.ContactUsService;
-import com.home.service.Service.CustomerService;
 import com.home.service.Service.DisputeService;
 import com.home.service.Service.ReviewService;
 import com.home.service.Service.ServiceCategoryService;
@@ -144,6 +143,23 @@ public class ServiceManagementController {
                 .getServiceCategoryWithServicesById(id, lang);
         return serviceCategory.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Delete a service category along with its related services
+    @CrossOrigin(originPatterns = "*")
+    @DeleteMapping("/service-categories/{id}")
+    public ResponseEntity<Void> deleteServiceCategory(@PathVariable Long id) {
+        serviceCategoryService.deleteServiceCategoryWithRelatedServices(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Batch delete service categories along with their related services
+    // Usage: DELETE /service-categories?ids=1,2,3
+    @CrossOrigin(originPatterns = "*")
+    @DeleteMapping("/service-categories")
+    public ResponseEntity<Void> deleteServiceCategories(@RequestParam("ids") java.util.List<Long> ids) {
+        serviceCategoryService.deleteServiceCategoriesWithRelatedServices(ids);
+        return ResponseEntity.noContent().build();
     }
 
     // @PutMapping("/services/{id}/icon")

@@ -85,6 +85,7 @@ public class TechnicianService {
         private final BookingService bookingService;
         private final SubscriptionService subscriptionService;
         private final TechnicianPortfolioRepository technicianPortfolioRepository;
+        private final com.home.service.services.EmailService emailService;
 
         public TechnicianService(UserService userService, FileStorageService fileStorageService,
                         TechnicianRepository technicianRepository, UserRepository userRepository,
@@ -95,7 +96,8 @@ public class TechnicianService {
                         ReviewRepository reviewRepository, BookingRepository bookingRepository,
                         OperatorRepository operatorRepository, BookingService bookingService,
                         SubscriptionService subscriptionService,
-                        TechnicianPortfolioRepository technicianPortfolioRepository) {
+                        TechnicianPortfolioRepository technicianPortfolioRepository,
+                        com.home.service.services.EmailService emailService) {
                 this.subscriptionService = subscriptionService;
                 this.operatorRepository = operatorRepository;
                 this.userService = userService;
@@ -112,6 +114,7 @@ public class TechnicianService {
                 this.operatorRepository = operatorRepository;
                 this.bookingService = bookingService;
                 this.technicianPortfolioRepository = technicianPortfolioRepository;
+                this.emailService = emailService;
 
         }
 
@@ -293,6 +296,7 @@ public class TechnicianService {
                 user.setPhoneNumber(signupRequest.getPhoneNumber());
                 user.setPassword(signupRequest.getPassword()); // Remember to hash the password in production
                 user.setRole(UserRole.TECHNICIAN);
+                user.setStatus(AccountStatus.INACTIVE);
                 String profileImagePath = fileStorageService.storeFile(signupRequest.getProfileImage());
                 user.setProfileImage(profileImagePath);
                 userService.saveUser(user);
@@ -349,6 +353,13 @@ public class TechnicianService {
                 technicianAddress.setLongitude(signupRequest.getLongitude());
 
                 newTechnician.getTechnicianAddresses().add(technicianAddressRepository.save(technicianAddress));
+
+                // Send verification email (token + code)
+                try {
+                        emailService.sendVerifyEmail(user);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
 
                 // Return the same payload as /auth/login
                 return userService.buildAuthenticationResponse(user);

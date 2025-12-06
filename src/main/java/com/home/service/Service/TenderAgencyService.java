@@ -17,11 +17,10 @@ import com.home.service.models.TenderAgencyProfile;
 import com.home.service.models.User;
 import com.home.service.models.enums.TenderStatus;
 import com.home.service.models.enums.UserRole;
-import com.home.service.repositories.ServiceRepository;
 import com.home.service.repositories.TenderAgencyProfileRepository;
-import com.home.service.repositories.TenderRepository;
 import com.home.service.repositories.UserRepository;
 import com.home.service.services.FileStorageService;
+import com.home.service.services.EmailService;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +34,10 @@ public class TenderAgencyService {
 	private final UserRepository userRepository;
 	private final FileStorageService fileStorageService;
 	private final PasswordEncoder passwordEncoder;
-	private final TenderRepository tenderRepository;
-	private final ServiceRepository servicesRepository;
+	// private final TenderRepository tenderRepository;
+	// private final ServiceRepository servicesRepository;
 	private final UserService userService;
+	private final EmailService emailService;
 
 	public AuthenticationResponse registerAgency(TenderAgencyRegistrationRequest request) {
 		if (userRepository.existsByEmail(request.getEmail())) {
@@ -49,6 +49,7 @@ public class TenderAgencyService {
 		user.setName(request.getCompanyName());
 		user.setPhoneNumber(request.getContactPerson());
 		user.setRole(UserRole.AGENCY);
+		user.setStatus(com.home.service.models.enums.AccountStatus.INACTIVE);
 
 		User savedUser = userRepository.save(user);
 
@@ -60,7 +61,14 @@ public class TenderAgencyService {
 		agency.setContactPerson(request.getContactPerson());
 		agency.setVerifiedStatus("PENDING");
 
-		TenderAgencyProfile savedAgency = tenderAgencyProfileRepository.save(agency);
+		tenderAgencyProfileRepository.save(agency);
+
+		// Send verification email (token + code) to agency user
+		try {
+			emailService.sendVerifyEmail(savedUser);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		// Return login-like auth payload for newly registered agency user
 		return userService.buildAuthenticationResponse(savedUser);

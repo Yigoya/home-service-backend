@@ -90,8 +90,9 @@ public class TenderService {
         tender.setService(category);
         tender.setStatus(tenderDTO.getStatus() != null ? tenderDTO.getStatus() : TenderStatus.OPEN);
         tender.setDatePosted(LocalDateTime.now());
-    // default to false if not specified
-    tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
+        // default to false if not specified
+        tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
+        tender.setExtraJson(tenderDTO.getExtraJson());
 
         if (tenderDTO.getFile() != null) {
             String filePath = fileStorageService.storeFile(tenderDTO.getFile());
@@ -120,7 +121,8 @@ public class TenderService {
         tender.setAgency(agency);
         tender.setQuestionDeadline(request.getQuestionDeadline());
         tender.setStatus(TenderStatus.OPEN);
-    tender.setFree(Boolean.TRUE.equals(request.getIsFree()));
+        tender.setFree(Boolean.TRUE.equals(request.getIsFree()));
+        tender.setExtraJson(request.getExtraJson());
 
         Tender savedTender = tenderRepository.save(tender);
         return mapToTenderResponse(savedTender);
@@ -186,6 +188,9 @@ public class TenderService {
         tender.setStatus(tenderDTO.getStatus());
         if (tenderDTO.getIsFree() != null) {
             tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
+        }
+        if (tenderDTO.getExtraJson() != null) {
+            tender.setExtraJson(tenderDTO.getExtraJson());
         }
 
         if (tenderDTO.getCategoryId() != null) {
@@ -419,6 +424,12 @@ public class TenderService {
         tender.setClosingDate(request.getClosingDate());
         tender.setContactInfo(request.getContactInfo());
         tender.setQuestionDeadline(request.getQuestionDeadline());
+        if (request.getIsFree() != null) {
+            tender.setFree(Boolean.TRUE.equals(request.getIsFree()));
+        }
+        if (request.getExtraJson() != null) {
+            tender.setExtraJson(request.getExtraJson());
+        }
 
         Tender updatedTender = tenderRepository.save(tender);
         return mapToTenderResponse(updatedTender);
@@ -462,6 +473,7 @@ public class TenderService {
                 tender.getServiceId(),
                 tender.getDocumentPath(),
                 tender.getQuestionDeadline(),
-                Boolean.TRUE.equals(tender.getFree()));
+            Boolean.TRUE.equals(tender.getFree()),
+            tender.getExtraJson());
     }
 }

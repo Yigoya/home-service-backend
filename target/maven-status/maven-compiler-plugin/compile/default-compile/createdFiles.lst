@@ -399,7 +399,6 @@ com/home/service/config/exceptions/GeneralException.class
 com/home/service/dto/ContactUsRequest.class
 com/home/service/models/CompanyProfile.class
 com/home/service/dto/RelatedJobDto.class
-com/home/service/controller/AdminController$1.class
 com/home/service/models/SavedJobApplication.class
 com/home/service/models/QuestionOption.class
 com/home/service/dto/BusinessServiceRequest$1.class
@@ -419,6 +418,7 @@ com/home/service/Service/SavedContentService.class
 com/home/service/repositories/BusinessClaimRepository.class
 com/home/service/repositories/TechnicianWeeklyScheduleRepository.class
 com/home/service/models/enums/EnquiryStatus.class
+com/home/service/controller/PromotionController.class
 com/home/service/repositories/SavedBusinessRepository.class
 com/home/service/controller/AdminController.class
 com/home/service/dto/admin/ServiceCategoryWithServicesDTO.class

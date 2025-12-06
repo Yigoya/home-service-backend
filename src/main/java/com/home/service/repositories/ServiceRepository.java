@@ -12,6 +12,9 @@ import com.home.service.models.Services;
 public interface ServiceRepository extends JpaRepository<Services, Long> {
     List<Services> findByCategoryOrderByIdAsc(ServiceCategory category);
 
+    // Also fetch services that reference the category as a mobile category
+    List<Services> findByMobileCategoryOrderByIdAsc(ServiceCategory category);
+
     // Returns services filtered by category ordered by displayOrder ascending
     @Query("SELECT s FROM Services s WHERE s.category = :category ORDER BY CASE WHEN s.displayOrder IS NULL THEN 1 ELSE 0 END, s.displayOrder ASC, s.id ASC")
     List<Services> findByCategoryOrderByDisplayOrderAsc(@Param("category") ServiceCategory category);

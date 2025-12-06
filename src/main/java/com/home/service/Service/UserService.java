@@ -1,8 +1,6 @@
 package com.home.service.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import java.util.UUID;
@@ -11,7 +9,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +20,6 @@ import com.home.service.dto.NewPasswordRequest;
 import com.home.service.dto.OperatorResponse;
 import com.home.service.dto.SignupRequest;
 import com.home.service.dto.SocialLoginRequest;
-import com.home.service.dto.TechnicianProfileDTO;
 import com.home.service.dto.TechnicianResponse;
 import com.home.service.dto.TenderAgencyProfileResponse;
 import com.home.service.dto.UserRegistrationRequest;
@@ -67,8 +63,8 @@ public class UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private MyUserDetailsService userDetailsService;
+    // @Autowired
+    // private MyUserDetailsService userDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -124,7 +120,8 @@ public class UserService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : UserRole.USER);
-        user.setStatus(AccountStatus.ACTIVE);
+        // New users must verify their email first
+        user.setStatus(AccountStatus.INACTIVE);
         user.setCreatedAt(LocalDateTime.now());
 
         User savedUser = userRepository.save(user);
@@ -142,6 +139,14 @@ public class UserService {
             companyProfile.setEmail(savedUser.getEmail());
             companyProfile.setPhone(savedUser.getPhoneNumber());
             companyProfileRepository.save(companyProfile);
+        }
+        
+        // Send verification email to the newly registered user
+        try {
+            emailService.sendVerifyEmail(savedUser);
+        } catch (Exception e) {
+            // Log and continue - signup should not fail because of mail issues
+            e.printStackTrace();
         }
 
         return savedUser;
@@ -164,27 +169,53 @@ public class UserService {
     }
 
     @Transactional
-    public Map<String, Object> verifyToken(String token) {
-        System.out.println("Token: " + token);
-        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalStateException("Token is invalid or expired."));
-        System.out.println(verificationToken.getExpiryDate());
-        // if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-        // throw new IllegalStateException("Token is invalid or expired.");
-        // }
+    public AuthenticationResponse verifyTokenOrCode(String token, String code) {
+        VerificationToken verificationToken = null;
+        if (token != null && !token.isEmpty()) {
+            verificationToken = verificationTokenRepository.findByToken(token)
+                    .orElseThrow(() -> new IllegalStateException("Token is invalid or expired."));
+        } else if (code != null && !code.isEmpty()) {
+            verificationToken = verificationTokenRepository.findByCode(code)
+                    .orElseThrow(() -> new IllegalStateException("Code is invalid or expired."));
+        } else {
+            throw new IllegalArgumentException("Token or code is required");
+        }
 
-        Technician technician = technicianRepository.findByUser(verificationToken.getUser())
-                .orElseThrow(() -> new IllegalStateException("Technician not found"));
+        // Allow small time skew and increase robustness: consider valid if within expiry + 5 minutes
+        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now().minusMinutes(5))) {
+            throw new IllegalStateException("Token is invalid or expired.");
+        }
 
-        technician.setVerified(true);
-        technicianRepository.save(technician);
-        TechnicianProfileDTO technicianProfileDTO = new TechnicianProfileDTO(technician,
-                verificationToken.getUser().getPreferredLanguage());
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Account verified successfully.");
-        response.put("technician", technicianProfileDTO);
+        User user = verificationToken.getUser();
 
-        return response;
+        // Activate user account
+        user.setStatus(AccountStatus.ACTIVE);
+        userRepository.save(user);
+
+        // If the user is a technician, mark technician profile as verified
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            Technician technician = technicianRepository.findByUser(user)
+                    .orElse(null);
+            if (technician != null) {
+                technician.setVerified(true);
+                technicianRepository.save(technician);
+            }
+        }
+
+        // Remove the token after successful verification
+        verificationTokenRepository.delete(verificationToken);
+
+        // Return the same authentication payload as login/signup
+        return buildAuthenticationResponse(user);
+    }
+
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (user.getStatus() == AccountStatus.ACTIVE) {
+            throw new IllegalStateException("Account is already active");
+        }
+        emailService.sendVerifyEmail(user);
     }
 
     public String requestPasswordReset(String email) {

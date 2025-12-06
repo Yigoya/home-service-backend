@@ -1,6 +1,7 @@
 package com.home.service.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,12 +11,10 @@ import com.home.service.dto.ServiceCategoryWithServicesDTO;
 import com.home.service.dto.ServiceDTO;
 import com.home.service.models.ServiceCategory;
 import com.home.service.models.ServiceCategoryTranslation;
-import com.home.service.models.ServiceTranslation;
 import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.repositories.ServiceCategoryRepository;
 import com.home.service.repositories.ServiceCategoryTranslationRepository;
 import com.home.service.repositories.ServiceRepository;
-import com.home.service.repositories.ServiceTranslationRepository;
 import com.home.service.services.FileStorageService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -149,7 +148,40 @@ public class ServiceCategoryService {
     }
 
     public void deleteServiceCategory(Long id) {
-        serviceCategoryRepository.deleteById(id);
+        // Ensure transactional consistency: delete related services, then the category
+        deleteServiceCategoryWithRelatedServices(id);
+    }
+
+        @Transactional
+        public void deleteServiceCategoryWithRelatedServices(Long id) {
+        ServiceCategory category = serviceCategoryRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Service Category not found"));
+
+        // Delete services referencing this category (primary or mobile category)
+        List<com.home.service.models.Services> primaryServices = serviceRepository
+            .findByCategoryOrderByIdAsc(category);
+        List<com.home.service.models.Services> mobileServices = serviceRepository
+            .findByMobileCategoryOrderByIdAsc(category);
+
+        // Merge both lists and delete to trigger cascades to translations and dependents
+        List<com.home.service.models.Services> allServices = java.util.stream.Stream
+            .concat(primaryServices.stream(), mobileServices.stream())
+            .distinct()
+            .toList();
+
+        if (!allServices.isEmpty()) {
+            serviceRepository.deleteAll(allServices);
+        }
+
+        // Finally, delete the category (translations will cascade)
+        serviceCategoryRepository.delete(category);
+        }
+
+    @Transactional
+    public void deleteServiceCategoriesWithRelatedServices(java.util.List<Long> ids) {
+        for (Long id : ids) {
+            deleteServiceCategoryWithRelatedServices(id);
+        }
     }
 
     public void addIconsToCategories(Map<Long, MultipartFile> categoryIcons) {

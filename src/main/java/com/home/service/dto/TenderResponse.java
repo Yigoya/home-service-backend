@@ -24,6 +24,7 @@ public class TenderResponse {
     private LocalDateTime questionDeadline;
     @com.fasterxml.jackson.annotation.JsonProperty("isFree")
     private boolean free;
+    private String extraJson;
 
     // Getters and Setters
     public Long getId() {
@@ -120,5 +121,13 @@ public class TenderResponse {
 
     public void setFree(boolean free) {
         this.free = free;
+    }
+
+    public String getExtraJson() {
+        return extraJson;
+    }
+
+    public void setExtraJson(String extraJson) {
+        this.extraJson = extraJson;
     }
 }

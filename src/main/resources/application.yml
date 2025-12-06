@@ -55,3 +55,17 @@ chapa:
     url: "https://home-service-managment.vercel.app/" # Callback URL for payment status updates
   return:
     url: "https://home-service-managment.vercel.app/" # Return URL after payment completion
+
+# Role-based application base URLs used in verification links
+app:
+  urls:
+    base:
+      default: "https://www.hulumoya.com"
+      customer: "https://www.hulumoya.com"
+      technician: "https://www.hulumoya.com"
+      operator: "https://www.hulumoya.com"
+      admin: "https://www.hulumoya.com"
+      user: "https://business-dashboard-pi.vercel.app"
+      agency: "https://tender-agency-dashboard.vercel.app"
+      job_company: "https://www.hulumoya.com"
+      job_seeker: "https://www.hulumoya.com"

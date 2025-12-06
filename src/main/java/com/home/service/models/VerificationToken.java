@@ -19,6 +19,7 @@ public class VerificationToken {
 
     private String token;
     private LocalDateTime expiryDate;
+    private String code; // 6-digit code for mobile verification
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")

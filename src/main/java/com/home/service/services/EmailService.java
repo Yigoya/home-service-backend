@@ -4,9 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -33,6 +31,50 @@ public class EmailService {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
+    // Role-based base URLs (can be overridden via application.yml)
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.default:https://www.hulumoya.com}")
+    private String defaultBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.customer:https://www.hulumoya.com}")
+    private String customerBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.technician:https://www.hulumoya.com}")
+    private String technicianBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.operator:https://www.hulumoya.com}")
+    private String operatorBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.admin:https://www.hulumoya.com}")
+    private String adminBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.user:https://www.hulumoya.com}")
+    private String genericUserBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.agency:https://www.hulumoya.com}")
+    private String agencyBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.job_company:https://www.hulumoya.com}")
+    private String jobCompanyBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.job_seeker:https://www.hulumoya.com}")
+    private String jobSeekerBaseUrl;
+
+    private String getBaseUrlForRole(com.home.service.models.enums.UserRole role) {
+        if (role == null) return defaultBaseUrl;
+        switch (role) {
+            case CUSTOMER:
+                return customerBaseUrl != null ? customerBaseUrl : defaultBaseUrl;
+            case TECHNICIAN:
+                return technicianBaseUrl != null ? technicianBaseUrl : defaultBaseUrl;
+            case OPERATOR:
+                return operatorBaseUrl != null ? operatorBaseUrl : defaultBaseUrl;
+            case ADMIN:
+                return adminBaseUrl != null ? adminBaseUrl : defaultBaseUrl;
+            case USER:
+                return genericUserBaseUrl != null ? genericUserBaseUrl : defaultBaseUrl;
+            case AGENCY:
+                return agencyBaseUrl != null ? agencyBaseUrl : defaultBaseUrl;
+            case JOB_COMPANY:
+                return jobCompanyBaseUrl != null ? jobCompanyBaseUrl : defaultBaseUrl;
+            case JOB_SEEKER:
+                return jobSeekerBaseUrl != null ? jobSeekerBaseUrl : defaultBaseUrl;
+            default:
+                return defaultBaseUrl;
+        }
+    }
+
     public void sendHtmlEmail(String to, String subject, String htmlContent) {
         MimeMessage message = mailSender.createMimeMessage();
         try {
@@ -48,16 +90,30 @@ public class EmailService {
 
     public void sendVerifyEmail(User user) {
         String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
+        String code = String.format("%06d", (int)(Math.random() * 1000000));
+        // Upsert token for user to avoid unique constraint violation
+        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByUser(user);
+        VerificationToken verificationToken;
+        if (optionalToken.isPresent()) {
+            verificationToken = optionalToken.get();
+            verificationToken.setToken(token);
+            verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+            verificationToken.setCode(code);
+        } else {
+            verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
+            verificationToken.setCode(code);
+        }
         verificationTokenRepository.save(verificationToken);
 
         String subject = "Account Verification";
+        String baseUrl = getBaseUrlForRole(user.getRole());
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
-                + "<h2 style='color: #2E86C1;'>Account Verification</h2>"
-                + "<p>To verify your email, click the link below:</p>"
-                + "<a href='http://188.245.43.110/auth/verify?token=" + token
-                + "' style='color: #2E86C1;'>Verify Email</a>"
-                + "</body></html>";
+            + "<h2 style='color: #2E86C1;'>Account Verification</h2>"
+            + "<p>To verify your account, click the link below or use this 6-digit code in the mobile app:</p>"
+            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>" + code + "</pre>"
+            + "<a href='" + baseUrl + "/auth/verify?token=" + token
+            + "' style='color: #2E86C1;'>Verify Email</a>"
+            + "</body></html>";
 
         sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
@@ -98,6 +154,7 @@ public class EmailService {
 
     public void sendTechnicianVerificationEmail(User user) {
         String token = UUID.randomUUID().toString();
+        String code = String.format("%06d", (int)(Math.random() * 1000000));
         Optional<VerificationToken> optionalToken = verificationTokenRepository.findByUser(user);
         VerificationToken verificationToken;
         if (optionalToken.isPresent()) {
@@ -107,14 +164,17 @@ public class EmailService {
         } else {
             verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
         }
+        verificationToken.setCode(code);
         verificationTokenRepository.save(verificationToken);
 
         String subject = "Technician Account Verification";
+        String baseUrlTech = getBaseUrlForRole(com.home.service.models.enums.UserRole.TECHNICIAN);
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
-                + "<h2 style='color: #2E86C1;'>Technician Account is Verified</h2>"
-                + "<p>Congratulations! Your application has been accepted.</p>"
-                
-                + "</body></html>";
+            + "<h2 style='color: #2E86C1;'>Technician Account Verification</h2>"
+            + "<p>Please verify your technician account using this code in the app or the link below:</p>"
+            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>" + code + "</pre>"
+            + "<a href='" + baseUrlTech + "/auth/verify?token=" + token + "' style='color: #2E86C1;'>Verify Account</a>"
+            + "</body></html>";
 
         sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }

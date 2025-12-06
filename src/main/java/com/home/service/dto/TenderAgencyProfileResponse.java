@@ -1,8 +1,10 @@
 package com.home.service.dto;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.home.service.models.TenderAgencyProfile;
+import com.home.service.models.Tender;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,7 +30,10 @@ public class TenderAgencyProfileResponse {
         this.companyName = tenderAgencyProfile.getCompanyName();
         this.tinNumber = tenderAgencyProfile.getTinNumber();
         this.businessLicensePath = tenderAgencyProfile.getBusinessLicensePath();
-        this.tenderIds = tenderAgencyProfile.getTenders().stream().map(tender -> tender.getId()).toList();
+        List<Tender> agencyTenders = tenderAgencyProfile.getTenders() == null
+            ? Collections.<Tender>emptyList()
+            : tenderAgencyProfile.getTenders();
+        this.tenderIds = agencyTenders.stream().map(Tender::getId).toList();
         this.website = tenderAgencyProfile.getWebsite();
         this.contactPerson = tenderAgencyProfile.getContactPerson();
         this.verifiedStatus = tenderAgencyProfile.getVerifiedStatus();

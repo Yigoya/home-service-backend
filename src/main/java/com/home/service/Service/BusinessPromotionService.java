@@ -378,6 +378,14 @@ public class BusinessPromotionService {
         return promotions.map(PublicPromotionDTO::new);
     }
 
+    // Get active promotions by service category id
+    public Page<PublicPromotionDTO> getPromotionsByCategoryId(Long categoryId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        LocalDateTime now = LocalDateTime.now();
+        Page<BusinessPromotion> promotions = businessPromotionRepository.findActivePromotionsByCategoryId(now, categoryId, pageable);
+        return promotions.map(PublicPromotionDTO::new);
+    }
+
     // // Method to get a unique promotion for a device based on service ID
     // public PublicPromotionDTO getUniquePromotionForDevice(Long serviceId, String deviceIdentifier) {
     //     // First verify that the service exists

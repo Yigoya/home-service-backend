@@ -11,6 +11,7 @@ public class TenderCreationRequest {
     private Long serviceId;
     private LocalDateTime questionDeadline;
     private Boolean isFree; // optional; defaults to false if null
+    private String extraJson; // optional JSON blob for extended tender details
 
     // Getters and Setters
     public String getTitle() {
@@ -75,5 +76,13 @@ public class TenderCreationRequest {
 
     public void setIsFree(Boolean isFree) {
         this.isFree = isFree;
+    }
+
+    public String getExtraJson() {
+        return extraJson;
+    }
+
+    public void setExtraJson(String extraJson) {
+        this.extraJson = extraJson;
     }
 }

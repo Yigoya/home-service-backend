@@ -91,6 +91,7 @@
 /home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/PaymentController.java
 /home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/PaymentMethodController.java
 /home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/ProfileController.java
+/home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/PromotionController.java
 /home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/ReviewController.java
 /home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/SavedContentController.java
 /home/yigo/dev/projects/home-service-backend/src/main/java/com/home/service/controller/SearchController.java

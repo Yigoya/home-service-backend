@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -137,6 +138,8 @@ public class AdminController {
         private List<ServiceCategoryWithServicesDTO> categoriesEnglish;
         private List<ServiceCategoryWithServicesDTO> categoriesAmharic;
         private List<ServiceCategoryWithServicesDTO> categoriesOromo;
+        private List<ServiceCategoryWithServicesDTO> categoriesTigrinya;
+        private List<ServiceCategoryWithServicesDTO> categoriesSomali;
 
         private boolean isUpdated = false;
 
@@ -147,6 +150,8 @@ public class AdminController {
                 this.categoriesEnglish = null;
                 this.categoriesAmharic = null;
                 this.categoriesOromo = null;
+                this.categoriesTigrinya = null;
+                this.categoriesSomali = null;
         }
 
         @GetMapping("/services")
@@ -162,12 +167,22 @@ public class AdminController {
                                 categoriesOromo = serviceService.getAllServicesCategorized(lang);
                         }
                         return ResponseEntity.ok(categoriesOromo);
+                } else if (lang == EthiopianLanguage.TIGRINYA) {
+                        if (categoriesTigrinya == null || isUpdated) {
+                                categoriesTigrinya = serviceService.getAllServicesCategorized(lang);
+                        }
+                        return ResponseEntity.ok(categoriesTigrinya);
+                } else if (lang == EthiopianLanguage.SOMALI) {
+                        if (categoriesSomali == null || isUpdated) {
+                                categoriesSomali = serviceService.getAllServicesCategorized(lang);
+                        }
+                        return ResponseEntity.ok(categoriesSomali);
                 } else {
                         if (categoriesEnglish == null || isUpdated) {
                                 categoriesEnglish = serviceService.getAllServicesCategorized(lang);
                         }
                         return ResponseEntity.ok(categoriesEnglish);
-                }
+                } 
         }
 
         @GetMapping("/unverified-technicians")
@@ -455,64 +470,80 @@ public class AdminController {
 
         private List<ServiceImportDTO> readExcelFile(InputStream inputStream) throws IOException {
                 List<ServiceImportDTO> services = new ArrayList<>();
-                Workbook workbook = new XSSFWorkbook(inputStream);
-                Sheet sheet = workbook.getSheetAt(0);
+                try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+                        Sheet sheet = workbook.getSheetAt(0);
+                        DataFormatter formatter = new DataFormatter();
 
-                for (Row row : sheet) {
-                        if (row.getRowNum() == 0)
-                                continue; // Skip header row
+                        for (Row row : sheet) {
+                                if (row.getRowNum() == 0)
+                                        continue; // Skip header row
 
-                        if (row.getCell(0) == null)
-                                continue; // Skip completely empty rows
+                                // Treat rows with an empty first 12 columns as empty
+                                boolean allEmpty = true;
+                                for (int i = 0; i <= 11; i++) {
+                                        String v = safeGetCellString(row, i, formatter);
+                                        if (!v.isEmpty()) {
+                                                allEmpty = false;
+                                                break;
+                                        }
+                                }
+                                if (allEmpty) continue;
 
-                        ServiceImportDTO dto = new ServiceImportDTO();
+                                ServiceImportDTO dto = new ServiceImportDTO();
 
-                        // Column indices per requirement:
-                        // 0 level, 1 EN name, 2 EN desc, 3 AM name, 4 AM desc,
-                        // 5 OM name, 6 OM desc, 7 TI name, 8 TI desc,
-                        // 9 SO name, 10 SO desc, 11 icon
-                        if (row.getCell(0) != null) {
-                                dto.setLevel((int) row.getCell(0).getNumericCellValue());
-                        } else {
-                                dto.setLevel(0);
+                                // Column indices per requirement:
+                                // 0 level, 1 EN name, 2 EN desc, 3 AM name, 4 AM desc,
+                                // 5 OM name, 6 OM desc, 7 TI name, 8 TI desc,
+                                // 9 SO name, 10 SO desc, 11 icon
+                                String levelStr = safeGetCellString(row, 0, formatter);
+                                dto.setLevel(parseIntOrDefault(levelStr, 0));
+
+                                dto.setNameEnglish(safeGetCellString(row, 1, formatter));
+                                dto.setDescriptionEnglish(safeGetCellString(row, 2, formatter));
+                                dto.setNameAmharic(safeGetCellString(row, 3, formatter));
+                                dto.setDescriptionAmharic(safeGetCellString(row, 4, formatter));
+                                dto.setNameOromo(safeGetCellString(row, 5, formatter));
+                                dto.setDescriptionOromo(safeGetCellString(row, 6, formatter));
+                                dto.setNameTigrinya(safeGetCellString(row, 7, formatter));
+                                dto.setDescriptionTigrinya(safeGetCellString(row, 8, formatter));
+                                dto.setNameSomali(safeGetCellString(row, 9, formatter));
+                                dto.setDescriptionSomali(safeGetCellString(row, 10, formatter));
+                                dto.setIconFileName(safeGetCellString(row, 11, formatter));
+
+                                services.add(dto);
                         }
-
-                        dto.setNameEnglish(getCellString(row, 1));
-                        dto.setDescriptionEnglish(getCellString(row, 2));
-                        dto.setNameAmharic(getCellString(row, 3));
-                        dto.setDescriptionAmharic(getCellString(row, 4));
-                        dto.setNameOromo(getCellString(row, 5));
-                        dto.setDescriptionOromo(getCellString(row, 6));
-                        dto.setNameTigrinya(getCellString(row, 7));
-                        dto.setDescriptionTigrinya(getCellString(row, 8));
-                        dto.setNameSomali(getCellString(row, 9));
-                        dto.setDescriptionSomali(getCellString(row, 10));
-                        dto.setIconFileName(getCellString(row, 11));
-
-                        services.add(dto);
+                } catch (Exception e) {
+                        throw new IOException("Failed to read spreadsheet: " + e.getMessage(), e);
                 }
-
-                workbook.close();
                 return services;
         }
 
-        // Safe string fetch converting any cell to trimmed string
-        private String getCellString(Row row, int idx) {
+        private String safeGetCellString(Row row, int idx, DataFormatter formatter) {
                 if (row == null)
                         return "";
                 if (row.getCell(idx) == null)
                         return "";
-                switch (row.getCell(idx).getCellType()) {
-                        case STRING:
-                                return row.getCell(idx).getStringCellValue().trim();
-                        case NUMERIC:
-                                return String.valueOf(row.getCell(idx).getNumericCellValue());
-                        case BOOLEAN:
-                                return Boolean.toString(row.getCell(idx).getBooleanCellValue());
-                        case FORMULA:
-                                return row.getCell(idx).getCellFormula();
-                        default:
-                                return "";
+                return formatter.formatCellValue(row.getCell(idx)).trim();
+        }
+
+        private int parseIntOrDefault(String s, int def) {
+                if (s == null)
+                        return def;
+                String t = s.trim();
+                if (t.isEmpty())
+                        return def;
+                try {
+                        // Handle values like "2.0" by parsing as double first
+                        if (t.matches("^-?\\d+\\.0$") ) {
+                                return (int) Double.parseDouble(t);
+                        }
+                        return Integer.parseInt(t);
+                } catch (NumberFormatException ex) {
+                        try {
+                                return (int) Math.round(Double.parseDouble(t));
+                        } catch (NumberFormatException ex2) {
+                                return def;
+                        }
                 }
         }
 

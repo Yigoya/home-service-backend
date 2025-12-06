@@ -10,6 +10,7 @@ public class TenderUpdateRequest {
     private String contactInfo;
     private LocalDateTime questionDeadline;
     private Boolean isFree; // allow updating free status
+    private String extraJson; // optional JSON blob for extended tender details
 
     // Getters and Setters
     public String getTitle() {
@@ -66,5 +67,13 @@ public class TenderUpdateRequest {
 
     public void setIsFree(Boolean isFree) {
         this.isFree = isFree;
+    }
+
+    public String getExtraJson() {
+        return extraJson;
+    }
+
+    public void setExtraJson(String extraJson) {
+        this.extraJson = extraJson;
     }
 }

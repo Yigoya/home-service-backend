@@ -8,7 +8,6 @@ import com.home.service.models.enums.TenderStatus;
 
 import java.time.LocalDateTime;
 
-import org.checkerframework.checker.units.qual.C;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -45,4 +44,8 @@ public class Tender extends BaseEntity {
 
     private String documentPath;
     private LocalDateTime questionDeadline = LocalDateTime.now().plusWeeks(2);
+
+    @Lob
+    @Column(name = "extra_json", columnDefinition = "TEXT")
+    private String extraJson;
 }

@@ -24,7 +24,6 @@ import com.home.service.Service.TechnicianService;
 import com.home.service.Service.TenderAgencyService;
 import com.home.service.Service.UserService;
 import com.home.service.dto.AdminLoginRequest;
-import com.home.service.dto.AgencyRegistrationRequest;
 import com.home.service.dto.AuthenticationResponse;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.NewPasswordRequest;
@@ -36,10 +35,8 @@ import com.home.service.dto.UploadPaymentProofRequest;
 import com.home.service.dto.UserRegistrationRequest;
 import com.home.service.dto.UserResponse;
 import com.home.service.config.JwtUtil;
-import com.home.service.models.AgencyProfile;
 import com.home.service.models.CustomDetails;
 import com.home.service.models.DeviceInfo;
-import com.home.service.models.TenderAgencyProfile;
 import com.home.service.models.User;
 import com.home.service.repositories.DeviceInfoRepository;
 import com.home.service.repositories.UserRepository;
@@ -63,7 +60,7 @@ public class AuthenticationController {
     private final UserRepository userRepository;
     private final DeviceInfoRepository deviceInfoRepository;
     private final SmsService smsService;
-    private final TenderAgencyService tenderAgencyService;
+    // private final TenderAgencyService tenderAgencyService;
 
     public AuthenticationController(CustomerService customerService, TechnicianService technicianService,
             OperatorService operatorService, AdminService adminService, UserService userService, JwtUtil jwtUtil,
@@ -79,7 +76,7 @@ public class AuthenticationController {
         this.userRepository = userRepository;
         this.deviceInfoRepository = deviceInfoRepository;
         this.smsService = smsService;
-        this.tenderAgencyService = tenderAgencyService;
+        // this.tenderAgencyService = tenderAgencyService;
     }
 
     @PostMapping("/login")
@@ -133,8 +130,16 @@ public class AuthenticationController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<Map<String, Object>> verifyAccount(@RequestParam("token") String token) {
-        return ResponseEntity.ok(userService.verifyToken(token));
+    public ResponseEntity<AuthenticationResponse> verifyAccount(
+            @RequestParam(value = "token", required = false) String token,
+            @RequestParam(value = "code", required = false) String code) {
+        return ResponseEntity.ok(userService.verifyTokenOrCode(token, code));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<String> resendVerification(@RequestParam("email") String email) {
+        userService.resendVerificationEmail(email);
+        return ResponseEntity.ok("Verification email sent");
     }
 
     @PostMapping("/password-reset-request")

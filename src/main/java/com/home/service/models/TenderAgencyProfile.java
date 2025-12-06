@@ -1,5 +1,6 @@
 package com.home.service.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -28,7 +29,7 @@ public class TenderAgencyProfile extends BaseEntity {
     private String businessLicensePath;
 
     @OneToMany(mappedBy = "agency", cascade = CascadeType.ALL)
-    private List<Tender> tenders;
+    private List<Tender> tenders = new ArrayList<>();
 
     private String website;
     private String contactPerson;

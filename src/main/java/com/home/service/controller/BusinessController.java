@@ -40,8 +40,7 @@ import com.home.service.models.Enquiry;
 import com.home.service.models.SearchLog;
 import com.home.service.models.enums.ClaimStatus;
 import com.home.service.models.enums.EnquiryStatus;
-import com.home.service.models.enums.PromotionType;
-import java.util.Set;
+// Promotion endpoints moved to PromotionController
 import com.home.service.dto.BusinessDTO;
 import com.home.service.dto.BusinessRequest;
 import com.home.service.dto.ReviewRequest;
@@ -665,129 +664,7 @@ public class BusinessController {
         return ResponseEntity.ok(isSaved);
     }
 
-    // Public Promotion Endpoints for Customers and Users
-    @GetMapping("/promotions/public")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPublicPromotions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPublicActivePromotions(page, size);
-        return ResponseEntity.ok(promotions);
-    }
-
-    @GetMapping("/promotions/public/{id}")
-    public ResponseEntity<BusinessPromotionService.PublicPromotionDTO> getPublicPromotionById(@PathVariable Long id) {
-        BusinessPromotionService.PublicPromotionDTO promotion = businessPromotionService.getPublicPromotionById(id);
-        return ResponseEntity.ok(promotion);
-    }
-
-    @GetMapping("/promotions/public/featured")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getFeaturedPublicPromotions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
-        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getFeaturedPromotions(page, size);
-        return ResponseEntity.ok(promotions);
-    }
-
-    @GetMapping("/promotions/public/type/{type}")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByType(
-            @PathVariable String type,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        try {
-            PromotionType promotionType = PromotionType.valueOf(type.toUpperCase());
-            Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByType(promotionType, page, size);
-            return ResponseEntity.ok(promotions);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/promotions/public/industry/{industry}")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByIndustry(
-            @PathVariable String industry,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByIndustry(industry, page, size);
-        return ResponseEntity.ok(promotions);
-    }
-
-    @GetMapping("/promotions/public/business-type/{businessType}")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByBusinessType(
-            @PathVariable String businessType,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        try {
-            com.home.service.models.enums.BusinessType type = com.home.service.models.enums.BusinessType.valueOf(businessType.toUpperCase());
-            Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByBusinessType(type, page, size);
-            return ResponseEntity.ok(promotions);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/promotions/public/search")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> searchPublicPromotions(
-            @RequestParam String query,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        if (query == null || query.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.searchPromotions(query.trim(), page, size);
-        return ResponseEntity.ok(promotions);
-    }
-
-    @GetMapping("/promotions/public/business/{businessId}")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPublicPromotionsByBusiness(
-            @PathVariable Long businessId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getActivePromotionsByBusiness(businessId, page, size);
-        return ResponseEntity.ok(promotions);
-    }
-
-    // Enhanced Promotion Management Endpoints
-    @CrossOrigin(originPatterns = "*")
-    @PatchMapping("/promotions/{id}/featured")
-    public ResponseEntity<BusinessPromotionService.BusinessPromotionDTO> makePromotionFeatured(
-            @PathVariable Long id) {
-        Long currentUserId = 4L; // Replace with actual user ID retrieval logic
-        BusinessPromotionService.BusinessPromotionDTO promotion = businessPromotionService.makePromotionFeatured(id, currentUserId);
-        return ResponseEntity.ok(promotion);
-    }
-
-    @CrossOrigin(originPatterns = "*")
-    @PatchMapping("/promotions/{id}/unfeatured")
-    public ResponseEntity<BusinessPromotionService.BusinessPromotionDTO> removePromotionFeatured(
-            @PathVariable Long id) {
-        Long currentUserId = 4L; // Replace with actual user ID retrieval logic
-        BusinessPromotionService.BusinessPromotionDTO promotion = businessPromotionService.removePromotionFeatured(id, currentUserId);
-        return ResponseEntity.ok(promotion);
-    }
-
-    @GetMapping("/promotions/{id}/details")
-    public ResponseEntity<BusinessPromotionService.BusinessPromotionDTO> getPromotionDetails(
-            @PathVariable Long id) {
-        Long currentUserId = 4L; // Replace with actual user ID retrieval logic
-        BusinessPromotionService.BusinessPromotionDTO promotion = businessPromotionService.getPromotionDetails(id, currentUserId);
-        return ResponseEntity.ok(promotion);
-    }
-
-    @GetMapping("/{businessId}/services/for-promotion")
-    public ResponseEntity<Set<BusinessPromotionService.ServiceInfo>> getBusinessServicesForPromotion(
-            @PathVariable Long businessId) {
-        Set<BusinessPromotionService.ServiceInfo> services = businessPromotionService.getBusinessServices(businessId);
-        return ResponseEntity.ok(services);
-    }
-
-    @GetMapping("/promotions/public/service/{serviceId}")
-    public ResponseEntity<Page<BusinessPromotionService.PublicPromotionDTO>> getPromotionsByServiceId(
-            @PathVariable Long serviceId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<BusinessPromotionService.PublicPromotionDTO> promotions = businessPromotionService.getPromotionsByServiceId(serviceId, page, size);
-        return ResponseEntity.ok(promotions);
-    }
+    // Promotion endpoints moved to PromotionController
 
     // @GetMapping("/promotions/public/service/{serviceId}/featured")
     // public ResponseEntity<BusinessPromotionService.PromotionWithRelatedDTO> getFeaturedPromotionWithRelated(
