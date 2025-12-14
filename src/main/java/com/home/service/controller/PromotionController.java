@@ -34,6 +34,7 @@ public class PromotionController {
 
         BusinessPromotionDTO dto = new BusinessPromotionDTO();
         dto.businessId = request.getBusinessId();
+        dto.categoryId = request.getCategoryId();
         dto.title = request.getTitle();
         dto.description = request.getDescription();
         dto.startDate = request.getStartDate();

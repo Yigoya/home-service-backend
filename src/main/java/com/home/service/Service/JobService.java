@@ -110,6 +110,59 @@ public class JobService {
         return jobRepository.findAll(spec, pageable);
     }
 
+    @Transactional
+    public Page<Job> searchJobs(Long serviceId, List<JobType> jobTypes, String location, String keyword, String level, String postedDateFilter, JobStatus status, Pageable pageable) {
+        Specification<Job> spec = (root, query, cb) -> {
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("company");
+                root.fetch("service").fetch("translations");
+            }
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.isEmpty()) {
+                String keywordLower = "%" + keyword.toLowerCase() + "%";
+                Predicate titleLike = cb.like(cb.lower(root.get("title")), keywordLower);
+                Predicate descriptionLike = cb.like(cb.lower(root.get("description").as(String.class)), keywordLower);
+                predicates.add(cb.or(titleLike, descriptionLike));
+            }
+
+            if (serviceId != null) {
+                predicates.add(cb.equal(root.get("service").get("id"), serviceId));
+            }
+
+            if (jobTypes != null && !jobTypes.isEmpty()) {
+                predicates.add(root.get("jobType").in(jobTypes));
+            }
+            if (location != null && !location.isEmpty()) {
+                predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("jobLocation")), "%" + location.toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("company").get("companyLocation")), "%" + location.toLowerCase() + "%")
+                ));
+            }
+
+            if (level != null && !level.isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("level")), "%" + level.toLowerCase() + "%"));
+            }
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (postedDateFilter != null && !postedDateFilter.isEmpty()) {
+                try {
+                    LocalDate filterDate = LocalDate.parse(postedDateFilter, DateTimeFormatter.ISO_LOCAL_DATE);
+                    Instant endOfDay = filterDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().minus(1, ChronoUnit.MILLIS);
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("postedDate"), endOfDay));
+                } catch (DateTimeParseException e) {
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        return jobRepository.findAll(spec, pageable);
+    }
+
     @Transactional(readOnly = true)
     public Job getJobById(Long id) {
         return jobRepository.findById(id)
@@ -208,10 +261,12 @@ public class JobService {
         Job jobToUpdate = getJobById(jobId);
         // verifyJobOwnership(jobToUpdate, companyEmail);
 
-        Services service = servicesRepository.findById(jobDto.getServiceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", jobDto.getServiceId()));
-        
-        jobToUpdate.setService(service);
+        Services service = jobDto.getServiceId() != null
+            ? servicesRepository.findById(jobDto.getServiceId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", jobDto.getServiceId()))
+            : jobToUpdate.getService();
+
+        jobToUpdate.setService(service); // keep previous service when incoming dto omits serviceId
         jobToUpdate.setTitle(jobDto.getTitle());
         jobToUpdate.setDescription(jobDto.getDescription());
         jobToUpdate.setJobLocation(jobDto.getJobLocation());

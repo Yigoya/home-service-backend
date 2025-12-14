@@ -25,7 +25,19 @@ public class TenderDTO {
     private LocalDateTime questionDeadline;
     @JsonProperty("isFree")
     private boolean free;
-    private String extraJson;
+    private String referenceNumber;
+    private String noticeNumber;
+    private String productCategory;
+    private String tenderType;
+    private String procurementMethod;
+    private String costOfTenderDocument;
+    private String bidValidity;
+    private String bidSecurity;
+    private String contractPeriod;
+    private String performanceSecurity;
+    private String paymentTerms;
+    private String keyDeliverables;
+    private String technicalSpecifications;
 
     public static TenderDTO createWithFullDetails(Tender tender) {
         TenderDTO tenderDTO = new TenderDTO();
@@ -42,7 +54,19 @@ public class TenderDTO {
         tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
         tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
         tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
-        tenderDTO.setExtraJson(tender.getExtraJson());
+        tenderDTO.setReferenceNumber(tender.getReferenceNumber());
+        tenderDTO.setNoticeNumber(tender.getNoticeNumber());
+        tenderDTO.setProductCategory(tender.getProductCategory());
+        tenderDTO.setTenderType(tender.getTenderType());
+        tenderDTO.setProcurementMethod(tender.getProcurementMethod());
+        tenderDTO.setCostOfTenderDocument(tender.getCostOfTenderDocument());
+        tenderDTO.setBidValidity(tender.getBidValidity());
+        tenderDTO.setBidSecurity(tender.getBidSecurity());
+        tenderDTO.setContractPeriod(tender.getContractPeriod());
+        tenderDTO.setPerformanceSecurity(tender.getPerformanceSecurity());
+        tenderDTO.setPaymentTerms(tender.getPaymentTerms());
+        tenderDTO.setKeyDeliverables(tender.getKeyDeliverables());
+        tenderDTO.setTechnicalSpecifications(tender.getTechnicalSpecifications());
 
         return tenderDTO;
     }
@@ -60,7 +84,19 @@ public class TenderDTO {
         tenderDTO.setCategoryName(tender.getService().getTranslations().stream().findFirst().get().getName());
         tenderDTO.setQuestionDeadline(tender.getQuestionDeadline());
         tenderDTO.setFree(Boolean.TRUE.equals(tender.getFree()));
-        tenderDTO.setExtraJson(tender.getExtraJson());
+        tenderDTO.setReferenceNumber(tender.getReferenceNumber());
+        tenderDTO.setNoticeNumber(tender.getNoticeNumber());
+        tenderDTO.setProductCategory(tender.getProductCategory());
+        tenderDTO.setTenderType(tender.getTenderType());
+        tenderDTO.setProcurementMethod(tender.getProcurementMethod());
+        tenderDTO.setCostOfTenderDocument(tender.getCostOfTenderDocument());
+        tenderDTO.setBidValidity(tender.getBidValidity());
+        tenderDTO.setBidSecurity(tender.getBidSecurity());
+        tenderDTO.setContractPeriod(tender.getContractPeriod());
+        tenderDTO.setPerformanceSecurity(tender.getPerformanceSecurity());
+        tenderDTO.setPaymentTerms(tender.getPaymentTerms());
+        tenderDTO.setKeyDeliverables(tender.getKeyDeliverables());
+        tenderDTO.setTechnicalSpecifications(tender.getTechnicalSpecifications());
         return tenderDTO;
     }
 }

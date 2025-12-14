@@ -24,7 +24,9 @@
             {"key": "type", "value": "DISCOUNT", "type": "text"},
             {"key": "discountPercentage", "value": "10", "type": "text"},
             {"key": "isFeatured", "value": "true", "type": "text"},
-            {"key": "serviceIds", "value": "[101,102]", "type": "text"},
+            {"key": "categoryId", "value": "{{categoryId}}", "type": "text", "disabled": true},
+            {"key": "serviceIds", "value": "101", "type": "text"},
+            {"key": "serviceIds", "value": "102", "type": "text"},
             {"key": "termsAndConditions", "value": "Limited time offer.", "type": "text"},
             {"key": "image", "type": "file", "src": ""}
           ]

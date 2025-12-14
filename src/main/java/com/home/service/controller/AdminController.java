@@ -185,6 +185,62 @@ public class AdminController {
                 } 
         }
 
+        @GetMapping("/service-categories/{categoryId}/services")
+        public ResponseEntity<ServiceCategoryWithServicesDTO> getServicesByCategory(
+                        @PathVariable Long categoryId,
+                        @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+                List<ServiceCategoryWithServicesDTO> categories;
+
+                if (lang == EthiopianLanguage.AMHARIC) {
+                        if (categoriesAmharic == null || isUpdated) {
+                                categoriesAmharic = serviceService.getAllServicesCategorized(lang);
+                        }
+                        categories = categoriesAmharic;
+                } else if (lang == EthiopianLanguage.OROMO) {
+                        if (categoriesOromo == null || isUpdated) {
+                                categoriesOromo = serviceService.getAllServicesCategorized(lang);
+                        }
+                        categories = categoriesOromo;
+                } else if (lang == EthiopianLanguage.TIGRINYA) {
+                        if (categoriesTigrinya == null || isUpdated) {
+                                categoriesTigrinya = serviceService.getAllServicesCategorized(lang);
+                        }
+                        categories = categoriesTigrinya;
+                } else if (lang == EthiopianLanguage.SOMALI) {
+                        if (categoriesSomali == null || isUpdated) {
+                                categoriesSomali = serviceService.getAllServicesCategorized(lang);
+                        }
+                        categories = categoriesSomali;
+                } else {
+                        if (categoriesEnglish == null || isUpdated) {
+                                categoriesEnglish = serviceService.getAllServicesCategorized(lang);
+                        }
+                        categories = categoriesEnglish;
+                }
+
+                if (categories == null) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                }
+
+                ServiceCategoryWithServicesDTO match = categories.stream()
+                                .filter(c -> c != null)
+                                .filter(c -> {
+                                        try {
+                                                // Assuming DTO exposes an id getter
+                                                return c.getCategoryId() != null && c.getCategoryId().equals(categoryId);
+                                        } catch (Exception ignored) {
+                                                return false;
+                                        }
+                                })
+                                .findFirst()
+                                .orElse(null);
+
+                if (match == null) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                }
+                return ResponseEntity.ok(match);
+        }
+
         @GetMapping("/unverified-technicians")
         public ResponseEntity<List<TechnicianProfileDTO>> listUnverifiedTechnicians() {
                 List<TechnicianProfileDTO> technicianDTOs = technicianService.listUnverifiedTechnicians();

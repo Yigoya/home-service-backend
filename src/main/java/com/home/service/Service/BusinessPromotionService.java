@@ -41,6 +41,7 @@ public class BusinessPromotionService {
     public static class BusinessPromotionDTO {
         public Long id;
         public Long businessId;
+        public Long categoryId;
         public String title;
         public String description;
         public LocalDateTime startDate;
@@ -58,6 +59,12 @@ public class BusinessPromotionService {
         public BusinessPromotionDTO(BusinessPromotion promotion) {
             this.id = promotion.getId();
             this.businessId = promotion.getBusiness().getId();
+            // Derive categoryId from the first attached service, if any
+            this.categoryId = promotion.getServices() != null && !promotion.getServices().isEmpty()
+                    ? promotion.getServices().iterator().next().getCategory() != null
+                        ? promotion.getServices().iterator().next().getCategory().getId()
+                        : null
+                    : null;
             this.title = promotion.getTitle();
             this.description = promotion.getDescription();
             this.startDate = promotion.getStartDate();
@@ -176,6 +183,19 @@ public class BusinessPromotionService {
                 services.add(service);
             }
             promotion.setServices(services);
+            // If categoryId not provided, infer it from the first service
+            if (dto.categoryId == null && !services.isEmpty()) {
+                com.home.service.models.Services first = services.iterator().next();
+                if (first.getCategory() != null) {
+                    dto.categoryId = first.getCategory().getId();
+                }
+            }
+        } else if (dto.categoryId != null) {
+            // When categoryId provided and serviceIds missing, attach all business services in that category
+            Set<com.home.service.models.Services> servicesInCategory = business.getServices().stream()
+                    .filter(s -> s.getCategory() != null && s.getCategory().getId().equals(dto.categoryId))
+                    .collect(Collectors.toSet());
+            promotion.setServices(servicesInCategory);
         }
 
         BusinessPromotion savedPromotion = businessPromotionRepository.save(promotion);

@@ -11,7 +11,19 @@ public class TenderCreationRequest {
     private Long serviceId;
     private LocalDateTime questionDeadline;
     private Boolean isFree; // optional; defaults to false if null
-    private String extraJson; // optional JSON blob for extended tender details
+    private String referenceNumber;
+    private String noticeNumber;
+    private String productCategory;
+    private String tenderType;
+    private String procurementMethod;
+    private String costOfTenderDocument;
+    private String bidValidity;
+    private String bidSecurity;
+    private String contractPeriod;
+    private String performanceSecurity;
+    private String paymentTerms;
+    private String keyDeliverables;
+    private String technicalSpecifications;
 
     // Getters and Setters
     public String getTitle() {
@@ -78,11 +90,107 @@ public class TenderCreationRequest {
         this.isFree = isFree;
     }
 
-    public String getExtraJson() {
-        return extraJson;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
-    public void setExtraJson(String extraJson) {
-        this.extraJson = extraJson;
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
+    }
+
+    public String getNoticeNumber() {
+        return noticeNumber;
+    }
+
+    public void setNoticeNumber(String noticeNumber) {
+        this.noticeNumber = noticeNumber;
+    }
+
+    public String getProductCategory() {
+        return productCategory;
+    }
+
+    public void setProductCategory(String productCategory) {
+        this.productCategory = productCategory;
+    }
+
+    public String getTenderType() {
+        return tenderType;
+    }
+
+    public void setTenderType(String tenderType) {
+        this.tenderType = tenderType;
+    }
+
+    public String getProcurementMethod() {
+        return procurementMethod;
+    }
+
+    public void setProcurementMethod(String procurementMethod) {
+        this.procurementMethod = procurementMethod;
+    }
+
+    public String getCostOfTenderDocument() {
+        return costOfTenderDocument;
+    }
+
+    public void setCostOfTenderDocument(String costOfTenderDocument) {
+        this.costOfTenderDocument = costOfTenderDocument;
+    }
+
+    public String getBidValidity() {
+        return bidValidity;
+    }
+
+    public void setBidValidity(String bidValidity) {
+        this.bidValidity = bidValidity;
+    }
+
+    public String getBidSecurity() {
+        return bidSecurity;
+    }
+
+    public void setBidSecurity(String bidSecurity) {
+        this.bidSecurity = bidSecurity;
+    }
+
+    public String getContractPeriod() {
+        return contractPeriod;
+    }
+
+    public void setContractPeriod(String contractPeriod) {
+        this.contractPeriod = contractPeriod;
+    }
+
+    public String getPerformanceSecurity() {
+        return performanceSecurity;
+    }
+
+    public void setPerformanceSecurity(String performanceSecurity) {
+        this.performanceSecurity = performanceSecurity;
+    }
+
+    public String getPaymentTerms() {
+        return paymentTerms;
+    }
+
+    public void setPaymentTerms(String paymentTerms) {
+        this.paymentTerms = paymentTerms;
+    }
+
+    public String getKeyDeliverables() {
+        return keyDeliverables;
+    }
+
+    public void setKeyDeliverables(String keyDeliverables) {
+        this.keyDeliverables = keyDeliverables;
+    }
+
+    public String getTechnicalSpecifications() {
+        return technicalSpecifications;
+    }
+
+    public void setTechnicalSpecifications(String technicalSpecifications) {
+        this.technicalSpecifications = technicalSpecifications;
     }
 }

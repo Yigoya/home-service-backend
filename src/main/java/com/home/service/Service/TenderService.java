@@ -92,7 +92,19 @@ public class TenderService {
         tender.setDatePosted(LocalDateTime.now());
         // default to false if not specified
         tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
-        tender.setExtraJson(tenderDTO.getExtraJson());
+        tender.setReferenceNumber(tenderDTO.getReferenceNumber());
+        tender.setNoticeNumber(tenderDTO.getNoticeNumber());
+        tender.setProductCategory(tenderDTO.getProductCategory());
+        tender.setTenderType(tenderDTO.getTenderType());
+        tender.setProcurementMethod(tenderDTO.getProcurementMethod());
+        tender.setCostOfTenderDocument(tenderDTO.getCostOfTenderDocument());
+        tender.setBidValidity(tenderDTO.getBidValidity());
+        tender.setBidSecurity(tenderDTO.getBidSecurity());
+        tender.setContractPeriod(tenderDTO.getContractPeriod());
+        tender.setPerformanceSecurity(tenderDTO.getPerformanceSecurity());
+        tender.setPaymentTerms(tenderDTO.getPaymentTerms());
+        tender.setKeyDeliverables(tenderDTO.getKeyDeliverables());
+        tender.setTechnicalSpecifications(tenderDTO.getTechnicalSpecifications());
 
         if (tenderDTO.getFile() != null) {
             String filePath = fileStorageService.storeFile(tenderDTO.getFile());
@@ -122,7 +134,19 @@ public class TenderService {
         tender.setQuestionDeadline(request.getQuestionDeadline());
         tender.setStatus(TenderStatus.OPEN);
         tender.setFree(Boolean.TRUE.equals(request.getIsFree()));
-        tender.setExtraJson(request.getExtraJson());
+        tender.setReferenceNumber(request.getReferenceNumber());
+        tender.setNoticeNumber(request.getNoticeNumber());
+        tender.setProductCategory(request.getProductCategory());
+        tender.setTenderType(request.getTenderType());
+        tender.setProcurementMethod(request.getProcurementMethod());
+        tender.setCostOfTenderDocument(request.getCostOfTenderDocument());
+        tender.setBidValidity(request.getBidValidity());
+        tender.setBidSecurity(request.getBidSecurity());
+        tender.setContractPeriod(request.getContractPeriod());
+        tender.setPerformanceSecurity(request.getPerformanceSecurity());
+        tender.setPaymentTerms(request.getPaymentTerms());
+        tender.setKeyDeliverables(request.getKeyDeliverables());
+        tender.setTechnicalSpecifications(request.getTechnicalSpecifications());
 
         Tender savedTender = tenderRepository.save(tender);
         return mapToTenderResponse(savedTender);
@@ -189,9 +213,19 @@ public class TenderService {
         if (tenderDTO.getIsFree() != null) {
             tender.setFree(Boolean.TRUE.equals(tenderDTO.getIsFree()));
         }
-        if (tenderDTO.getExtraJson() != null) {
-            tender.setExtraJson(tenderDTO.getExtraJson());
-        }
+        tender.setReferenceNumber(tenderDTO.getReferenceNumber());
+        tender.setNoticeNumber(tenderDTO.getNoticeNumber());
+        tender.setProductCategory(tenderDTO.getProductCategory());
+        tender.setTenderType(tenderDTO.getTenderType());
+        tender.setProcurementMethod(tenderDTO.getProcurementMethod());
+        tender.setCostOfTenderDocument(tenderDTO.getCostOfTenderDocument());
+        tender.setBidValidity(tenderDTO.getBidValidity());
+        tender.setBidSecurity(tenderDTO.getBidSecurity());
+        tender.setContractPeriod(tenderDTO.getContractPeriod());
+        tender.setPerformanceSecurity(tenderDTO.getPerformanceSecurity());
+        tender.setPaymentTerms(tenderDTO.getPaymentTerms());
+        tender.setKeyDeliverables(tenderDTO.getKeyDeliverables());
+        tender.setTechnicalSpecifications(tenderDTO.getTechnicalSpecifications());
 
         if (tenderDTO.getCategoryId() != null) {
             Services category = servicesRepository.findById(tenderDTO.getCategoryId())
@@ -424,11 +458,21 @@ public class TenderService {
         tender.setClosingDate(request.getClosingDate());
         tender.setContactInfo(request.getContactInfo());
         tender.setQuestionDeadline(request.getQuestionDeadline());
+        tender.setReferenceNumber(request.getReferenceNumber());
+        tender.setNoticeNumber(request.getNoticeNumber());
+        tender.setProductCategory(request.getProductCategory());
+        tender.setTenderType(request.getTenderType());
+        tender.setProcurementMethod(request.getProcurementMethod());
+        tender.setCostOfTenderDocument(request.getCostOfTenderDocument());
+        tender.setBidValidity(request.getBidValidity());
+        tender.setBidSecurity(request.getBidSecurity());
+        tender.setContractPeriod(request.getContractPeriod());
+        tender.setPerformanceSecurity(request.getPerformanceSecurity());
+        tender.setPaymentTerms(request.getPaymentTerms());
+        tender.setKeyDeliverables(request.getKeyDeliverables());
+        tender.setTechnicalSpecifications(request.getTechnicalSpecifications());
         if (request.getIsFree() != null) {
             tender.setFree(Boolean.TRUE.equals(request.getIsFree()));
-        }
-        if (request.getExtraJson() != null) {
-            tender.setExtraJson(request.getExtraJson());
         }
 
         Tender updatedTender = tenderRepository.save(tender);
@@ -461,19 +505,32 @@ public class TenderService {
     }
 
     private TenderResponse mapToTenderResponse(Tender tender) {
-        return new TenderResponse(
-                tender.getId(),
-                tender.getTitle(),
-                tender.getDescription(),
-                tender.getLocation(),
-                tender.getDatePosted(),
-                tender.getClosingDate(),
-                tender.getContactInfo(),
-                tender.getStatus(),
-                tender.getServiceId(),
-                tender.getDocumentPath(),
-                tender.getQuestionDeadline(),
-            Boolean.TRUE.equals(tender.getFree()),
-            tender.getExtraJson());
+        TenderResponse response = new TenderResponse();
+        response.setId(tender.getId());
+        response.setTitle(tender.getTitle());
+        response.setDescription(tender.getDescription());
+        response.setLocation(tender.getLocation());
+        response.setDatePosted(tender.getDatePosted());
+        response.setClosingDate(tender.getClosingDate());
+        response.setContactInfo(tender.getContactInfo());
+        response.setReferenceNumber(tender.getReferenceNumber());
+        response.setNoticeNumber(tender.getNoticeNumber());
+        response.setProductCategory(tender.getProductCategory());
+        response.setTenderType(tender.getTenderType());
+        response.setProcurementMethod(tender.getProcurementMethod());
+        response.setCostOfTenderDocument(tender.getCostOfTenderDocument());
+        response.setBidValidity(tender.getBidValidity());
+        response.setBidSecurity(tender.getBidSecurity());
+        response.setContractPeriod(tender.getContractPeriod());
+        response.setPerformanceSecurity(tender.getPerformanceSecurity());
+        response.setPaymentTerms(tender.getPaymentTerms());
+        response.setKeyDeliverables(tender.getKeyDeliverables());
+        response.setTechnicalSpecifications(tender.getTechnicalSpecifications());
+        response.setStatus(tender.getStatus());
+        response.setServiceId(tender.getServiceId());
+        response.setDocumentPath(tender.getDocumentPath());
+        response.setQuestionDeadline(tender.getQuestionDeadline());
+        response.setFree(Boolean.TRUE.equals(tender.getFree()));
+        return response;
     }
 }

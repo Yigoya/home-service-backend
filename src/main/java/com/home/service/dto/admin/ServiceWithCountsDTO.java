@@ -24,7 +24,6 @@ public class ServiceWithCountsDTO {
     private Integer technicianCount;
     @JsonIgnore
     private Integer bookingCount;
-    @JsonIgnore
     private String icon;
     @JsonIgnore
     private String document;

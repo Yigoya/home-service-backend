@@ -35,8 +35,8 @@ public class JobController {
 
     @CrossOrigin(originPatterns = "*")
     @GetMapping
-    public Page<JobSummaryDto> searchJobs(
-            @RequestParam(required = false) String category,
+        public Page<JobSummaryDto> searchJobs(
+            @RequestParam(required = false) Long serviceId,
             @RequestParam(required = false) List<JobType> jobTypes,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String keyword,
@@ -55,7 +55,7 @@ public class JobController {
         };
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Job> jobPage = jobService.searchJobs(category, jobTypes, location, keyword, level, postedDate, status, pageable);
+        Page<Job> jobPage = jobService.searchJobs(serviceId, jobTypes, location, keyword, level, postedDate, status, pageable);
         return jobPage.map(jobMapper::toJobSummaryDto);
     }
 

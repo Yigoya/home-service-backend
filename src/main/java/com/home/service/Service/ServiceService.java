@@ -482,7 +482,7 @@ public class ServiceService {
                 Long categoryOrder = category.getOrder() != null ? category.getOrder() : category.getId();
                 // Downstream clients read the legacy categoryId field to obtain ordering info.
                 dto.setCategoryId(categoryOrder);
-                dto.setOrder(category.getOrder());
+                dto.setId(category.getId());
                 dto.setCategoryName(category.getTranslations().stream()
                                 .filter(t -> t.getLang().equals(lang))
                                 .findFirst()

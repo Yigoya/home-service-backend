@@ -42,10 +42,6 @@ public class TechnicianSignupRequest {
     // Public service area description
     private String serviceArea;
 
-    // National ID (stored for verification, not exposed publicly)
-    @NotBlank(message = "National ID is required")
-    private String nationalIdNumber;
-
     private MultipartFile profileImage;
 
     private MultipartFile idCardImage;

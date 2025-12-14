@@ -36,9 +36,6 @@ public class Technician extends BaseEntity {
     // Public-facing service area description (e.g., city or districts served)
     private String serviceArea;
 
-    // National ID number (stored for verification, do NOT expose publicly)
-    private String nationalIdNumber;
-
     @ElementCollection
     private List<String> documents;
 

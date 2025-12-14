@@ -15,6 +15,7 @@ import lombok.Setter;
 @Setter
 public class PromotionRequest {
     private Long businessId;
+    private Long categoryId; // optional: attach all business services in this category when serviceIds missing
     private String title;
     private String description;
 

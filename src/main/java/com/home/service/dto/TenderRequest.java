@@ -21,7 +21,19 @@ public class TenderRequest {
     private TenderStatus status;
     private Long categoryId;
     private Boolean isFree; // optional, defaults to false when not provided
-    private String extraJson; // optional JSON blob for extended tender details
+    private String referenceNumber;
+    private String noticeNumber;
+    private String productCategory;
+    private String tenderType;
+    private String procurementMethod;
+    private String costOfTenderDocument;
+    private String bidValidity;
+    private String bidSecurity;
+    private String contractPeriod;
+    private String performanceSecurity;
+    private String paymentTerms;
+    private String keyDeliverables;
+    private String technicalSpecifications;
 
     private MultipartFile file;
 }

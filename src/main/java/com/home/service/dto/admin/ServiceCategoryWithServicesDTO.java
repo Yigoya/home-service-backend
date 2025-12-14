@@ -16,11 +16,11 @@ public class ServiceCategoryWithServicesDTO {
     @JsonIgnore
     private String description;
 
-    @JsonIgnore
+    // @JsonIgnore
     private String icon;
     private List<ServiceWithCountsDTO> services;
 
-    private Long order;
+    private Long id;
 
     // Getters and Setters
 }

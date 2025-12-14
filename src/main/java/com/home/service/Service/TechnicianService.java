@@ -308,7 +308,6 @@ public class TechnicianService {
                 technician.setBusinessName(signupRequest.getBusinessName());
                 technician.setYearsExperience(signupRequest.getYearsExperience());
                 technician.setServiceArea(signupRequest.getServiceArea());
-                technician.setNationalIdNumber(signupRequest.getNationalIdNumber());
                 technician.setWebsite(signupRequest.getWebsite());
                 technician.setFacebook(signupRequest.getFacebook());
                 technician.setTwitter(signupRequest.getTwitter());
