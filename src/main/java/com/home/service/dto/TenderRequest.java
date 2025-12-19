@@ -34,6 +34,31 @@ public class TenderRequest {
     private String paymentTerms;
     private String keyDeliverables;
     private String technicalSpecifications;
+    private String tenderReferenceNoticeNo;
+    private LocalDateTime publishedOn;
+    private LocalDateTime bidSubmissionDeadline;
+    private String tenderNoticeCode;
+    private String warranty;
+    private String generalEligibility;
+    private String technicalRequirements;
+    private String financialRequirements;
+    private String experience;
+    private String preBidMeeting;
+    private String siteVisit;
+    private LocalDateTime deadlineForClarifications;
+    private LocalDateTime bidOpeningDate;
+    private String tenderDocumentCollectionLocation;
+    private String tenderDocumentCollectionTime;
+    private String tenderDocumentDownload;
+    private String bidSubmissionMode;
+    private String bidSubmissionAddress;
+    private String organization;
+    private String department;
+    private String address;
+    private String tenderLocation;
+    private String languageOfBids;
+    private String validityPeriodOfBids;
+    private String governingLaw;
 
     private MultipartFile file;
 }

@@ -37,10 +37,8 @@ public class BusinessLocation extends BaseEntity {
     @NotBlank(message = "City is required")
     private String city;
 
-    @NotBlank(message = "State is required")
     private String state;
 
-    @NotBlank(message = "Postal Code is required")
     private String postalCode;
 
     @NotBlank(message = "Country is required")

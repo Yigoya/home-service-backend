@@ -8,7 +8,6 @@ import com.home.service.models.enums.TenderStatus;
 
 import java.time.LocalDateTime;
 
-import org.checkerframework.checker.units.qual.C;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -40,6 +39,53 @@ public class Tender extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String technicalSpecifications;
+
+    private String tenderReferenceNoticeNo;
+    private LocalDateTime publishedOn = LocalDateTime.now();
+    private LocalDateTime bidSubmissionDeadline;
+    private String tenderNoticeCode;
+
+    @Column(columnDefinition = "TEXT")
+    private String warranty;
+
+    @Column(columnDefinition = "TEXT")
+    private String generalEligibility;
+
+    @Column(columnDefinition = "TEXT")
+    private String technicalRequirements;
+
+    @Column(columnDefinition = "TEXT")
+    private String financialRequirements;
+
+    @Column(columnDefinition = "TEXT")
+    private String experience;
+
+    @Column(columnDefinition = "TEXT")
+    private String preBidMeeting;
+
+    @Column(columnDefinition = "TEXT")
+    private String siteVisit;
+
+    private LocalDateTime deadlineForClarifications;
+    private LocalDateTime bidOpeningDate;
+    private String tenderDocumentCollectionLocation;
+    private String tenderDocumentCollectionTime;
+    private String tenderDocumentDownload;
+    private String bidSubmissionMode;
+
+    @Column(columnDefinition = "TEXT")
+    private String bidSubmissionAddress;
+
+    private String organization;
+    private String department;
+
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    private String tenderLocation;
+    private String languageOfBids;
+    private String validityPeriodOfBids;
+    private String governingLaw;
     
     @Column(name = "is_free")
     @JsonProperty("isFree")

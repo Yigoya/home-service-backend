@@ -22,6 +22,7 @@ import com.home.service.dto.admin.TechnicianDetailDTO;
 import com.home.service.dto.TechnicianWeeklyScheduleDTO;
 import com.home.service.dto.records.SingleTechnician;
 import com.home.service.config.JwtUtil;
+import com.home.service.config.exceptions.BadRequestException;
 import com.home.service.config.exceptions.EmailException;
 import com.home.service.config.exceptions.GeneralException;
 import com.home.service.models.Services;
@@ -61,7 +62,9 @@ import java.util.Set;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
@@ -297,7 +300,11 @@ public class TechnicianService {
                 user.setPassword(signupRequest.getPassword()); // Remember to hash the password in production
                 user.setRole(UserRole.TECHNICIAN);
                 user.setStatus(AccountStatus.INACTIVE);
-                String profileImagePath = fileStorageService.storeFile(signupRequest.getProfileImage());
+                MultipartFile profileImage = signupRequest.getProfileImage();
+                if (profileImage == null || profileImage.isEmpty()) {
+                        throw new BadRequestException("Profile image file is required for technician signup.");
+                }
+                String profileImagePath = fileStorageService.storeFile(profileImage);
                 user.setProfileImage(profileImagePath);
                 userService.saveUser(user);
 
@@ -319,18 +326,30 @@ public class TechnicianService {
                 technician.setServices(new HashSet<>(services));
 
                 // Store profile image and set the path
-                String idCardImagePath = fileStorageService.storeFile(signupRequest.getIdCardImage());
+                MultipartFile idCardImage = signupRequest.getIdCardImage();
+                if (idCardImage == null || idCardImage.isEmpty()) {
+                        throw new BadRequestException("ID card image file is required for technician signup.");
+                }
+                String idCardImagePath = fileStorageService.storeFile(idCardImage);
                 technician.setIdCardImage(idCardImagePath);
 
                 // Store documents and set the paths
-                List<String> documentPaths = signupRequest.getDocuments().stream()
-                                .map(fileStorageService::storeFile)
-                                .collect(Collectors.toList());
+                List<MultipartFile> documents = signupRequest.getDocuments();
+                List<String> documentPaths = Collections.emptyList();
+                if (documents != null && !documents.isEmpty()) {
+                        documentPaths = documents.stream()
+                                        .filter(Objects::nonNull)
+                                        .filter(file -> !file.isEmpty())
+                                        .map(fileStorageService::storeFile)
+                                        .collect(Collectors.toList());
+                }
                 technician.setDocuments(documentPaths);
 
                 // Store licenses and set the paths if provided
                 if (signupRequest.getLicenses() != null && !signupRequest.getLicenses().isEmpty()) {
                         List<String> licensePaths = signupRequest.getLicenses().stream()
+                                        .filter(Objects::nonNull)
+                                        .filter(file -> !file.isEmpty())
                                         .map(fileStorageService::storeFile)
                                         .collect(Collectors.toList());
                         technician.setLicenses(licensePaths);

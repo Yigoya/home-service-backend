@@ -105,6 +105,31 @@ public class TenderService {
         tender.setPaymentTerms(tenderDTO.getPaymentTerms());
         tender.setKeyDeliverables(tenderDTO.getKeyDeliverables());
         tender.setTechnicalSpecifications(tenderDTO.getTechnicalSpecifications());
+        tender.setTenderReferenceNoticeNo(tenderDTO.getTenderReferenceNoticeNo());
+        tender.setPublishedOn(tenderDTO.getPublishedOn() != null ? tenderDTO.getPublishedOn() : LocalDateTime.now());
+        tender.setBidSubmissionDeadline(tenderDTO.getBidSubmissionDeadline());
+        tender.setTenderNoticeCode(tenderDTO.getTenderNoticeCode());
+        tender.setWarranty(tenderDTO.getWarranty());
+        tender.setGeneralEligibility(tenderDTO.getGeneralEligibility());
+        tender.setTechnicalRequirements(tenderDTO.getTechnicalRequirements());
+        tender.setFinancialRequirements(tenderDTO.getFinancialRequirements());
+        tender.setExperience(tenderDTO.getExperience());
+        tender.setPreBidMeeting(tenderDTO.getPreBidMeeting());
+        tender.setSiteVisit(tenderDTO.getSiteVisit());
+        tender.setDeadlineForClarifications(tenderDTO.getDeadlineForClarifications());
+        tender.setBidOpeningDate(tenderDTO.getBidOpeningDate());
+        tender.setTenderDocumentCollectionLocation(tenderDTO.getTenderDocumentCollectionLocation());
+        tender.setTenderDocumentCollectionTime(tenderDTO.getTenderDocumentCollectionTime());
+        tender.setTenderDocumentDownload(tenderDTO.getTenderDocumentDownload());
+        tender.setBidSubmissionMode(tenderDTO.getBidSubmissionMode());
+        tender.setBidSubmissionAddress(tenderDTO.getBidSubmissionAddress());
+        tender.setOrganization(tenderDTO.getOrganization());
+        tender.setDepartment(tenderDTO.getDepartment());
+        tender.setAddress(tenderDTO.getAddress());
+        tender.setTenderLocation(tenderDTO.getTenderLocation());
+        tender.setLanguageOfBids(tenderDTO.getLanguageOfBids());
+        tender.setValidityPeriodOfBids(tenderDTO.getValidityPeriodOfBids());
+        tender.setGoverningLaw(tenderDTO.getGoverningLaw());
 
         if (tenderDTO.getFile() != null) {
             String filePath = fileStorageService.storeFile(tenderDTO.getFile());
@@ -147,6 +172,33 @@ public class TenderService {
         tender.setPaymentTerms(request.getPaymentTerms());
         tender.setKeyDeliverables(request.getKeyDeliverables());
         tender.setTechnicalSpecifications(request.getTechnicalSpecifications());
+        tender.setTenderReferenceNoticeNo(request.getTenderReferenceNoticeNo());
+        if (request.getPublishedOn() != null) {
+            tender.setPublishedOn(request.getPublishedOn());
+        }
+        tender.setBidSubmissionDeadline(request.getBidSubmissionDeadline());
+        tender.setTenderNoticeCode(request.getTenderNoticeCode());
+        tender.setWarranty(request.getWarranty());
+        tender.setGeneralEligibility(request.getGeneralEligibility());
+        tender.setTechnicalRequirements(request.getTechnicalRequirements());
+        tender.setFinancialRequirements(request.getFinancialRequirements());
+        tender.setExperience(request.getExperience());
+        tender.setPreBidMeeting(request.getPreBidMeeting());
+        tender.setSiteVisit(request.getSiteVisit());
+        tender.setDeadlineForClarifications(request.getDeadlineForClarifications());
+        tender.setBidOpeningDate(request.getBidOpeningDate());
+        tender.setTenderDocumentCollectionLocation(request.getTenderDocumentCollectionLocation());
+        tender.setTenderDocumentCollectionTime(request.getTenderDocumentCollectionTime());
+        tender.setTenderDocumentDownload(request.getTenderDocumentDownload());
+        tender.setBidSubmissionMode(request.getBidSubmissionMode());
+        tender.setBidSubmissionAddress(request.getBidSubmissionAddress());
+        tender.setOrganization(request.getOrganization());
+        tender.setDepartment(request.getDepartment());
+        tender.setAddress(request.getAddress());
+        tender.setTenderLocation(request.getTenderLocation());
+        tender.setLanguageOfBids(request.getLanguageOfBids());
+        tender.setValidityPeriodOfBids(request.getValidityPeriodOfBids());
+        tender.setGoverningLaw(request.getGoverningLaw());
 
         Tender savedTender = tenderRepository.save(tender);
         return mapToTenderResponse(savedTender);
@@ -226,6 +278,33 @@ public class TenderService {
         tender.setPaymentTerms(tenderDTO.getPaymentTerms());
         tender.setKeyDeliverables(tenderDTO.getKeyDeliverables());
         tender.setTechnicalSpecifications(tenderDTO.getTechnicalSpecifications());
+        tender.setTenderReferenceNoticeNo(tenderDTO.getTenderReferenceNoticeNo());
+        if (tenderDTO.getPublishedOn() != null) {
+            tender.setPublishedOn(tenderDTO.getPublishedOn());
+        }
+        tender.setBidSubmissionDeadline(tenderDTO.getBidSubmissionDeadline());
+        tender.setTenderNoticeCode(tenderDTO.getTenderNoticeCode());
+        tender.setWarranty(tenderDTO.getWarranty());
+        tender.setGeneralEligibility(tenderDTO.getGeneralEligibility());
+        tender.setTechnicalRequirements(tenderDTO.getTechnicalRequirements());
+        tender.setFinancialRequirements(tenderDTO.getFinancialRequirements());
+        tender.setExperience(tenderDTO.getExperience());
+        tender.setPreBidMeeting(tenderDTO.getPreBidMeeting());
+        tender.setSiteVisit(tenderDTO.getSiteVisit());
+        tender.setDeadlineForClarifications(tenderDTO.getDeadlineForClarifications());
+        tender.setBidOpeningDate(tenderDTO.getBidOpeningDate());
+        tender.setTenderDocumentCollectionLocation(tenderDTO.getTenderDocumentCollectionLocation());
+        tender.setTenderDocumentCollectionTime(tenderDTO.getTenderDocumentCollectionTime());
+        tender.setTenderDocumentDownload(tenderDTO.getTenderDocumentDownload());
+        tender.setBidSubmissionMode(tenderDTO.getBidSubmissionMode());
+        tender.setBidSubmissionAddress(tenderDTO.getBidSubmissionAddress());
+        tender.setOrganization(tenderDTO.getOrganization());
+        tender.setDepartment(tenderDTO.getDepartment());
+        tender.setAddress(tenderDTO.getAddress());
+        tender.setTenderLocation(tenderDTO.getTenderLocation());
+        tender.setLanguageOfBids(tenderDTO.getLanguageOfBids());
+        tender.setValidityPeriodOfBids(tenderDTO.getValidityPeriodOfBids());
+        tender.setGoverningLaw(tenderDTO.getGoverningLaw());
 
         if (tenderDTO.getCategoryId() != null) {
             Services category = servicesRepository.findById(tenderDTO.getCategoryId())
@@ -526,6 +605,31 @@ public class TenderService {
         response.setPaymentTerms(tender.getPaymentTerms());
         response.setKeyDeliverables(tender.getKeyDeliverables());
         response.setTechnicalSpecifications(tender.getTechnicalSpecifications());
+        response.setTenderReferenceNoticeNo(tender.getTenderReferenceNoticeNo());
+        response.setPublishedOn(tender.getPublishedOn());
+        response.setBidSubmissionDeadline(tender.getBidSubmissionDeadline());
+        response.setTenderNoticeCode(tender.getTenderNoticeCode());
+        response.setWarranty(tender.getWarranty());
+        response.setGeneralEligibility(tender.getGeneralEligibility());
+        response.setTechnicalRequirements(tender.getTechnicalRequirements());
+        response.setFinancialRequirements(tender.getFinancialRequirements());
+        response.setExperience(tender.getExperience());
+        response.setPreBidMeeting(tender.getPreBidMeeting());
+        response.setSiteVisit(tender.getSiteVisit());
+        response.setDeadlineForClarifications(tender.getDeadlineForClarifications());
+        response.setBidOpeningDate(tender.getBidOpeningDate());
+        response.setTenderDocumentCollectionLocation(tender.getTenderDocumentCollectionLocation());
+        response.setTenderDocumentCollectionTime(tender.getTenderDocumentCollectionTime());
+        response.setTenderDocumentDownload(tender.getTenderDocumentDownload());
+        response.setBidSubmissionMode(tender.getBidSubmissionMode());
+        response.setBidSubmissionAddress(tender.getBidSubmissionAddress());
+        response.setOrganization(tender.getOrganization());
+        response.setDepartment(tender.getDepartment());
+        response.setAddress(tender.getAddress());
+        response.setTenderLocation(tender.getTenderLocation());
+        response.setLanguageOfBids(tender.getLanguageOfBids());
+        response.setValidityPeriodOfBids(tender.getValidityPeriodOfBids());
+        response.setGoverningLaw(tender.getGoverningLaw());
         response.setStatus(tender.getStatus());
         response.setServiceId(tender.getServiceId());
         response.setDocumentPath(tender.getDocumentPath());

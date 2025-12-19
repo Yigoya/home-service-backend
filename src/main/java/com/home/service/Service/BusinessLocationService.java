@@ -31,10 +31,8 @@ public class BusinessLocationService {
         @NotBlank(message = "City is required")
         public String city;
 
-        @NotBlank(message = "State is required")
         public String state;
 
-        @NotBlank(message = "Postal Code is required")
         public String postalCode;
 
         @NotBlank(message = "Country is required")

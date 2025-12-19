@@ -3,6 +3,8 @@ package com.home.service.services;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.home.service.config.exceptions.BadRequestException;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +25,14 @@ public class FileStorageService {
     }
 
     public String storeFile(MultipartFile file) {
+        if (file == null) {
+            throw new BadRequestException("No file was provided for upload.");
+        }
+
+        if (file.isEmpty()) {
+            throw new BadRequestException("Uploaded file is empty.");
+        }
+
         try {
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             Path filePath = Paths.get(uploadDir + fileName);

@@ -24,6 +24,31 @@ public class TenderCreationRequest {
     private String paymentTerms;
     private String keyDeliverables;
     private String technicalSpecifications;
+    private String tenderReferenceNoticeNo;
+    private LocalDateTime publishedOn;
+    private LocalDateTime bidSubmissionDeadline;
+    private String tenderNoticeCode;
+    private String warranty;
+    private String generalEligibility;
+    private String technicalRequirements;
+    private String financialRequirements;
+    private String experience;
+    private String preBidMeeting;
+    private String siteVisit;
+    private LocalDateTime deadlineForClarifications;
+    private LocalDateTime bidOpeningDate;
+    private String tenderDocumentCollectionLocation;
+    private String tenderDocumentCollectionTime;
+    private String tenderDocumentDownload;
+    private String bidSubmissionMode;
+    private String bidSubmissionAddress;
+    private String organization;
+    private String department;
+    private String address;
+    private String tenderLocation;
+    private String languageOfBids;
+    private String validityPeriodOfBids;
+    private String governingLaw;
 
     // Getters and Setters
     public String getTitle() {
@@ -192,5 +217,205 @@ public class TenderCreationRequest {
 
     public void setTechnicalSpecifications(String technicalSpecifications) {
         this.technicalSpecifications = technicalSpecifications;
+    }
+
+    public String getTenderReferenceNoticeNo() {
+        return tenderReferenceNoticeNo;
+    }
+
+    public void setTenderReferenceNoticeNo(String tenderReferenceNoticeNo) {
+        this.tenderReferenceNoticeNo = tenderReferenceNoticeNo;
+    }
+
+    public LocalDateTime getPublishedOn() {
+        return publishedOn;
+    }
+
+    public void setPublishedOn(LocalDateTime publishedOn) {
+        this.publishedOn = publishedOn;
+    }
+
+    public LocalDateTime getBidSubmissionDeadline() {
+        return bidSubmissionDeadline;
+    }
+
+    public void setBidSubmissionDeadline(LocalDateTime bidSubmissionDeadline) {
+        this.bidSubmissionDeadline = bidSubmissionDeadline;
+    }
+
+    public String getTenderNoticeCode() {
+        return tenderNoticeCode;
+    }
+
+    public void setTenderNoticeCode(String tenderNoticeCode) {
+        this.tenderNoticeCode = tenderNoticeCode;
+    }
+
+    public String getWarranty() {
+        return warranty;
+    }
+
+    public void setWarranty(String warranty) {
+        this.warranty = warranty;
+    }
+
+    public String getGeneralEligibility() {
+        return generalEligibility;
+    }
+
+    public void setGeneralEligibility(String generalEligibility) {
+        this.generalEligibility = generalEligibility;
+    }
+
+    public String getTechnicalRequirements() {
+        return technicalRequirements;
+    }
+
+    public void setTechnicalRequirements(String technicalRequirements) {
+        this.technicalRequirements = technicalRequirements;
+    }
+
+    public String getFinancialRequirements() {
+        return financialRequirements;
+    }
+
+    public void setFinancialRequirements(String financialRequirements) {
+        this.financialRequirements = financialRequirements;
+    }
+
+    public String getExperience() {
+        return experience;
+    }
+
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public String getPreBidMeeting() {
+        return preBidMeeting;
+    }
+
+    public void setPreBidMeeting(String preBidMeeting) {
+        this.preBidMeeting = preBidMeeting;
+    }
+
+    public String getSiteVisit() {
+        return siteVisit;
+    }
+
+    public void setSiteVisit(String siteVisit) {
+        this.siteVisit = siteVisit;
+    }
+
+    public LocalDateTime getDeadlineForClarifications() {
+        return deadlineForClarifications;
+    }
+
+    public void setDeadlineForClarifications(LocalDateTime deadlineForClarifications) {
+        this.deadlineForClarifications = deadlineForClarifications;
+    }
+
+    public LocalDateTime getBidOpeningDate() {
+        return bidOpeningDate;
+    }
+
+    public void setBidOpeningDate(LocalDateTime bidOpeningDate) {
+        this.bidOpeningDate = bidOpeningDate;
+    }
+
+    public String getTenderDocumentCollectionLocation() {
+        return tenderDocumentCollectionLocation;
+    }
+
+    public void setTenderDocumentCollectionLocation(String tenderDocumentCollectionLocation) {
+        this.tenderDocumentCollectionLocation = tenderDocumentCollectionLocation;
+    }
+
+    public String getTenderDocumentCollectionTime() {
+        return tenderDocumentCollectionTime;
+    }
+
+    public void setTenderDocumentCollectionTime(String tenderDocumentCollectionTime) {
+        this.tenderDocumentCollectionTime = tenderDocumentCollectionTime;
+    }
+
+    public String getTenderDocumentDownload() {
+        return tenderDocumentDownload;
+    }
+
+    public void setTenderDocumentDownload(String tenderDocumentDownload) {
+        this.tenderDocumentDownload = tenderDocumentDownload;
+    }
+
+    public String getBidSubmissionMode() {
+        return bidSubmissionMode;
+    }
+
+    public void setBidSubmissionMode(String bidSubmissionMode) {
+        this.bidSubmissionMode = bidSubmissionMode;
+    }
+
+    public String getBidSubmissionAddress() {
+        return bidSubmissionAddress;
+    }
+
+    public void setBidSubmissionAddress(String bidSubmissionAddress) {
+        this.bidSubmissionAddress = bidSubmissionAddress;
+    }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTenderLocation() {
+        return tenderLocation;
+    }
+
+    public void setTenderLocation(String tenderLocation) {
+        this.tenderLocation = tenderLocation;
+    }
+
+    public String getLanguageOfBids() {
+        return languageOfBids;
+    }
+
+    public void setLanguageOfBids(String languageOfBids) {
+        this.languageOfBids = languageOfBids;
+    }
+
+    public String getValidityPeriodOfBids() {
+        return validityPeriodOfBids;
+    }
+
+    public void setValidityPeriodOfBids(String validityPeriodOfBids) {
+        this.validityPeriodOfBids = validityPeriodOfBids;
+    }
+
+    public String getGoverningLaw() {
+        return governingLaw;
+    }
+
+    public void setGoverningLaw(String governingLaw) {
+        this.governingLaw = governingLaw;
     }
 }

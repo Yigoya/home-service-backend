@@ -38,6 +38,31 @@ public class TenderDTO {
     private String paymentTerms;
     private String keyDeliverables;
     private String technicalSpecifications;
+    private String tenderReferenceNoticeNo;
+    private LocalDateTime publishedOn;
+    private LocalDateTime bidSubmissionDeadline;
+    private String tenderNoticeCode;
+    private String warranty;
+    private String generalEligibility;
+    private String technicalRequirements;
+    private String financialRequirements;
+    private String experience;
+    private String preBidMeeting;
+    private String siteVisit;
+    private LocalDateTime deadlineForClarifications;
+    private LocalDateTime bidOpeningDate;
+    private String tenderDocumentCollectionLocation;
+    private String tenderDocumentCollectionTime;
+    private String tenderDocumentDownload;
+    private String bidSubmissionMode;
+    private String bidSubmissionAddress;
+    private String organization;
+    private String department;
+    private String address;
+    private String tenderLocation;
+    private String languageOfBids;
+    private String validityPeriodOfBids;
+    private String governingLaw;
 
     public static TenderDTO createWithFullDetails(Tender tender) {
         TenderDTO tenderDTO = new TenderDTO();
@@ -67,6 +92,31 @@ public class TenderDTO {
         tenderDTO.setPaymentTerms(tender.getPaymentTerms());
         tenderDTO.setKeyDeliverables(tender.getKeyDeliverables());
         tenderDTO.setTechnicalSpecifications(tender.getTechnicalSpecifications());
+        tenderDTO.setTenderReferenceNoticeNo(tender.getTenderReferenceNoticeNo());
+        tenderDTO.setPublishedOn(tender.getPublishedOn());
+        tenderDTO.setBidSubmissionDeadline(tender.getBidSubmissionDeadline());
+        tenderDTO.setTenderNoticeCode(tender.getTenderNoticeCode());
+        tenderDTO.setWarranty(tender.getWarranty());
+        tenderDTO.setGeneralEligibility(tender.getGeneralEligibility());
+        tenderDTO.setTechnicalRequirements(tender.getTechnicalRequirements());
+        tenderDTO.setFinancialRequirements(tender.getFinancialRequirements());
+        tenderDTO.setExperience(tender.getExperience());
+        tenderDTO.setPreBidMeeting(tender.getPreBidMeeting());
+        tenderDTO.setSiteVisit(tender.getSiteVisit());
+        tenderDTO.setDeadlineForClarifications(tender.getDeadlineForClarifications());
+        tenderDTO.setBidOpeningDate(tender.getBidOpeningDate());
+        tenderDTO.setTenderDocumentCollectionLocation(tender.getTenderDocumentCollectionLocation());
+        tenderDTO.setTenderDocumentCollectionTime(tender.getTenderDocumentCollectionTime());
+        tenderDTO.setTenderDocumentDownload(tender.getTenderDocumentDownload());
+        tenderDTO.setBidSubmissionMode(tender.getBidSubmissionMode());
+        tenderDTO.setBidSubmissionAddress(tender.getBidSubmissionAddress());
+        tenderDTO.setOrganization(tender.getOrganization());
+        tenderDTO.setDepartment(tender.getDepartment());
+        tenderDTO.setAddress(tender.getAddress());
+        tenderDTO.setTenderLocation(tender.getTenderLocation());
+        tenderDTO.setLanguageOfBids(tender.getLanguageOfBids());
+        tenderDTO.setValidityPeriodOfBids(tender.getValidityPeriodOfBids());
+        tenderDTO.setGoverningLaw(tender.getGoverningLaw());
 
         return tenderDTO;
     }
@@ -97,6 +147,31 @@ public class TenderDTO {
         tenderDTO.setPaymentTerms(tender.getPaymentTerms());
         tenderDTO.setKeyDeliverables(tender.getKeyDeliverables());
         tenderDTO.setTechnicalSpecifications(tender.getTechnicalSpecifications());
+        tenderDTO.setTenderReferenceNoticeNo(tender.getTenderReferenceNoticeNo());
+        tenderDTO.setPublishedOn(tender.getPublishedOn());
+        tenderDTO.setBidSubmissionDeadline(tender.getBidSubmissionDeadline());
+        tenderDTO.setTenderNoticeCode(tender.getTenderNoticeCode());
+        tenderDTO.setWarranty(tender.getWarranty());
+        tenderDTO.setGeneralEligibility(tender.getGeneralEligibility());
+        tenderDTO.setTechnicalRequirements(tender.getTechnicalRequirements());
+        tenderDTO.setFinancialRequirements(tender.getFinancialRequirements());
+        tenderDTO.setExperience(tender.getExperience());
+        tenderDTO.setPreBidMeeting(tender.getPreBidMeeting());
+        tenderDTO.setSiteVisit(tender.getSiteVisit());
+        tenderDTO.setDeadlineForClarifications(tender.getDeadlineForClarifications());
+        tenderDTO.setBidOpeningDate(tender.getBidOpeningDate());
+        tenderDTO.setTenderDocumentCollectionLocation(tender.getTenderDocumentCollectionLocation());
+        tenderDTO.setTenderDocumentCollectionTime(tender.getTenderDocumentCollectionTime());
+        tenderDTO.setTenderDocumentDownload(tender.getTenderDocumentDownload());
+        tenderDTO.setBidSubmissionMode(tender.getBidSubmissionMode());
+        tenderDTO.setBidSubmissionAddress(tender.getBidSubmissionAddress());
+        tenderDTO.setOrganization(tender.getOrganization());
+        tenderDTO.setDepartment(tender.getDepartment());
+        tenderDTO.setAddress(tender.getAddress());
+        tenderDTO.setTenderLocation(tender.getTenderLocation());
+        tenderDTO.setLanguageOfBids(tender.getLanguageOfBids());
+        tenderDTO.setValidityPeriodOfBids(tender.getValidityPeriodOfBids());
+        tenderDTO.setGoverningLaw(tender.getGoverningLaw());
         return tenderDTO;
     }
 }

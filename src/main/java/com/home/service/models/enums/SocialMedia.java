@@ -12,6 +12,8 @@ public class SocialMedia {
     private String twitter;
     private String instagram;
     private String linkedin;
+    private String telegram;
+    private String whatsapp;
 
     // Getters and Setters
 }
