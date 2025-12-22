@@ -30,6 +30,7 @@ import com.home.service.models.enums.BusinessType;
 import com.home.service.models.enums.OpeningHours;
 import com.home.service.models.enums.PlanType;
 import com.home.service.models.enums.SocialMedia;
+import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.BusinessLocationRepository;
 import com.home.service.repositories.BusinessRepository;
 import com.home.service.repositories.BusinessReviewRepository;
@@ -183,6 +184,8 @@ public class BusinessService {
     public BusinessDTO createBusiness(@Valid BusinessRequest request) {
         User owner = userRepository.findById(request.getOwnerId())
                 .orElseThrow(() -> new EntityNotFoundException("Owner not found with ID: " + request.getOwnerId()));
+
+        assignBusinessRoleIfNeeded(owner);
 
         // Save the BusinessLocation entity first
         System.out.println(request.getLocation());
@@ -407,6 +410,18 @@ public class BusinessService {
         return businessRepository.save(business);
     }
 
+    private void assignBusinessRoleIfNeeded(User owner) {
+        if (owner == null) {
+            return;
+        }
+
+        UserRole currentRole = owner.getRole();
+        if (currentRole == null || currentRole == UserRole.USER || currentRole == UserRole.CUSTOMER) {
+            owner.setRole(UserRole.BUSINESS);
+            userRepository.save(owner);
+        }
+    }
+
     private BusinessDTO mapBusinessEntityToDTO(Business entity) {
         BusinessDTO dto = new BusinessDTO();
         dto.setId(entity.getId());
@@ -427,7 +442,7 @@ public class BusinessService {
         dto.setTradeTerms(entity.getTradeTerms());
         dto.setImages(entity.getImages());
         dto.setFeatured(entity.isFeatured());
-        dto.setOwner(entity.getOwner());
+        dto.setOwner(entity.getOwner() != null ? new BusinessDTO.OwnerDTO(entity.getOwner()) : null);
         dto.setTelephoneNumbers(entity.getTelephoneNumbers());
         dto.setMobileNumbers(entity.getMobileNumbers());
         // Note: Map relationships as needed

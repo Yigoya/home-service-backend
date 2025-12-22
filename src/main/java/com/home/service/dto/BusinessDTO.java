@@ -8,9 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.home.service.Service.BusinessLocationService.BusinessLocationDTO;
 import com.home.service.models.Business;
-import com.home.service.models.BusinessLocation;
 import com.home.service.models.SubscriptionPlan;
-import com.home.service.models.User;
 import com.home.service.models.enums.BusinessType;
 import com.home.service.models.enums.OpeningHours;
 import com.home.service.models.enums.SocialMedia;
@@ -40,7 +38,7 @@ public class BusinessDTO {
     public BusinessLocationDTO location;
     public SocialMedia socialMedia;
     public OpeningHours openingHours;
-    public User owner;
+    public OwnerDTO owner;
     public List<String> images;
     public List<String> telephoneNumbers;
     public List<String> mobileNumbers;
@@ -82,7 +80,7 @@ public class BusinessDTO {
         this.mobileNumbers = business.getMobileNumbers();
         this.isFeatured = business.isFeatured();
         this.subscriptionPlan = business.getSubscriptionPlan();
-        this.owner = business.getOwner();
+        this.owner = business.getOwner() != null ? new OwnerDTO(business.getOwner()) : null;
     }
 
     public static final ObjectMapper mapper = new ObjectMapper()
@@ -133,6 +131,23 @@ public class BusinessDTO {
             return mapper.readValue(socialMediaJson, SocialMedia.class);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid social media format: " + e.getMessage(), e);
+        }
+    }
+
+    @Data
+    public static class OwnerDTO {
+        public Long id;
+        public String name;
+        public String email;
+        public String phoneNumber;
+        public String profileImage;
+
+        public OwnerDTO(com.home.service.models.User user) {
+            this.id = user.getId();
+            this.name = user.getName();
+            this.email = user.getEmail();
+            this.phoneNumber = user.getPhoneNumber();
+            this.profileImage = user.getProfileImage();
         }
     }
 }

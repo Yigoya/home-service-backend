@@ -208,6 +208,7 @@ com/home/service/controller/ReviewController.class
 com/home/service/dto/CompanySearchDto.class
 com/home/service/models/enums/B2BPartnerStatus.class
 com/home/service/dto/ReviewDTO.class
+com/home/service/dto/BusinessDTO$OwnerDTO.class
 com/home/service/repositories/CustomerSubscriptionRepository.class
 com/home/service/Service/ProductService.class
 com/home/service/Service/B2BPartnerService.class

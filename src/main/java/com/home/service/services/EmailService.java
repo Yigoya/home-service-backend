@@ -44,6 +44,8 @@ public class EmailService {
     private String adminBaseUrl;
     @org.springframework.beans.factory.annotation.Value("${app.urls.base.user:https://www.hulumoya.com}")
     private String genericUserBaseUrl;
+    @org.springframework.beans.factory.annotation.Value("${app.urls.base.business:https://www.hulumoya.com}")
+    private String businessBaseUrl;
     @org.springframework.beans.factory.annotation.Value("${app.urls.base.agency:https://www.hulumoya.com}")
     private String agencyBaseUrl;
     @org.springframework.beans.factory.annotation.Value("${app.urls.base.job_company:https://www.hulumoya.com}")
@@ -64,6 +66,8 @@ public class EmailService {
                 return adminBaseUrl != null ? adminBaseUrl : defaultBaseUrl;
             case USER:
                 return genericUserBaseUrl != null ? genericUserBaseUrl : defaultBaseUrl;
+            case BUSINESS:
+                return businessBaseUrl != null ? businessBaseUrl : defaultBaseUrl;
             case AGENCY:
                 return agencyBaseUrl != null ? agencyBaseUrl : defaultBaseUrl;
             case JOB_COMPANY:

@@ -39,6 +39,7 @@ import com.home.service.repositories.UserRepository;
 import com.home.service.services.FileStorageService;
 import com.home.service.config.JwtUtil;
 import com.home.service.dto.UserResponse;
+import com.home.service.models.enums.UserRole;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -408,6 +409,13 @@ public class ProfileService {
     // Ensure a Business exists for this CompanyProfile's user and link a Service by industry name when resolvable
     private void syncBusinessAndService(CompanyProfile profile) {
         User user = profile.getUser();
+        if (user != null) {
+            UserRole role = user.getRole();
+            if (role == null || role == UserRole.USER || role == UserRole.CUSTOMER) {
+                user.setRole(UserRole.BUSINESS);
+                userRepository.save(user);
+            }
+        }
         Business business = businessRepository.findFirstByOwner(user).orElseGet(() -> {
             Business b = new Business();
             b.setOwner(user);
