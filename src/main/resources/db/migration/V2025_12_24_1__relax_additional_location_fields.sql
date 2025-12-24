@@ -1,0 +1,4 @@
+ALTER TABLE business_locations
+    ALTER COLUMN street DROP NOT NULL,
+    ALTER COLUMN city DROP NOT NULL,
+    ALTER COLUMN country DROP NOT NULL;

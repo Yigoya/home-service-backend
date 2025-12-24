@@ -133,26 +133,23 @@ GET /businesses/{businessId}/services
 ```
 **Description:** Get all services available for a business to link with promotions.
 
-### 5. Create Promotion with Services
+### 5. Create Promotion with Services (supports multiple images)
 ```
 POST /businesses/promotions
+Content-Type: multipart/form-data
 ```
-**Request Body:**
-```json
-{
-  "businessId": 1,
-  "title": "Summer Special",
-  "description": "20% off on selected services",
-  "startDate": "2025-01-15T00:00:00",
-  "endDate": "2025-03-15T23:59:59",
-  "type": "SPECIAL_OFFER",
-  "discountPercentage": 20.0,
-  "isFeatured": true,
-  "serviceIds": [1, 2, 3],
-  "imageUrl": "/uploads/promotion-image.jpg",
-  "termsAndConditions": "Valid for new customers only"
-}
-```
+**Form Fields:**
+- `businessId` (number)
+- `title` (string)
+- `description` (string)
+- `startDate` (ISO datetime)
+- `endDate` (ISO datetime)
+- `type` (enum)
+- `discountPercentage` (number)
+- `isFeatured` (boolean)
+- `serviceIds` (array of numbers)
+- `images` (array of files) — send multiple files using `images[]`
+- `termsAndConditions` (string)
 
 ### 6. Update Promotion with Services
 ```
@@ -177,6 +174,7 @@ PUT /businesses/promotions/{id}
   "businessId": 5,
   "businessCategory": "Home Services",
   "isActive": true
+  "images": ["/uploads/promo1.jpg", "/uploads/promo2.jpg"]
 }
 ```
 

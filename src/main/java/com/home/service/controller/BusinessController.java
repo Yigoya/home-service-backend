@@ -426,11 +426,17 @@ public class BusinessController {
         dto.serviceIds = request.getServiceIds();
         dto.termsAndConditions = request.getTermsAndConditions();
 
-        // Handle image upload via storage service if present
-        if (request.getImage() != null && !request.getImage().isEmpty()) {
+        // Handle image uploads via storage service if present
+        if (request.getImages() != null && request.getImages().length > 0) {
             try {
-                String storedFileName = fileStorageService.storeFile(request.getImage());
-                dto.imageUrl = storedFileName; // Assuming static handler maps /uploads/** to /opt/uploads/
+                java.util.List<String> imagePaths = new java.util.ArrayList<>();
+                for (org.springframework.web.multipart.MultipartFile file : request.getImages()) {
+                    if (file != null && !file.isEmpty()) {
+                        String storedFileName = fileStorageService.storeFile(file);
+                        imagePaths.add(storedFileName);
+                    }
+                }
+                dto.images = imagePaths; // Assuming static handler maps /uploads/** to /opt/uploads/
             } catch (RuntimeException ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }

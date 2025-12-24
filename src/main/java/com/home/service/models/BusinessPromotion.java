@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.home.service.models.enums.PromotionType;
@@ -41,7 +42,10 @@ public class BusinessPromotion extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "service_id"))
     private Set<Services> services = new HashSet<>();
 
-    private String imageUrl;
+    @ElementCollection
+    @CollectionTable(name = "promotion_images", joinColumns = @JoinColumn(name = "promotion_id"))
+    @Column(name = "image_url")
+    private List<String> images;
 
     private String termsAndConditions;
 

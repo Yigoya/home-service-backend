@@ -45,10 +45,16 @@ public class PromotionController {
         dto.serviceIds = request.getServiceIds();
         dto.termsAndConditions = request.getTermsAndConditions();
 
-        if (request.getImage() != null && !request.getImage().isEmpty()) {
+        if (request.getImages() != null && request.getImages().length > 0) {
             try {
-                String storedFileName = fileStorageService.storeFile(request.getImage());
-                dto.imageUrl = storedFileName;
+                java.util.List<String> imagePaths = new java.util.ArrayList<>();
+                for (org.springframework.web.multipart.MultipartFile file : request.getImages()) {
+                    if (file != null && !file.isEmpty()) {
+                        String storedFileName = fileStorageService.storeFile(file);
+                        imagePaths.add(storedFileName);
+                    }
+                }
+                dto.images = imagePaths;
             } catch (RuntimeException ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }

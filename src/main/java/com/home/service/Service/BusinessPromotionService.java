@@ -50,7 +50,7 @@ public class BusinessPromotionService {
         public Double discountPercentage;
         public boolean isFeatured;
         public Set<Long> serviceIds;
-        public String imageUrl;
+        public java.util.List<String> images;
         public String termsAndConditions;
 
         public BusinessPromotionDTO() {
@@ -75,7 +75,7 @@ public class BusinessPromotionService {
             this.serviceIds = promotion.getServices().stream()
                     .map(service -> service.getId())
                     .collect(java.util.stream.Collectors.toSet());
-            this.imageUrl = promotion.getImageUrl();
+            this.images = promotion.getImages();
             this.termsAndConditions = promotion.getTermsAndConditions();
         }
     }
@@ -94,7 +94,7 @@ public class BusinessPromotionService {
         public String businessCategory;
         public boolean isActive;
         public boolean isFeatured;
-        public String imageUrl;
+        public java.util.List<String> images;
         public String termsAndConditions;
         public Set<ServiceInfo> services;
 
@@ -115,7 +115,7 @@ public class BusinessPromotionService {
             this.businessCategory = promotion.getBusiness().getIndustry();
             this.isActive = isPromotionActive(promotion);
             this.isFeatured = promotion.isFeatured();
-            this.imageUrl = promotion.getImageUrl();
+                this.images = promotion.getImages();
             this.termsAndConditions = promotion.getTermsAndConditions();
             this.services = promotion.getServices().stream()
                     .map(ServiceInfo::new)
@@ -171,7 +171,7 @@ public class BusinessPromotionService {
         promotion.setType(dto.type);
         promotion.setDiscountPercentage(dto.discountPercentage);
         promotion.setFeatured(dto.isFeatured);
-        promotion.setImageUrl(dto.imageUrl);
+        promotion.setImages(dto.images != null ? dto.images : java.util.Collections.emptyList());
         promotion.setTermsAndConditions(dto.termsAndConditions);
 
         // Add services to promotion
@@ -224,7 +224,7 @@ public class BusinessPromotionService {
         promotion.setType(dto.type);
         promotion.setDiscountPercentage(dto.discountPercentage);
         promotion.setFeatured(dto.isFeatured);
-        promotion.setImageUrl(dto.imageUrl);
+        promotion.setImages(dto.images != null ? dto.images : java.util.Collections.emptyList());
         promotion.setTermsAndConditions(dto.termsAndConditions);
 
         // Update services

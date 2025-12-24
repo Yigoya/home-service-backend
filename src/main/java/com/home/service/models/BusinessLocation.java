@@ -6,7 +6,6 @@ import com.home.service.models.enums.Coordinates;
 import com.home.service.models.enums.LocationType;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,17 +30,14 @@ public class BusinessLocation extends BaseEntity {
     @Embedded
     private Coordinates coordinates;
 
-    @NotBlank(message = "Street is required")
     private String street;
 
-    @NotBlank(message = "City is required")
     private String city;
 
     private String state;
 
     private String postalCode;
 
-    @NotBlank(message = "Country is required")
     private String country;
 
     // existing fields and methods

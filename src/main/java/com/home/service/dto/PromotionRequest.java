@@ -29,6 +29,6 @@ public class PromotionRequest {
     private Double discountPercentage;
     private Boolean isFeatured = false;
     private Set<Long> serviceIds;
-    private MultipartFile image; // Optional image file
+    private MultipartFile[] images; // Optional image files
     private String termsAndConditions;
 }

@@ -12,7 +12,6 @@ import com.home.service.repositories.BusinessLocationRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 
 @Service
 public class BusinessLocationService {
@@ -25,17 +24,14 @@ public class BusinessLocationService {
 
     public static class BusinessLocationDTO {
         public Long id;
-        @NotBlank(message = "Street is r equired")
         public String street;
 
-        @NotBlank(message = "City is required")
         public String city;
 
         public String state;
 
         public String postalCode;
 
-        @NotBlank(message = "Country is required")
         public String country;
 
         public String name;
