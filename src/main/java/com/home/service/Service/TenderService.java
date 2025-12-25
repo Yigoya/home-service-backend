@@ -106,7 +106,7 @@ public class TenderService {
         tender.setKeyDeliverables(tenderDTO.getKeyDeliverables());
         tender.setTechnicalSpecifications(tenderDTO.getTechnicalSpecifications());
         tender.setTenderReferenceNoticeNo(tenderDTO.getTenderReferenceNoticeNo());
-        tender.setPublishedOn(tenderDTO.getPublishedOn() != null ? tenderDTO.getPublishedOn() : LocalDateTime.now());
+        tender.setPublishedOn(tenderDTO.getPublishedOn());
         tender.setBidSubmissionDeadline(tenderDTO.getBidSubmissionDeadline());
         tender.setTenderNoticeCode(tenderDTO.getTenderNoticeCode());
         tender.setWarranty(tenderDTO.getWarranty());
@@ -173,9 +173,7 @@ public class TenderService {
         tender.setKeyDeliverables(request.getKeyDeliverables());
         tender.setTechnicalSpecifications(request.getTechnicalSpecifications());
         tender.setTenderReferenceNoticeNo(request.getTenderReferenceNoticeNo());
-        if (request.getPublishedOn() != null) {
-            tender.setPublishedOn(request.getPublishedOn());
-        }
+        tender.setPublishedOn(request.getPublishedOn());
         tender.setBidSubmissionDeadline(request.getBidSubmissionDeadline());
         tender.setTenderNoticeCode(request.getTenderNoticeCode());
         tender.setWarranty(request.getWarranty());
@@ -279,9 +277,7 @@ public class TenderService {
         tender.setKeyDeliverables(tenderDTO.getKeyDeliverables());
         tender.setTechnicalSpecifications(tenderDTO.getTechnicalSpecifications());
         tender.setTenderReferenceNoticeNo(tenderDTO.getTenderReferenceNoticeNo());
-        if (tenderDTO.getPublishedOn() != null) {
-            tender.setPublishedOn(tenderDTO.getPublishedOn());
-        }
+        tender.setPublishedOn(tenderDTO.getPublishedOn());
         tender.setBidSubmissionDeadline(tenderDTO.getBidSubmissionDeadline());
         tender.setTenderNoticeCode(tenderDTO.getTenderNoticeCode());
         tender.setWarranty(tenderDTO.getWarranty());

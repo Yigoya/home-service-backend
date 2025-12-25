@@ -24,7 +24,7 @@ public class TenderUpdateRequest {
     private String keyDeliverables;
     private String technicalSpecifications;
     private String tenderReferenceNoticeNo;
-    private LocalDateTime publishedOn;
+    private String publishedOn;
     private LocalDateTime bidSubmissionDeadline;
     private String tenderNoticeCode;
     private String warranty;
@@ -218,11 +218,11 @@ public class TenderUpdateRequest {
         this.tenderReferenceNoticeNo = tenderReferenceNoticeNo;
     }
 
-    public LocalDateTime getPublishedOn() {
+    public String getPublishedOn() {
         return publishedOn;
     }
 
-    public void setPublishedOn(LocalDateTime publishedOn) {
+    public void setPublishedOn(String publishedOn) {
         this.publishedOn = publishedOn;
     }
 

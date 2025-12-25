@@ -255,13 +255,19 @@ public class BusinessService {
         business.setSocialMedia(dto.getSocialMedia());
         business.setVerified(dto.isVerified);
         business.setFeatured(dto.isFeatured);
-        List<String> imageUrls = new ArrayList<>();
+        List<String> imageUrls = business.getImages() != null
+                ? new ArrayList<>(business.getImages())
+                : new ArrayList<>();
         if (dto.getImages() != null) {
             for (MultipartFile image : dto.getImages()) {
+                if (image == null || image.isEmpty()) {
+                    continue;
+                }
                 String fileName = fileStorageService.storeFile(image);
                 imageUrls.add(fileName);
             }
         }
+        business.setImages(imageUrls);
         BusinessLocation location = businessLocationRepository.save(new BusinessLocation(dto.getLocation()));
         business.setLocation(location);
         

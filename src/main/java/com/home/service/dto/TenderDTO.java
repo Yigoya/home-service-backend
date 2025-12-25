@@ -39,7 +39,7 @@ public class TenderDTO {
     private String keyDeliverables;
     private String technicalSpecifications;
     private String tenderReferenceNoticeNo;
-    private LocalDateTime publishedOn;
+    private String publishedOn;
     private LocalDateTime bidSubmissionDeadline;
     private String tenderNoticeCode;
     private String warranty;

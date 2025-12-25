@@ -99,9 +99,9 @@ public class BusinessController {
     }
 
     @CrossOrigin(originPatterns = "*")
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BusinessDTO> updateBusiness(@PathVariable Long id,
-            @RequestBody BusinessRequest businessRequest) {
+        @ModelAttribute BusinessRequest businessRequest) {
         Long currentUserId = 4L; // Replace with actual user ID retrieval logic
         BusinessDTO business = businessService.updateBusiness(id, businessRequest, currentUserId);
         return ResponseEntity.ok(business);

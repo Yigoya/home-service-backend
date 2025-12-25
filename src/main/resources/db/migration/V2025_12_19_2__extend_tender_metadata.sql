@@ -1,6 +1,6 @@
 ALTER TABLE tender
     ADD COLUMN IF NOT EXISTS tender_reference_notice_no TEXT,
-    ADD COLUMN IF NOT EXISTS published_on TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS published_on TEXT,
     ADD COLUMN IF NOT EXISTS bid_submission_deadline TIMESTAMP,
     ADD COLUMN IF NOT EXISTS tender_notice_code TEXT,
     ADD COLUMN IF NOT EXISTS warranty TEXT,

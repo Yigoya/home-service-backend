@@ -68,7 +68,9 @@ public class Tender extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String tenderReferenceNoticeNo;
-    private LocalDateTime publishedOn = LocalDateTime.now();
+
+    @Column(columnDefinition = "TEXT")
+    private String publishedOn;
     private LocalDateTime bidSubmissionDeadline;
     @Column(columnDefinition = "TEXT")
     private String tenderNoticeCode;
