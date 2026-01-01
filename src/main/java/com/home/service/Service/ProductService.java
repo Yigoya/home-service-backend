@@ -97,6 +97,10 @@ public class ProductService {
             product.setServices(services);
         }
 
+        if (productDTO.getImages() == null) {
+            productDTO.setImages(product.getImages());
+        }
+
         mapProductDTOToEntity(productDTO, product);
         Product updatedProduct = productRepository.save(product);
         logger.info("Product updated with ID: {}", updatedProduct.getId());
@@ -419,7 +423,9 @@ public class ProductService {
         entity.setCurrency(dto.getCurrency());
         entity.setStockQuantity(dto.getStockQuantity());
         entity.setMinOrderQuantity(dto.getMinOrderQuantity());
-        entity.setImages(dto.getImages());
+        if (dto.getImages() != null) {
+            entity.setImages(dto.getImages());
+        }
         entity.setCategory(dto.getCategory());
         entity.setSku(dto.getSku());
         entity.setActive(true);

@@ -45,6 +45,6 @@ public interface BusinessPromotionRepository extends JpaRepository<BusinessPromo
            "ORDER BY p.createdAt DESC")
     Page<BusinessPromotion> findActivePromotionsByServiceId(@Param("now") LocalDateTime now, @Param("serviceId") Long serviceId, Pageable pageable);
 
-       @Query("SELECT DISTINCT p FROM BusinessPromotion p JOIN p.services s WHERE p.startDate <= :now AND p.endDate >= :now AND s.category.id = :categoryId ORDER BY p.createdAt DESC")
+       @Query("SELECT DISTINCT p FROM BusinessPromotion p LEFT JOIN p.services s WHERE p.startDate <= :now AND p.endDate >= :now AND ((s.category.id = :categoryId) OR (p.category.id = :categoryId)) ORDER BY p.createdAt DESC")
        Page<BusinessPromotion> findActivePromotionsByCategoryId(@Param("now") LocalDateTime now, @Param("categoryId") Long categoryId, Pageable pageable);
 }

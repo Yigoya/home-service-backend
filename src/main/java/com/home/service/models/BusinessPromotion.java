@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.home.service.models.enums.PromotionType;
+import com.home.service.models.ServiceCategory;
 
 @Entity
 @Table(name = "business_promotions")
@@ -22,6 +23,10 @@ public class BusinessPromotion extends BaseEntity {
     private Business business;
 
     private String title;
+
+        @ManyToOne
+        @JoinColumn(name = "category_id")
+        private ServiceCategory category;
 
     private String description;
 

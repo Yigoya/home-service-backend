@@ -3,24 +3,22 @@ package com.home.service.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.home.service.models.Business;
 import com.home.service.models.BusinessPromotion;
-import com.home.service.models.enums.PromotionType;
+import com.home.service.models.ServiceCategory;
 import com.home.service.models.enums.BusinessType;
+import com.home.service.models.enums.PromotionType;
 import com.home.service.repositories.BusinessPromotionRepository;
 import com.home.service.repositories.BusinessRepository;
+import com.home.service.repositories.ServiceCategoryRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,13 +27,16 @@ public class BusinessPromotionService {
     private final BusinessPromotionRepository businessPromotionRepository;
     private final BusinessRepository businessRepository;
     private final com.home.service.repositories.ServicesRepository servicesRepository;
+    private final ServiceCategoryRepository serviceCategoryRepository;
 
     public BusinessPromotionService(BusinessPromotionRepository businessPromotionRepository,
             BusinessRepository businessRepository,
-            com.home.service.repositories.ServicesRepository servicesRepository) {
+            com.home.service.repositories.ServicesRepository servicesRepository,
+            ServiceCategoryRepository serviceCategoryRepository) {
         this.businessPromotionRepository = businessPromotionRepository;
         this.businessRepository = businessRepository;
         this.servicesRepository = servicesRepository;
+        this.serviceCategoryRepository = serviceCategoryRepository;
     }
 
     public static class BusinessPromotionDTO {
@@ -59,12 +60,14 @@ public class BusinessPromotionService {
         public BusinessPromotionDTO(BusinessPromotion promotion) {
             this.id = promotion.getId();
             this.businessId = promotion.getBusiness().getId();
-            // Derive categoryId from the first attached service, if any
-            this.categoryId = promotion.getServices() != null && !promotion.getServices().isEmpty()
-                    ? promotion.getServices().iterator().next().getCategory() != null
-                        ? promotion.getServices().iterator().next().getCategory().getId()
-                        : null
-                    : null;
+            if (promotion.getCategory() != null) {
+                this.categoryId = promotion.getCategory().getId();
+            } else if (promotion.getServices() != null && !promotion.getServices().isEmpty()) {
+                com.home.service.models.Services first = promotion.getServices().iterator().next();
+                this.categoryId = first.getCategory() != null ? first.getCategory().getId() : null;
+            } else {
+                this.categoryId = null;
+            }
             this.title = promotion.getTitle();
             this.description = promotion.getDescription();
             this.startDate = promotion.getStartDate();
@@ -92,6 +95,7 @@ public class BusinessPromotionService {
         public String businessLogo;
         public Long businessId;
         public String businessCategory;
+        public Long categoryId;
         public boolean isActive;
         public boolean isFeatured;
         public java.util.List<String> images;
@@ -113,6 +117,14 @@ public class BusinessPromotionService {
             this.businessLogo = promotion.getBusiness().getLogo();
             this.businessId = promotion.getBusiness().getId();
             this.businessCategory = promotion.getBusiness().getIndustry();
+            if (promotion.getCategory() != null) {
+                this.categoryId = promotion.getCategory().getId();
+            } else if (promotion.getServices() != null && !promotion.getServices().isEmpty()) {
+                com.home.service.models.Services first = promotion.getServices().iterator().next();
+                this.categoryId = first.getCategory() != null ? first.getCategory().getId() : null;
+            } else {
+                this.categoryId = null;
+            }
             this.isActive = isPromotionActive(promotion);
             this.isFeatured = promotion.isFeatured();
                 this.images = promotion.getImages();
@@ -174,6 +186,12 @@ public class BusinessPromotionService {
         promotion.setImages(dto.images != null ? dto.images : java.util.Collections.emptyList());
         promotion.setTermsAndConditions(dto.termsAndConditions);
 
+        ServiceCategory category = null;
+        if (dto.categoryId != null) {
+            category = serviceCategoryRepository.findById(dto.categoryId)
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + dto.categoryId));
+        }
+
         // Add services to promotion
         if (dto.serviceIds != null && !dto.serviceIds.isEmpty()) {
             Set<com.home.service.models.Services> services = new HashSet<>();
@@ -183,11 +201,12 @@ public class BusinessPromotionService {
                 services.add(service);
             }
             promotion.setServices(services);
-            // If categoryId not provided, infer it from the first service
-            if (dto.categoryId == null && !services.isEmpty()) {
+            // If category not provided, infer it from the first service
+            if (category == null && !services.isEmpty()) {
                 com.home.service.models.Services first = services.iterator().next();
                 if (first.getCategory() != null) {
-                    dto.categoryId = first.getCategory().getId();
+                    category = first.getCategory();
+                    dto.categoryId = category.getId();
                 }
             }
         } else if (dto.categoryId != null) {
@@ -197,6 +216,8 @@ public class BusinessPromotionService {
                     .collect(Collectors.toSet());
             promotion.setServices(servicesInCategory);
         }
+
+        promotion.setCategory(category);
 
         BusinessPromotion savedPromotion = businessPromotionRepository.save(promotion);
         return new BusinessPromotionDTO(savedPromotion);
@@ -227,6 +248,12 @@ public class BusinessPromotionService {
         promotion.setImages(dto.images != null ? dto.images : java.util.Collections.emptyList());
         promotion.setTermsAndConditions(dto.termsAndConditions);
 
+        ServiceCategory category = promotion.getCategory();
+        if (dto.categoryId != null) {
+            category = serviceCategoryRepository.findById(dto.categoryId)
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + dto.categoryId));
+        }
+
         // Update services
         if (dto.serviceIds != null) {
             Set<com.home.service.models.Services> services = new HashSet<>();
@@ -236,7 +263,13 @@ public class BusinessPromotionService {
                 services.add(service);
             }
             promotion.setServices(services);
+            if (category == null && !services.isEmpty()) {
+                com.home.service.models.Services first = services.iterator().next();
+                category = first.getCategory();
+            }
         }
+
+        promotion.setCategory(category);
 
         BusinessPromotion updatedPromotion = businessPromotionRepository.save(promotion);
         return new BusinessPromotionDTO(updatedPromotion);
@@ -289,7 +322,7 @@ public class BusinessPromotionService {
         return promotions.map(PublicPromotionDTO::new);
     }
 
-    public Page<PublicPromotionDTO> getPromotionsByBusinessType(com.home.service.models.enums.BusinessType businessType, int page, int size) {
+    public Page<PublicPromotionDTO> getPromotionsByBusinessType(BusinessType businessType, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         LocalDateTime now = LocalDateTime.now();
         Page<BusinessPromotion> promotions = businessPromotionRepository.findActivePromotionsByBusinessType(now, businessType, pageable);
@@ -406,61 +439,4 @@ public class BusinessPromotionService {
         return promotions.map(PublicPromotionDTO::new);
     }
 
-    // // Method to get a unique promotion for a device based on service ID
-    // public PublicPromotionDTO getUniquePromotionForDevice(Long serviceId, String deviceIdentifier) {
-    //     // First verify that the service exists
-    //     servicesRepository.findById(serviceId)
-    //             .orElseThrow(() -> new EntityNotFoundException("Service not found with ID: " + serviceId));
-        
-    //     LocalDateTime now = LocalDateTime.now();
-        
-    //     // Get all active promotions for this service
-    //     List<BusinessPromotion> allPromotions = businessPromotionRepository.findAllActivePromotionsByServiceId(now, serviceId);
-        
-    //     if (allPromotions.isEmpty()) {
-    //         throw new EntityNotFoundException("No active promotions found for service ID: " + serviceId);
-    //     }
-        
-    //     // Get promotions already shown to this device
-    //     Set<Long> shownPromotionIds = getShownPromotionsForDevice(deviceIdentifier, serviceId);
-        
-    //     // Filter out already shown promotions
-    //     List<BusinessPromotion> availablePromotions = allPromotions.stream()
-    //             .filter(promotion -> !shownPromotionIds.contains(promotion.getId()))
-    //             .collect(Collectors.toList());
-        
-    //     // If all promotions have been shown, reset and start over
-    //     if (availablePromotions.isEmpty()) {
-    //         clearShownPromotionsForDevice(deviceIdentifier, serviceId);
-    //         availablePromotions = allPromotions;
-    //     }
-        
-    //     // Select a random promotion from available ones
-    //     BusinessPromotion selectedPromotion = availablePromotions.get(
-    //         (int) (Math.random() * availablePromotions.size())
-    //     );
-        
-    //     // Mark this promotion as shown for this device
-    //     markPromotionAsShown(deviceIdentifier, serviceId, selectedPromotion.getId());
-        
-    //     return new PublicPromotionDTO(selectedPromotion);
-    // }
-    
-    // Simple in-memory storage for demo - in production, use Redis or database
-    private static final Map<String, Set<Long>> devicePromotionHistory = new HashMap<>();
-    
-    private Set<Long> getShownPromotionsForDevice(String deviceIdentifier, Long serviceId) {
-        String key = deviceIdentifier + "_service_" + serviceId;
-        return devicePromotionHistory.getOrDefault(key, new HashSet<>());
-    }
-    
-    private void markPromotionAsShown(String deviceIdentifier, Long serviceId, Long promotionId) {
-        String key = deviceIdentifier + "_service_" + serviceId;
-        devicePromotionHistory.computeIfAbsent(key, k -> new HashSet<>()).add(promotionId);
-    }
-    
-    private void clearShownPromotionsForDevice(String deviceIdentifier, Long serviceId) {
-        String key = deviceIdentifier + "_service_" + serviceId;
-        devicePromotionHistory.remove(key);
-    }
 }

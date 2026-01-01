@@ -24,7 +24,7 @@
             {"key": "type", "value": "DISCOUNT", "type": "text"},
             {"key": "discountPercentage", "value": "10", "type": "text"},
             {"key": "isFeatured", "value": "true", "type": "text"},
-            {"key": "categoryId", "value": "{{categoryId}}", "type": "text", "disabled": true},
+            {"key": "categoryId", "value": "{{categoryId}}", "type": "text"},
             {"key": "serviceIds", "value": "101", "type": "text"},
             {"key": "serviceIds", "value": "102", "type": "text"},
             {"key": "termsAndConditions", "value": "Limited time offer.", "type": "text"},
@@ -50,7 +50,7 @@
         "url": {"raw": "{{baseUrl}}/promotions/{{promotionId}}", "host": ["{{baseUrl}}"], "path": ["promotions", "{{promotionId}}"]},
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"businessId\": 1,\n  \"title\": \"Holiday Discount Updated\",\n  \"description\": \"15% off selected services\",\n  \"startDate\": \"2025-12-01T00:00:00\",\n  \"endDate\": \"2025-12-31T23:59:59\",\n  \"type\": \"DISCOUNT\",\n  \"discountPercentage\": 15,\n  \"isFeatured\": true,\n  \"serviceIds\": [101,102],\n  \"imageUrl\": \"/uploads/sample.jpg\",\n  \"termsAndConditions\": \"Limited time offer.\"\n}"
+          "raw": "{\n  \"businessId\": 1,\n  \"categoryId\": 5,\n  \"title\": \"Holiday Discount Updated\",\n  \"description\": \"15% off selected services\",\n  \"startDate\": \"2025-12-01T00:00:00\",\n  \"endDate\": \"2025-12-31T23:59:59\",\n  \"type\": \"DISCOUNT\",\n  \"discountPercentage\": 15,\n  \"isFeatured\": true,\n  \"serviceIds\": [101,102],\n  \"imageUrl\": \"/uploads/sample.jpg\",\n  \"termsAndConditions\": \"Limited time offer.\"\n}"
         }
       }
     },

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import java.util.UUID;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -63,8 +65,8 @@ public class UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    // @Autowired
-    // private MyUserDetailsService userDetailsService;
+    @Autowired
+    private MyUserDetailsService userDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -104,6 +106,30 @@ public class UserService {
 
     @Autowired
     private JobSeekerProfileRepository jobSeekerProfileRepository;
+
+    public AuthenticationResponse authenticateWithToken(String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Token is required");
+        }
+
+        try {
+            String email = jwtUtil.extractUsername(token);
+            CustomDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            if (!jwtUtil.validateToken(token, userDetails)) {
+                throw new IllegalStateException("Invalid token");
+            }
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+            return buildAuthenticationResponse(user, token);
+        } catch (ExpiredJwtException e) {
+            throw new IllegalStateException("Token expired", e);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new IllegalStateException("Invalid token", e);
+        }
+    }
 
     @Transactional
     public User registerUser(UserRegistrationRequest request) {
@@ -345,7 +371,13 @@ public class UserService {
 
     // Centralized builder for AuthenticationResponse to keep login/register consistent
     public AuthenticationResponse buildAuthenticationResponse(User user) {
-        final String jwtToken = jwtUtil.generateToken(user.getEmail());
+        return buildAuthenticationResponse(user, null);
+    }
+
+    public AuthenticationResponse buildAuthenticationResponse(User user, String existingToken) {
+        final String jwtToken = (existingToken != null && !existingToken.isBlank())
+                ? existingToken
+                : jwtUtil.generateToken(user.getEmail());
 
         UserResponse userResponse = new UserResponse(
                 user.getId(),

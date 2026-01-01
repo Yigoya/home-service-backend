@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -93,6 +94,20 @@ public class AuthenticationController {
         } catch (FirebaseAuthException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
+    @GetMapping("/token-login")
+    public ResponseEntity<?> loginWithToken(@RequestParam("token") String token) {
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body("Token is required");
+        }
+
+        try {
+            AuthenticationResponse authenticationResponse = userService.authenticateWithToken(token);
+            return ResponseEntity.ok(authenticationResponse);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
