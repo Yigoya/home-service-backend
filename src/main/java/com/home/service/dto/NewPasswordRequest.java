@@ -6,10 +6,27 @@ import lombok.Data;
 
 @Data
 public class NewPasswordRequest {
-    @NotBlank(message = "Token cannot be blank")
     private String token;
+
+    private String code;
 
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 }

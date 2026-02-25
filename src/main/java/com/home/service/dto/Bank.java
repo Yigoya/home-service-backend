@@ -1,10 +1,6 @@
 package com.home.service.dto;
 
-import lombok.Data;
-
-@Data
+@Deprecated
 public class Bank {
-    private String id;
-    private String code;
-    private String name;
+    // Deprecated: Telebirr integration replaces Chapa.
 }

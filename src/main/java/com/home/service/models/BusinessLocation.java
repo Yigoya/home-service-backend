@@ -32,6 +32,8 @@ public class BusinessLocation extends BaseEntity {
 
     private String street;
 
+    private String kebele;
+
     private String city;
 
     private String state;
@@ -50,6 +52,7 @@ public class BusinessLocation extends BaseEntity {
         this.type = dto.type;
         this.coordinates = dto.coordinates;
         this.street = dto.street;
+        this.kebele = dto.kebele;
         this.city = dto.city;
         this.state = dto.state;
         this.postalCode = dto.postalCode;

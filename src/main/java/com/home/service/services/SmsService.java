@@ -1,12 +1,9 @@
 package com.home.service.services;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,28 +12,43 @@ public class SmsService {
 
     private final RestTemplate restTemplate;
 
-    // @Value("${sms.api.key}")
-    private String apiKey = "\teyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiU3VpOGtaZmxvS1pqQ1Zzb2g1MTVsRTBKVGtIMHBZTVoiLCJleHAiOjE4OTY2MTYwODgsImlhdCI6MTczODg0OTY4OCwianRpIjoiMDBiZDJlMGItOWU3Mi00OTQ0LWI2M2YtNDc5NGVhODU3N2RkIn0.mZoYExLrhwI9KGSFo4TEt4LKVOdjVBa-wvwYXhJr_8E";
+    @Value("${sms.geez.token:}")
+    private String apiToken;
+
+    @Value("${sms.geez.shortcodeId:}")
+    private String shortcodeId;
 
     public SmsService() {
         this.restTemplate = new RestTemplate();
     }
 
     public String sendSms(String to, String message) {
-        String url = "https://api.afromessage.com/api/send";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + apiKey); // Assuming apiKey is the token
+        if (apiToken == null || apiToken.isBlank()) {
+            throw new IllegalStateException("SMS API token is not configured");
+        }
 
-        Map<String, String> body = new HashMap<>();
-        body.put("from", "e80ad9d8-adf3-463f-80f4-7c4b39f7f164"); // Replace with actual identifier
-        body.put("sender", "Hulu Moya"); // Replace with actual sender name
-        body.put("to", to);
-        body.put("message", message);
-        body.put("callback", "https://home-service-managment.vercel.app/"); // Replace with actual callback URL
+        String normalizedPhone = normalizePhone(to);
+        String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
+        StringBuilder url = new StringBuilder("https://api.geezsms.com/api/v1/sms/send");
+        url.append("?token=").append(URLEncoder.encode(apiToken, StandardCharsets.UTF_8));
+        url.append("&phone=").append(URLEncoder.encode(normalizedPhone, StandardCharsets.UTF_8));
+        url.append("&msg=").append(encodedMsg);
+        if (shortcodeId != null && !shortcodeId.isBlank()) {
+            url.append("&shortcode_id=").append(URLEncoder.encode(shortcodeId, StandardCharsets.UTF_8));
+        }
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        return response.getBody();
+        return restTemplate.getForObject(url.toString(), String.class);
+    }
+
+    private String normalizePhone(String phone) {
+        if (phone == null) return "";
+        String digits = phone.replaceAll("[^0-9]", "");
+        if (digits.startsWith("0") && digits.length() == 10) {
+            digits = "251" + digits.substring(1);
+        } else if (!digits.startsWith("251") && digits.length() == 9) {
+            // handle 9XXXXXXXX local format
+            digits = "251" + digits;
+        }
+        return digits;
     }
 }

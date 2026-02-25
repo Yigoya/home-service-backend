@@ -1,0 +1,230 @@
+{
+  "info": {
+    "name": "HuluMoya Telebirr Subscription",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "planType",
+      "value": "MARKETPLACE"
+    },
+    {
+      "key": "language",
+      "value": "ENGLISH"
+    },
+    {
+      "key": "planId",
+      "value": "1"
+    },
+    {
+      "key": "subscriberType",
+      "value": "BUSINESS"
+    },
+    {
+      "key": "subscriberId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "1) List plans by type",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/plans?planType={{planType}}&language={{language}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "plans"],
+          "query": [
+            { "key": "planType", "value": "{{planType}}" },
+            { "key": "language", "value": "{{language}}" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2) Create Telebirr checkout",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}},\n  \"subscriberType\": \"{{subscriberType}}\",\n  \"subscriberId\": {{subscriberId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/telebirr/checkout",
+          "host": ["{{baseUrl}}"],
+          "path": ["payment", "telebirr", "checkout"]
+        }
+      }
+    },
+    {
+      "name": "3) Telebirr notify callback (simulate)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"merch_order_id\": \"SUB-EXAMPLE\",\n  \"prepay_id\": \"PREPAY_EXAMPLE\",\n  \"trade_status\": \"Completed\",\n  \"sign\": \"REPLACE_WITH_SIGNATURE\",\n  \"sign_type\": \"SHA256WithRSA\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/telebirr/notify",
+          "host": ["{{baseUrl}}"],
+          "path": ["payment", "telebirr", "notify"]
+        }
+      }
+    },
+    {
+      "name": "4) Get business subscription",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/business/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "business", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "5) Get technician subscription",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/technician/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "technician", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "6) Get customer subscription",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/customer/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "customer", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "7) Create business subscription (manual)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/business/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "business", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "8) Update business subscription (manual)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/business/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "business", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "9) Create technician subscription (manual)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/technician/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "technician", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "10) Update technician subscription (manual)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/technician/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "technician", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "11) Create customer subscription (manual)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/customer/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "customer", "{{subscriberId}}"]
+        }
+      }
+    },
+    {
+      "name": "12) Update customer subscription (manual)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": {{planId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/subscriptions/customer/{{subscriberId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["subscriptions", "customer", "{{subscriberId}}"]
+        }
+      }
+    }
+  ]
+}

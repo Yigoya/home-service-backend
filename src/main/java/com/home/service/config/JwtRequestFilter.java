@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.home.service.models.CustomDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -45,6 +46,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (JwtException | IllegalArgumentException e) {
                 // Malformed or invalid token: ignore and proceed without authentication
                 username = null;
+            }
+        } else {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("access_token".equals(cookie.getName())) {
+                        jwt = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+
+            if (jwt != null && !jwt.isBlank()) {
+                try {
+                    username = jwtUtil.extractUsername(jwt);
+                } catch (ExpiredJwtException e) {
+                    username = null;
+                } catch (JwtException | IllegalArgumentException e) {
+                    username = null;
+                }
             }
         }
 

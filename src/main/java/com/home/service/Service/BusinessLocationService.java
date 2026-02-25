@@ -26,6 +26,8 @@ public class BusinessLocationService {
         public Long id;
         public String street;
 
+        public String kebele;
+
         public String city;
 
         public String state;
@@ -45,6 +47,7 @@ public class BusinessLocationService {
         public BusinessLocationDTO(BusinessLocation location) {
             this.id = location.getId();
             this.street = location.getStreet();
+            this.kebele = location.getKebele();
             this.city = location.getCity();
             this.state = location.getState();
             this.postalCode = location.getPostalCode();
@@ -71,6 +74,7 @@ public class BusinessLocationService {
         location.setCity(dto.city);
         location.setPostalCode(dto.postalCode);
         location.setStreet(dto.street);
+        location.setKebele(dto.kebele);
         location.setCountry(dto.country);
 
         BusinessLocation savedLocation = businessLocationRepository.save(location);
@@ -95,6 +99,13 @@ public class BusinessLocationService {
             location.setParentLocation(null);
         }
         location.setCoordinates(dto.coordinates);
+
+        location.setStreet(dto.street);
+        location.setKebele(dto.kebele);
+        location.setCity(dto.city);
+        location.setState(dto.state);
+        location.setPostalCode(dto.postalCode);
+        location.setCountry(dto.country);
 
         BusinessLocation savedLocation = businessLocationRepository.save(location);
         return new BusinessLocationDTO(savedLocation);

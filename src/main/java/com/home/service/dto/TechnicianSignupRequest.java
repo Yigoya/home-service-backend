@@ -22,7 +22,6 @@ public class TechnicianSignupRequest {
     @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 
-    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 

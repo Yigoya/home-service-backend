@@ -42,18 +42,26 @@ public class InquiryService {
     @Transactional
     public InquiryDTO createInquiry(InquiryDTO inquiryDTO) {
         logger.info("Creating inquiry with subject: {}", inquiryDTO.getSubject());
-        Business sender = businessRepository.findById(inquiryDTO.getSenderId())
+        // Validate productId and derive recipient from product owner
+        if (inquiryDTO.getProductId() == null) {
+            throw new jakarta.validation.ValidationException("productId is required for inquiries");
+        }
+        Product product = productRepository.findById(inquiryDTO.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Sender business not found with ID: " + inquiryDTO.getSenderId()));
-        Business recipient = businessRepository.findById(inquiryDTO.getRecipientId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Recipient business not found with ID: " + inquiryDTO.getRecipientId()));
+                        "Product not found with ID: " + inquiryDTO.getProductId()));
+        Business recipient = product.getBusiness();
 
-        Product product = null;
-        if (inquiryDTO.getProductId() != null) {
-            product = productRepository.findById(inquiryDTO.getProductId())
+        // Optional sender: if absent, require contact name/email/phone
+        Business sender = null;
+        if (inquiryDTO.getSenderId() != null) {
+            sender = businessRepository.findById(inquiryDTO.getSenderId())
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "Product not found with ID: " + inquiryDTO.getProductId()));
+                            "Sender business not found with ID: " + inquiryDTO.getSenderId()));
+        } else {
+            if (isBlank(inquiryDTO.getName()) || isBlank(inquiryDTO.getEmail()) || isBlank(inquiryDTO.getPhone())) {
+                throw new jakarta.validation.ValidationException(
+                        "name, email and phone are required when senderId is not provided");
+            }
         }
 
         Inquiry inquiry = new Inquiry();
@@ -63,6 +71,10 @@ public class InquiryService {
         inquiry.setRecipient(recipient);
         inquiry.setProduct(product);
         inquiry.setStatus(InquiryStatus.PENDING);
+        // Set contact info for anonymous inquiries
+        inquiry.setContactName(inquiryDTO.getName());
+        inquiry.setContactEmail(inquiryDTO.getEmail());
+        inquiry.setContactPhone(inquiryDTO.getPhone());
 
         Inquiry savedInquiry = inquiryRepository.save(inquiry);
         logger.info("Inquiry created with ID: {}", savedInquiry.getId());
@@ -128,11 +140,18 @@ public class InquiryService {
         dto.setId(entity.getId());
         dto.setSubject(entity.getSubject());
         dto.setMessage(entity.getMessage());
-        dto.setSenderId(entity.getSender().getId());
+                dto.setSenderId(entity.getSender() != null ? entity.getSender().getId() : null);
         dto.setRecipientId(entity.getRecipient().getId());
         dto.setProductId(entity.getProduct() != null ? entity.getProduct().getId() : null);
         dto.setStatus(entity.getStatus());
         dto.setRespondedAt(entity.getRespondedAt());
+                dto.setName(entity.getContactName());
+                dto.setEmail(entity.getContactEmail());
+                dto.setPhone(entity.getContactPhone());
         return dto;
     }
+
+        private boolean isBlank(String s) {
+                return s == null || s.trim().isEmpty();
+        }
 }

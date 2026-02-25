@@ -39,18 +39,20 @@ public class OperatorService {
     }
 
     public AuthenticationResponse signupOperator(OperatorSignupRequest signupRequest) {
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+        String normalizedEmail = userService.normalizeEmail(signupRequest.getEmail());
+        if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
             throw new EmailException("Email already in use");
         }
         // Create and save User
         User user = new User();
         user.setName(signupRequest.getName());
-        user.setEmail(signupRequest.getEmail());
+        user.setEmail(normalizedEmail);
         user.setPhoneNumber(signupRequest.getPhoneNumber());
         user.setPassword(signupRequest.getPassword());
         user.setRole(UserRole.OPERATOR);
 
         userService.saveUser(user);
+        userService.sendPhoneVerificationCode(user);
 
         // Create and save Operator
         Operator operator = new Operator();

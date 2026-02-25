@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.home.service.models.CustomDetails;
@@ -16,11 +16,15 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Secure key (ensure this is at least 32 characters or 256 bits)
-    private static final String SECRET_KEY = "your_32_character_minimum_secret_key_here";
+    private final SecretKey key;
+    private final long accessTokenExpirationMs;
 
-    // Convert the SECRET_KEY to a SecretKey object using Keys.hmacShaKeyFor
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    public JwtUtil(
+            @Value("${security.jwt.secret:change-this-jwt-secret-to-a-strong-32plus-char-key}") String secretKey,
+            @Value("${security.jwt.access-token-expiration-ms:900000}") long accessTokenExpirationMs) {
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.accessTokenExpirationMs = accessTokenExpirationMs;
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -44,10 +48,14 @@ public class JwtUtil {
     }
 
     public String generateToken(String username) {
+        return generateToken(username, accessTokenExpirationMs);
+    }
+
+    public String generateToken(String username, long ttlMs) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .setExpiration(new Date(System.currentTimeMillis() + ttlMs))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

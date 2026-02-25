@@ -205,14 +205,25 @@ public class BusinessService {
         System.out.println(request.getName());
         Business business = new Business();
         business.setName(request.getName());
+        business.setNameAmharic(request.getNameAmharic());
         business.setDescription(request.getDescription());
         business.setOwner(owner);
         business.setLocation(location);
         business.setPhoneNumber(request.getPhoneNumber());
+        business.setAlternativeContactPhone(request.getAlternativeContactPhone());
         business.setEmail(request.getEmail());
         business.setWebsite(request.getWebsite());
+        business.setBusinessType(request.getBusinessType());
+        business.setFoundedYear(request.getFoundedYear());
+        business.setEmployeeCount(request.getEmployeeCount());
+        business.setRegistrationNumber(request.getRegistrationNumber());
         business.setOpeningHours(request.getOpeningHours());
         business.setSocialMedia(request.getSocialMedia());
+        business.setTaxId(request.getTaxId());
+        business.setLegalRepresentativeName(request.getLegalRepresentativeName());
+        business.setPrimaryCategory(request.getPrimaryCategory());
+        business.setSecondaryCategories(request.getSecondaryCategories());
+        business.setLocalDistributionNetwork(request.isLocalDistributionNetwork());
         business.setImages(imageUrls);
         business.setVerified(request.isVerified());
         business.setFeatured(request.isFeatured());
@@ -247,12 +258,23 @@ public class BusinessService {
     public BusinessDTO updateBusiness(Long id, BusinessRequest dto, Long currentUserId) {
         Business business = getBusinessById(id, currentUserId);
         business.setName(dto.name);
+        business.setNameAmharic(dto.nameAmharic);
         business.setEmail(dto.email);
         business.setPhoneNumber(dto.phoneNumber);
+        business.setAlternativeContactPhone(dto.alternativeContactPhone);
+        business.setBusinessType(dto.businessType);
         business.setDescription(dto.description);
         business.setWebsite(dto.website);
+        business.setFoundedYear(dto.foundedYear);
+        business.setEmployeeCount(dto.employeeCount);
+        business.setRegistrationNumber(dto.registrationNumber);
         business.setOpeningHours(dto.getOpeningHours());
         business.setSocialMedia(dto.getSocialMedia());
+        business.setTaxId(dto.taxId);
+        business.setLegalRepresentativeName(dto.legalRepresentativeName);
+        business.setPrimaryCategory(dto.primaryCategory);
+        business.setSecondaryCategories(dto.secondaryCategories);
+        business.setLocalDistributionNetwork(dto.isLocalDistributionNetwork());
         business.setVerified(dto.isVerified);
         business.setFeatured(dto.isFeatured);
         List<String> imageUrls = business.getImages() != null
@@ -395,7 +417,7 @@ public class BusinessService {
         Business business = businessRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Business not found"));
         SubscriptionPlan plan = subscriptionService.getPlanById(planId);
-        if (plan.getPlanType() != PlanType.BUSINESS) {
+        if (!isBusinessPlan(plan.getPlanType())) {
             throw new IllegalArgumentException("Invalid plan type for business");
         }
         business.setSubscriptionPlan(plan);
@@ -409,11 +431,18 @@ public class BusinessService {
             throw new IllegalStateException("Business is already subscribed to a plan. Use update instead.");
         }
         SubscriptionPlan plan = subscriptionService.getPlanById(planId);
-        if (plan.getPlanType() != PlanType.BUSINESS) {
+        if (!isBusinessPlan(plan.getPlanType())) {
             throw new IllegalArgumentException("Invalid plan type for business");
         }
         business.setSubscriptionPlan(plan);
         return businessRepository.save(business);
+    }
+
+    private boolean isBusinessPlan(PlanType planType) {
+        return planType == PlanType.MARKETPLACE
+                || planType == PlanType.YELLOW_PAGES
+                || planType == PlanType.JOBS
+                || planType == PlanType.BUSINESS;
     }
 
     private void assignBusinessRoleIfNeeded(User owner) {
@@ -432,25 +461,32 @@ public class BusinessService {
         BusinessDTO dto = new BusinessDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setNameAmharic(entity.getNameAmharic());
         dto.setEmail(entity.getEmail());
         dto.setPhoneNumber(entity.getPhoneNumber());
+        dto.setAlternativeContactPhone(entity.getAlternativeContactPhone());
         dto.setBusinessType(entity.getBusinessType());
         dto.setDescription(entity.getDescription());
         dto.setLogo(entity.getLogo());
         dto.setWebsite(entity.getWebsite());
         dto.setFoundedYear(entity.getFoundedYear());
         dto.setEmployeeCount(entity.getEmployeeCount());
+        dto.setRegistrationNumber(entity.getRegistrationNumber());
         dto.setVerified(entity.isVerified());
         dto.setIndustry(entity.getIndustry());
         dto.setTaxId(entity.getTaxId());
+        dto.setLegalRepresentativeName(entity.getLegalRepresentativeName());
         dto.setCertifications(entity.getCertifications());
         dto.setMinOrderQuantity(entity.getMinOrderQuantity());
         dto.setTradeTerms(entity.getTradeTerms());
+        dto.setPrimaryCategory(entity.getPrimaryCategory());
+        dto.setSecondaryCategories(entity.getSecondaryCategories());
         dto.setImages(entity.getImages());
         dto.setFeatured(entity.isFeatured());
         dto.setOwner(entity.getOwner() != null ? new BusinessDTO.OwnerDTO(entity.getOwner()) : null);
         dto.setTelephoneNumbers(entity.getTelephoneNumbers());
         dto.setMobileNumbers(entity.getMobileNumbers());
+        dto.setLocalDistributionNetwork(entity.isLocalDistributionNetwork());
         // Note: Map relationships as needed
         return dto;
     }

@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.home.service.models.enums.ProductCondition;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -45,6 +46,7 @@ public class ProductRequest {
 
     private String specifications;
     private String serviceIdsJson;
+    private String condition; // NEW or USED
 
     private static final ObjectMapper mapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -84,6 +86,9 @@ public class ProductRequest {
         dto.setBusinessId(this.businessId);
         dto.setSpecifications(this.specifications);
         dto.setServiceIds(this.getServiceIds());
+        if (this.condition != null && !this.condition.isBlank()) {
+            dto.setCondition(ProductCondition.valueOf(this.condition.trim().toUpperCase()));
+        }
         return dto;
     }
 }

@@ -25,12 +25,18 @@ public class Business extends BaseEntity {
     @NotBlank
     private String name;
 
+    // Optional Amharic/localized name for display
+    private String nameAmharic;
+
     @NotBlank
     @Email
     private String email;
 
     @NotBlank
     private String phoneNumber;
+
+    // Secondary/backup contact
+    private String alternativeContactPhone;
 
     @Enumerated(EnumType.STRING)
     private BusinessType businessType;
@@ -46,6 +52,9 @@ public class Business extends BaseEntity {
 
     private Integer employeeCount;
 
+    @Column(name = "registration_number")
+    private String registrationNumber;
+
     // Primary verified flag mapped to new column
     @Column(name = "is_verified", nullable = false)
     private boolean isVerified;
@@ -58,11 +67,22 @@ public class Business extends BaseEntity {
 
     private String industry;
 
+    // Mandatory Tax Identification Number (TIN)
+    @NotBlank
     private String taxId;
+
+    private String legalRepresentativeName;
 
     private String certifications;
     private Integer minOrderQuantity;
     private String tradeTerms;
+
+    private String primaryCategory;
+
+    @ElementCollection
+    @CollectionTable(name = "business_secondary_categories", joinColumns = @JoinColumn(name = "business_id"))
+    @Column(name = "category")
+    private List<String> secondaryCategories;
 
     @ManyToMany
     @JoinTable(name = "company_services",
@@ -110,6 +130,9 @@ public class Business extends BaseEntity {
     @CollectionTable(name = "business_mobile_numbers", joinColumns = @JoinColumn(name = "business_id"))
     @Column(name = "mobile")
     private List<String> mobileNumbers;
+
+    @Column(name = "local_distribution_network", nullable = false)
+    private boolean localDistributionNetwork;
 
     @PrePersist
     private void syncVerifiedOnPersist() {

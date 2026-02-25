@@ -2,11 +2,12 @@ package com.home.service.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import java.util.UUID;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -56,6 +57,8 @@ import com.home.service.repositories.TenderAgencyProfileRepository;
 import com.home.service.repositories.UserRepository;
 import com.home.service.repositories.VerificationTokenRepository;
 import com.home.service.services.EmailService;
+import com.home.service.services.PasswordPolicyService;
+import com.home.service.services.SmsService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -87,6 +90,9 @@ public class UserService {
     private EmailService emailService;
 
     @Autowired
+    private SmsService smsService;
+
+    @Autowired
     private TechnicianRepository technicianRepository;
 
     @Autowired
@@ -106,6 +112,15 @@ public class UserService {
 
     @Autowired
     private JobSeekerProfileRepository jobSeekerProfileRepository;
+
+    @Autowired
+    private PasswordPolicyService passwordPolicyService;
+
+    @Value("${security.auth.lockout.max-failed-attempts:5}")
+    private int maxFailedAttempts;
+
+    @Value("${security.auth.lockout.duration-minutes:15}")
+    private long lockoutDurationMinutes;
 
     public AuthenticationResponse authenticateWithToken(String token) {
         if (token == null || token.isBlank()) {
@@ -133,7 +148,10 @@ public class UserService {
 
     @Transactional
     public User registerUser(UserRegistrationRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        passwordPolicyService.validateOrThrow(request.getPassword());
+
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalStateException("Email already in use");
         }
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
@@ -142,7 +160,7 @@ public class UserService {
 
         User user = new User();
         user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        user.setEmail(normalizedEmail);
         user.setPhoneNumber(request.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : UserRole.USER);
@@ -167,31 +185,31 @@ public class UserService {
             companyProfileRepository.save(companyProfile);
         }
         
-        // Send verification email to the newly registered user
-        try {
-            emailService.sendVerifyEmail(savedUser);
-        } catch (Exception e) {
-            // Log and continue - signup should not fail because of mail issues
-            e.printStackTrace();
-        }
+        // Send verification email + SMS to the newly registered user
+        sendSignupVerification(savedUser);
 
         return savedUser;
     }
 
     public User signup(SignupRequest signupRequest) {
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+        passwordPolicyService.validateOrThrow(signupRequest.getPassword());
+
+        String normalizedEmail = normalizeEmail(signupRequest.getEmail());
+        if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalStateException("Email already in use");
         }
 
         User user = new User();
         user.setName(signupRequest.getName());
-        user.setEmail(signupRequest.getEmail());
+        user.setEmail(normalizedEmail);
         user.setPhoneNumber(signupRequest.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setRole(UserRole.USER); // default role
-        user.setStatus(AccountStatus.ACTIVE); // default status
+        user.setStatus(AccountStatus.INACTIVE);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        sendSignupVerification(savedUser);
+        return savedUser;
     }
 
     @Transactional
@@ -235,36 +253,70 @@ public class UserService {
         return buildAuthenticationResponse(user);
     }
 
-    public void resendVerificationEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public void resendVerification(String email, String phoneNumber) {
+        User user = null;
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail != null) {
+            user = userRepository.findByEmail(normalizedEmail).orElse(null);
+        }
+        if (user == null && phoneNumber != null && !phoneNumber.isBlank()) {
+            user = findUserByPhoneFlexible(phoneNumber).orElse(null);
+        }
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
         if (user.getStatus() == AccountStatus.ACTIVE) {
             throw new IllegalStateException("Account is already active");
         }
-        emailService.sendVerifyEmail(user);
+        sendSignupVerification(user);
     }
 
-    public String requestPasswordReset(String email) {
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user == null)
-            throw new UserNotFoundException("No account associated with this email.");
-
-        // Check if a token already exists for the user
-        PasswordResetToken existingToken = passwordResetTokenRepository.findByUser(user.get());
-        if (existingToken != null) {
-            passwordResetTokenRepository.delete(existingToken);
+    public String requestPasswordReset(String email, String phoneNumber) {
+        User user = null;
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail != null) {
+            user = userRepository.findByEmail(normalizedEmail).orElse(null);
         }
-        emailService.sendResetPassEmail(user.get());
+        if (user == null && phoneNumber != null && !phoneNumber.isBlank()) {
+            user = findUserByPhoneFlexible(phoneNumber).orElse(null);
+        }
+        if (user == null) {
+            return "If the account exists, password reset instructions were sent.";
+        }
 
-        return "Password reset link sent to your email.";
+        PasswordResetToken token = emailService.createOrRefreshPasswordResetToken(user);
+
+        if (user.getEmail() != null && !user.getEmail().isBlank() && normalizedEmail != null) {
+            emailService.sendResetPassEmail(user, token);
+        }
+
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()
+                && phoneNumber != null && !phoneNumber.isBlank()) {
+            String message = "Your password reset code is " + token.getCode();
+            smsService.sendSms(user.getPhoneNumber(), message);
+        }
+
+        return "If the account exists, password reset instructions were sent.";
     }
 
     public String resetPassword(NewPasswordRequest newPasswordRequest) {
-        PasswordResetToken resetToken = passwordResetTokenRepository
-                .findFirstByTokenOrderByExpiryDateDesc(newPasswordRequest.getToken());
-        if (resetToken == null ||
-                resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token is invalid or expired.");
+        passwordPolicyService.validateOrThrow(newPasswordRequest.getPassword());
+
+        PasswordResetToken resetToken = null;
+        String token = newPasswordRequest.getToken();
+        String code = newPasswordRequest.getCode();
+
+        if (token != null && !token.isBlank()) {
+            resetToken = passwordResetTokenRepository
+                    .findFirstByTokenOrderByExpiryDateDesc(token);
+        } else if (code != null && !code.isBlank()) {
+            resetToken = passwordResetTokenRepository.findByCode(code);
+        } else {
+            throw new IllegalArgumentException("Token or code is required.");
+        }
+
+        if (resetToken == null || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Token or code is invalid or expired.");
         }
 
         // Update user password
@@ -276,21 +328,72 @@ public class UserService {
     }
 
     public User saveUser(User user) {
+        passwordPolicyService.validateOrThrow(user.getPassword());
         // Encrypt the password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
+    public void sendSignupVerification(User user) {
+        VerificationToken verificationToken = emailService.createOrRefreshVerificationToken(user);
+        try {
+            if (user.getEmail() != null && !user.getEmail().isBlank()) {
+                emailService.sendVerifyEmail(user, verificationToken);
+            }
+        } catch (Exception e) {
+            // Email failure shouldn't block signup
+            e.printStackTrace();
+        }
+        sendPhoneVerificationCode(user, verificationToken);
+    }
+
+    public void sendPhoneVerificationCode(User user) {
+        VerificationToken verificationToken = emailService.createOrRefreshVerificationToken(user);
+        sendPhoneVerificationCode(user, verificationToken);
+    }
+
+    private void sendPhoneVerificationCode(User user, VerificationToken verificationToken) {
+        try {
+            String phoneNumber = user.getPhoneNumber();
+            if (phoneNumber == null || phoneNumber.isBlank()) {
+                return;
+            }
+            String code = verificationToken.getCode();
+            String message = "Your verification code is " + code;
+            smsService.sendSms(phoneNumber, message);
+        } catch (Exception e) {
+            // SMS failure shouldn't block signup
+            e.printStackTrace();
+        }
+    }
+
     @Transactional
     public AuthenticationResponse authenticate(LoginRequest loginRequest) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()));
+        String identifier = resolveLoginIdentifier(loginRequest);
+        Optional<User> userOpt = findUserByIdentifier(identifier, loginRequest.getPhoneNumber());
 
-        // Load user and update device info
-        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
-                () -> new UserNotFoundException("User not found"));
+        if (userOpt.isPresent() && isAccountLocked(userOpt.get())) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            identifier,
+                            loginRequest.getPassword()));
+        } catch (BadCredentialsException ex) {
+            userOpt.ifPresent(this::registerFailedLoginAttempt);
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        User user = userOpt
+                .orElseGet(() -> findUserByIdentifier(identifier, loginRequest.getPhoneNumber()).orElse(null));
+        if (user == null) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        resetLoginAttemptState(user);
+
         DeviceInfo deviceInfo = user.getDevices().stream()
                 .filter(device -> device.getFCMToken().equals(loginRequest.getFCMToken()))
                 .findFirst().orElse(null);
@@ -311,6 +414,107 @@ public class UserService {
 
         // Build and return authentication response (includes fresh JWT)
         return buildAuthenticationResponse(user);
+    }
+
+    private String resolveLoginIdentifier(LoginRequest loginRequest) {
+        String email = loginRequest.getEmail() == null ? null : loginRequest.getEmail().trim();
+        String phone = loginRequest.getPhoneNumber() == null ? null : loginRequest.getPhoneNumber().trim();
+
+        if (email != null && !email.isBlank()) {
+            return email;
+        }
+
+        if (phone != null && !phone.isBlank()) {
+            Optional<User> byPhone = findUserByPhoneFlexible(phone);
+            if (byPhone.isPresent()) {
+                return byPhone.get().getPhoneNumber();
+            }
+            return phone;
+        }
+
+        throw new IllegalArgumentException("Email or phone number is required");
+    }
+
+    private Optional<User> findUserByIdentifier(String identifier, String rawPhone) {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+
+        if (identifier.contains("@")) {
+            return userRepository.findByEmail(identifier);
+        }
+
+        Optional<User> direct = userRepository.findByPhoneNumber(identifier);
+        if (direct.isPresent()) {
+            return direct;
+        }
+
+        return findUserByPhoneFlexible(rawPhone != null ? rawPhone : identifier);
+    }
+
+    private boolean isAccountLocked(User user) {
+        return user.getLockoutUntil() != null && user.getLockoutUntil().isAfter(LocalDateTime.now());
+    }
+
+    private void registerFailedLoginAttempt(User user) {
+        int attempts = user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts();
+        attempts++;
+        user.setFailedLoginAttempts(attempts);
+        if (attempts >= maxFailedAttempts) {
+            user.setLockoutUntil(LocalDateTime.now().plusMinutes(lockoutDurationMinutes));
+        }
+        userRepository.save(user);
+    }
+
+    private void resetLoginAttemptState(User user) {
+        boolean needsReset = (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0)
+                || user.getLockoutUntil() != null;
+        if (!needsReset) {
+            return;
+        }
+        user.setFailedLoginAttempts(0);
+        user.setLockoutUntil(null);
+        userRepository.save(user);
+    }
+
+    public String normalizeEmail(String email) {
+        if (email == null) return null;
+        String trimmed = email.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private Optional<User> findUserByPhoneFlexible(String phoneNumber) {
+        if (phoneNumber == null) return Optional.empty();
+        String trimmed = phoneNumber.trim();
+        if (trimmed.isEmpty()) return Optional.empty();
+
+        Optional<User> direct = userRepository.findByPhoneNumber(trimmed);
+        if (direct.isPresent()) return direct;
+
+        String digits = trimmed.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) return Optional.empty();
+
+        // Try with and without +
+        Optional<User> withPlus = userRepository.findByPhoneNumber("+" + digits);
+        if (withPlus.isPresent()) return withPlus;
+        Optional<User> withoutPlus = userRepository.findByPhoneNumber(digits);
+        if (withoutPlus.isPresent()) return withoutPlus;
+
+        // Convert local formats
+        if (digits.startsWith("0") && digits.length() == 10) {
+            String et = "251" + digits.substring(1);
+            Optional<User> etUser = userRepository.findByPhoneNumber(et);
+            if (etUser.isPresent()) return etUser;
+            return userRepository.findByPhoneNumber("+" + et);
+        }
+        if (!digits.startsWith("251") && digits.length() == 9) {
+            String et = "251" + digits;
+            Optional<User> etUser = userRepository.findByPhoneNumber(et);
+            if (etUser.isPresent()) return etUser;
+            return userRepository.findByPhoneNumber("+" + et);
+        }
+
+        return Optional.empty();
     }
 
     @Transactional

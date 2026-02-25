@@ -19,6 +19,9 @@ public class PasswordResetToken {
 
     @Column(unique = true, nullable = false)
     private String token;
+    // 6-digit code for SMS password reset
+    @Column
+    private String code;
     private LocalDateTime expiryDate;
 
     @OneToOne
@@ -28,6 +31,18 @@ public class PasswordResetToken {
     public PasswordResetToken(String token, LocalDateTime expiryDate, User user) {
 
         this.token = token;
+
+        this.expiryDate = expiryDate;
+
+        this.user = user;
+
+    }
+
+    public PasswordResetToken(String token, String code, LocalDateTime expiryDate, User user) {
+
+        this.token = token;
+
+        this.code = code;
 
         this.expiryDate = expiryDate;
 

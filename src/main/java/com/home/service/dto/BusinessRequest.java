@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.home.service.Service.BusinessLocationService.BusinessLocationDTO;
+import com.home.service.models.enums.BusinessType;
 import com.home.service.models.enums.OpeningHours;
 import com.home.service.models.enums.SocialMedia;
 
@@ -29,6 +30,8 @@ public class BusinessRequest {
     @NotBlank(message = "Name is required")
     public String name;
 
+    public String nameAmharic;
+
     @NotBlank(message = "Description is required")
     public String description;
 
@@ -37,8 +40,19 @@ public class BusinessRequest {
 
     public String locationJson;
     public String phoneNumber;
+    public String alternativeContactPhone;
     public String email;
     public String website;
+    public BusinessType businessType;
+    public Integer foundedYear;
+    public Integer employeeCount;
+    public String registrationNumber;
+    @NotBlank(message = "Tax Identification Number (TIN) is required")
+    public String taxId;
+    public String legalRepresentativeName;
+    public String primaryCategory;
+    public List<String> secondaryCategories;
+    public boolean localDistributionNetwork;
     public String openingHoursJson;
     public String socialMediaJson;
     public boolean isVerified;

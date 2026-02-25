@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -41,9 +41,14 @@ import com.home.service.models.DeviceInfo;
 import com.home.service.models.User;
 import com.home.service.repositories.DeviceInfoRepository;
 import com.home.service.repositories.UserRepository;
+import com.home.service.services.AuthCookieService;
+import com.home.service.services.RefreshTokenService;
 import com.home.service.services.SmsService;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.validation.annotation.Validated;
 
 @RestController
@@ -61,12 +66,16 @@ public class AuthenticationController {
     private final UserRepository userRepository;
     private final DeviceInfoRepository deviceInfoRepository;
     private final SmsService smsService;
+    private final RefreshTokenService refreshTokenService;
+    private final AuthCookieService authCookieService;
     // private final TenderAgencyService tenderAgencyService;
 
     public AuthenticationController(CustomerService customerService, TechnicianService technicianService,
             OperatorService operatorService, AdminService adminService, UserService userService, JwtUtil jwtUtil,
             PaymentProofService paymentProofService, UserRepository userRepository,
-            DeviceInfoRepository deviceInfoRepository, SmsService smsService, TenderAgencyService tenderAgencyService) {
+            DeviceInfoRepository deviceInfoRepository, SmsService smsService,
+            RefreshTokenService refreshTokenService, AuthCookieService authCookieService,
+            TenderAgencyService tenderAgencyService) {
         this.customerService = customerService;
         this.technicianService = technicianService;
         this.operatorService = operatorService;
@@ -77,19 +86,32 @@ public class AuthenticationController {
         this.userRepository = userRepository;
         this.deviceInfoRepository = deviceInfoRepository;
         this.smsService = smsService;
+        this.refreshTokenService = refreshTokenService;
+        this.authCookieService = authCookieService;
         // this.tenderAgencyService = tenderAgencyService;
     }
 
     @PostMapping("/login")
-    public AuthenticationResponse loginCustomer(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthenticationResponse> loginCustomer(@Valid @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response) {
         System.out.println("token token token " + loginRequest.getDeviceModel());
-        return userService.authenticate(loginRequest);
+        AuthenticationResponse auth = userService.authenticate(loginRequest);
+        User user = userRepository.findById(auth.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String refreshToken = refreshTokenService.issueToken(user);
+        authCookieService.writeAuthCookies(response, auth.getToken(), refreshToken);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/social-login")
-    public ResponseEntity<?> handleSocialLogin(@Valid @RequestBody SocialLoginRequest loginRequest) {
+    public ResponseEntity<?> handleSocialLogin(@Valid @RequestBody SocialLoginRequest loginRequest,
+            HttpServletResponse response) {
         try {
             AuthenticationResponse authenticationResponse = userService.handleSocialLogin(loginRequest);
+            User user = userRepository.findById(authenticationResponse.getUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            String refreshToken = refreshTokenService.issueToken(user);
+            authCookieService.writeAuthCookies(response, authenticationResponse.getToken(), refreshToken);
             return ResponseEntity.ok(authenticationResponse);
         } catch (FirebaseAuthException e) {
             System.out.println(e.getMessage());
@@ -98,16 +120,43 @@ public class AuthenticationController {
     }
 
     @GetMapping("/token-login")
-    public ResponseEntity<?> loginWithToken(@RequestParam("token") String token) {
+    public ResponseEntity<?> loginWithToken(@RequestParam("token") String token, HttpServletResponse response) {
         if (token == null || token.isBlank()) {
             return ResponseEntity.badRequest().body("Token is required");
         }
 
         try {
             AuthenticationResponse authenticationResponse = userService.authenticateWithToken(token);
+            User user = userRepository.findById(authenticationResponse.getUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            String refreshToken = refreshTokenService.issueToken(user);
+            authCookieService.writeAuthCookies(response, authenticationResponse.getToken(), refreshToken);
             return ResponseEntity.ok(authenticationResponse);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/csrf")
+    public ResponseEntity<Map<String, String>> csrf(CsrfToken token) {
+        return ResponseEntity.ok(Map.of("token", token.getToken()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = extractCookie(request, AuthCookieService.REFRESH_TOKEN_COOKIE);
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing refresh token");
+        }
+
+        try {
+            RefreshTokenService.RotationResult rotated = refreshTokenService.rotate(refreshToken);
+            AuthenticationResponse auth = userService.buildAuthenticationResponse(rotated.user());
+            authCookieService.writeAuthCookies(response, auth.getToken(), rotated.newPlainToken());
+            return ResponseEntity.ok(auth);
+        } catch (IllegalStateException ex) {
+            authCookieService.clearAuthCookies(response);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
         }
     }
 
@@ -147,19 +196,27 @@ public class AuthenticationController {
     @GetMapping("/verify")
     public ResponseEntity<AuthenticationResponse> verifyAccount(
             @RequestParam(value = "token", required = false) String token,
-            @RequestParam(value = "code", required = false) String code) {
-        return ResponseEntity.ok(userService.verifyTokenOrCode(token, code));
+            @RequestParam(value = "code", required = false) String code,
+            HttpServletResponse response) {
+        AuthenticationResponse auth = userService.verifyTokenOrCode(token, code);
+        User user = userRepository.findById(auth.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String refreshToken = refreshTokenService.issueToken(user);
+        authCookieService.writeAuthCookies(response, auth.getToken(), refreshToken);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<String> resendVerification(@RequestParam("email") String email) {
-        userService.resendVerificationEmail(email);
-        return ResponseEntity.ok("Verification email sent");
+    public ResponseEntity<String> resendVerification(
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "phoneNumber", required = false) String phoneNumber) {
+        userService.resendVerification(email, phoneNumber);
+        return ResponseEntity.ok("Verification sent");
     }
 
     @PostMapping("/password-reset-request")
     public ResponseEntity<String> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
-        return ResponseEntity.ok(userService.requestPasswordReset(request.getEmail()));
+        return ResponseEntity.ok(userService.requestPasswordReset(request.getEmail(), request.getPhoneNumber()));
     }
 
     @PostMapping("/reset-password")
@@ -168,38 +225,58 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<AuthenticationResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request,
+            HttpServletResponse servletResponse) {
         User registeredUser = userService.registerUser(request);
         // Return same shape as /auth/login: JWT + user/role-specific payload
-        AuthenticationResponse response = userService.buildAuthenticationResponse(registeredUser);
-        return ResponseEntity.ok(response);
+        AuthenticationResponse auth = userService.buildAuthenticationResponse(registeredUser);
+        String refreshToken = refreshTokenService.issueToken(registeredUser);
+        authCookieService.writeAuthCookies(servletResponse, auth.getToken(), refreshToken);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/customer/signup")
-    public ResponseEntity<AuthenticationResponse> signupCustomer(@Valid @RequestBody User user) {
-        AuthenticationResponse response = customerService.signupCustomer(user);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthenticationResponse> signupCustomer(@Valid @RequestBody User user,
+            HttpServletResponse response) {
+        AuthenticationResponse auth = customerService.signupCustomer(user);
+        User saved = userRepository.findById(auth.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String refreshToken = refreshTokenService.issueToken(saved);
+        authCookieService.writeAuthCookies(response, auth.getToken(), refreshToken);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/technician/signup")
-    public ResponseEntity<AuthenticationResponse> signupTechnician(@Valid @ModelAttribute TechnicianSignupRequest signupRequest) {
-        AuthenticationResponse response = technicianService.signupTechnician(signupRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthenticationResponse> signupTechnician(@Valid @ModelAttribute TechnicianSignupRequest signupRequest,
+            HttpServletResponse response) {
+        AuthenticationResponse auth = technicianService.signupTechnician(signupRequest);
+        User saved = userRepository.findById(auth.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String refreshToken = refreshTokenService.issueToken(saved);
+        authCookieService.writeAuthCookies(response, auth.getToken(), refreshToken);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/operator/signup")
-    public ResponseEntity<AuthenticationResponse> signupOperator(@Valid @ModelAttribute OperatorSignupRequest signupRequest) {
-        AuthenticationResponse response = operatorService.signupOperator(signupRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthenticationResponse> signupOperator(@Valid @ModelAttribute OperatorSignupRequest signupRequest,
+            HttpServletResponse response) {
+        AuthenticationResponse auth = operatorService.signupOperator(signupRequest);
+        User saved = userRepository.findById(auth.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String refreshToken = refreshTokenService.issueToken(saved);
+        authCookieService.writeAuthCookies(response, auth.getToken(), refreshToken);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/admin/login")
-    public ResponseEntity<AuthenticationResponse> loginAdmin(@Valid @RequestBody AdminLoginRequest loginRequest) {
+    public ResponseEntity<AuthenticationResponse> loginAdmin(@Valid @RequestBody AdminLoginRequest loginRequest,
+            HttpServletResponse response) {
         if (adminService.authenticateAdmin(loginRequest.getUsername(), loginRequest.getPassword())) {
             final String jwtToken = jwtUtil.generateToken("admin");
             final UserResponse user = new UserResponse();
             user.setName("admin");
             user.setRole("ADMIN");
+            authCookieService.writeAuthCookies(response, jwtToken, null);
             return ResponseEntity.ok(new AuthenticationResponse(jwtToken, user));
         } else {
             throw new BadCredentialsException("Invalid admin credentials.");
@@ -239,15 +316,25 @@ public class AuthenticationController {
 
     @CrossOrigin(originPatterns = "*")
 @DeleteMapping("/logout")
-    public ResponseEntity<String> deleteDevice(@RequestParam String firebaseToken,
-            @AuthenticationPrincipal CustomDetails currentUser) {
+    public ResponseEntity<String> deleteDevice(@RequestParam(required = false) String firebaseToken,
+            @AuthenticationPrincipal CustomDetails currentUser,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        String refreshToken = extractCookie(request, AuthCookieService.REFRESH_TOKEN_COOKIE);
+        refreshTokenService.revoke(refreshToken);
+        authCookieService.clearAuthCookies(response);
+
         // Find the logged-in user
         User user = userRepository.findByEmail(currentUser.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (firebaseToken == null || firebaseToken.isBlank()) {
+            return ResponseEntity.ok("Logged out");
+        }
+
         // Find the device with the given firebaseToken
         DeviceInfo device = deviceInfoRepository.findByFCMToken(firebaseToken)
-                .orElseThrow(() -> new RuntimeException("Device not found"));
+            .orElseThrow(() -> new RuntimeException("Device not found"));
 
         // Ensure the device belongs to the logged-in user
         if (!device.getUser().getId().equals(user.getId())) {
@@ -266,5 +353,18 @@ public class AuthenticationController {
         String message = request.get("message");
         String response = smsService.sendSms(to, message);
         return ResponseEntity.ok(response);
+    }
+
+    private String extractCookie(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

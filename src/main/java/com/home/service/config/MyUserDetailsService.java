@@ -9,8 +9,6 @@ import com.home.service.models.CustomDetails;
 import com.home.service.models.User;
 import com.home.service.repositories.UserRepository;
 
-import jakarta.persistence.EntityNotFoundException;
-
 @Service
 public class MyUserDetailsService implements UserDetailsService {
 
@@ -18,10 +16,11 @@ public class MyUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public CustomDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public CustomDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByPhoneNumber(identifier))
+            .orElseThrow(() -> new UsernameNotFoundException("Invalid username or password"));
         System.out.println("User loadUser: " + user.toString());
         // Return User with authorities if necessary, using hashed password
         return new CustomDetails(user);

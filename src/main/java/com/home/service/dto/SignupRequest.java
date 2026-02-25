@@ -15,7 +15,6 @@ public class SignupRequest {
     private String name;
 
     @Email(message = "Email should be valid")
-    @NotBlank(message = "Email is mandatory")
     private String email;
 
     @NotBlank(message = "Phone number is mandatory")

@@ -14,16 +14,12 @@ import com.home.service.dto.CustomerProfileDTO;
 import com.home.service.dto.LoginRequest;
 import com.home.service.dto.ProfileUpdateDTO;
 import com.home.service.dto.ServiceDTO;
-import com.home.service.dto.UserResponse;
 import com.home.service.dto.admin.AddressDTO;
 import com.home.service.dto.admin.CustomerDetailDTO;
-import com.home.service.config.JwtUtil;
 import com.home.service.config.exceptions.EmailException;
 import com.home.service.models.Address;
 import com.home.service.models.Booking;
 import com.home.service.models.Customer;
-import com.home.service.models.CustomerAddress;
-import com.home.service.models.Services;
 import com.home.service.models.SubscriptionPlan;
 import com.home.service.models.User;
 import com.home.service.models.enums.AccountStatus;
@@ -33,7 +29,6 @@ import com.home.service.repositories.AddressRepository;
 import com.home.service.repositories.BookingRepository;
 import com.home.service.repositories.CustomerRepository;
 import com.home.service.repositories.UserRepository;
-import com.home.service.services.EmailService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -44,33 +39,32 @@ public class CustomerService {
     private final UserService userService;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
-    private final JwtUtil jwtUtil;
     private final AddressRepository addressRepository;
     private final BookingRepository bookingRepository;
     private final SubscriptionService subscriptionService;
 
-    public CustomerService(UserService userService, CustomerRepository customerRepository,
-            UserRepository userRepository, EmailService emailService, JwtUtil jwtUtil,
+            public CustomerService(UserService userService, CustomerRepository customerRepository,
+                UserRepository userRepository,
             AddressRepository addressRepository, BookingRepository bookingRepository,
             SubscriptionService subscriptionService) {
         this.subscriptionService = subscriptionService;
         this.userService = userService;
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.jwtUtil = jwtUtil;
         this.addressRepository = addressRepository;
         this.bookingRepository = bookingRepository;
     }
 
     @Transactional
     public AuthenticationResponse signupCustomer(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
+        String normalizedEmail = userService.normalizeEmail(user.getEmail());
+        if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
             throw new EmailException("Email already in use");
         }
         System.out.println("Pass email check");
         user.setStatus(AccountStatus.INACTIVE);
+
+        user.setEmail(normalizedEmail);
 
         user.setRole(UserRole.CUSTOMER);
         userService.saveUser(user); // Save user with CUSTOMER role
@@ -80,13 +74,8 @@ public class CustomerService {
         customerRepository.save(customer);
         System.out.println("Customer saved");
 
-        try {
-            emailService.sendVerifyEmail(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Email failure shouldn't block successful signup response
-        }
-        System.out.println("Email sent");
+        userService.sendSignupVerification(user);
+        System.out.println("Verification sent");
 
         // Return the same structure as /auth/login
         return userService.buildAuthenticationResponse(user);
@@ -225,7 +214,7 @@ public class CustomerService {
             throw new IllegalStateException("Customer is already subscribed to a tender plan. Use update instead.");
         }
         SubscriptionPlan plan = subscriptionService.getPlanById(planId);
-        if (plan.getPlanType() != PlanType.CUSTOMER_TENDER) {
+        if (!isTenderPlan(plan.getPlanType())) {
             throw new IllegalArgumentException("Invalid plan type for customer tender");
         }
         customer.setSubscriptionPlan(plan);
@@ -236,10 +225,15 @@ public class CustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
         SubscriptionPlan plan = subscriptionService.getPlanById(planId);
-        if (plan.getPlanType() != PlanType.CUSTOMER_TENDER) {
+        if (!isTenderPlan(plan.getPlanType())) {
             throw new IllegalArgumentException("Invalid plan type for customer tender");
         }
         customer.setSubscriptionPlan(plan);
         return customerRepository.save(customer);
+    }
+
+    private boolean isTenderPlan(PlanType planType) {
+        return planType == PlanType.TENDER
+                || planType == PlanType.CUSTOMER_TENDER;
     }
 }

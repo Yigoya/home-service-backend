@@ -28,7 +28,7 @@ public class Inquiry extends BaseEntity {
     private String message;
 
     @ManyToOne
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = true)
     private Business sender;
 
     @ManyToOne
@@ -43,4 +43,14 @@ public class Inquiry extends BaseEntity {
     private InquiryStatus status = InquiryStatus.PENDING;
 
     private LocalDateTime respondedAt;
+
+    // Fallback contact info when sender is anonymous
+    @Column(name = "contact_name")
+    private String contactName;
+
+    @Column(name = "contact_email")
+    private String contactEmail;
+
+    @Column(name = "contact_phone")
+    private String contactPhone;
 }

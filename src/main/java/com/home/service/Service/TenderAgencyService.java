@@ -20,7 +20,7 @@ import com.home.service.models.enums.UserRole;
 import com.home.service.repositories.TenderAgencyProfileRepository;
 import com.home.service.repositories.UserRepository;
 import com.home.service.services.FileStorageService;
-import com.home.service.services.EmailService;
+import com.home.service.services.PasswordPolicyService;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -34,17 +34,20 @@ public class TenderAgencyService {
 	private final UserRepository userRepository;
 	private final FileStorageService fileStorageService;
 	private final PasswordEncoder passwordEncoder;
+	private final PasswordPolicyService passwordPolicyService;
 	// private final TenderRepository tenderRepository;
 	// private final ServiceRepository servicesRepository;
 	private final UserService userService;
-	private final EmailService emailService;
 
 	public AuthenticationResponse registerAgency(TenderAgencyRegistrationRequest request) {
-		if (userRepository.existsByEmail(request.getEmail())) {
+		passwordPolicyService.validateOrThrow(request.getPassword());
+
+		String normalizedEmail = userService.normalizeEmail(request.getEmail());
+		if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
 			throw new EmailException("Email already in use");
 		}
 		User user = new User();
-		user.setEmail(request.getEmail());
+		user.setEmail(normalizedEmail);
 		user.setPassword(passwordEncoder.encode(request.getPassword()));
 		user.setName(request.getCompanyName());
 		user.setPhoneNumber(request.getContactPerson());
@@ -63,12 +66,8 @@ public class TenderAgencyService {
 
 		tenderAgencyProfileRepository.save(agency);
 
-		// Send verification email (token + code) to agency user
-		try {
-			emailService.sendVerifyEmail(savedUser);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// Send verification email + SMS (token + code) to agency user
+		userService.sendSignupVerification(savedUser);
 
 		// Return login-like auth payload for newly registered agency user
 		return userService.buildAuthenticationResponse(savedUser);

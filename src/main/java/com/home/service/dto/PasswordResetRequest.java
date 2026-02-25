@@ -1,12 +1,14 @@
 package com.home.service.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class PasswordResetRequest {
     @Email(message = "Invalid email format")
-    @NotBlank(message = "Email is mandatory")
     private String email;
+
+    @Pattern(regexp = "^\\+?[0-9]{10,13}$", message = "Invalid phone number format")
+    private String phoneNumber;
 
     // Getter and setter
     public String getEmail() {
@@ -15,5 +17,13 @@ public class PasswordResetRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

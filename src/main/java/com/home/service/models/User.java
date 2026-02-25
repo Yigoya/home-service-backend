@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +21,11 @@ public class User extends BaseEntity {
     private String name;
 
     @NotBlank(message = "Phone number is required")
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
+    @Column(nullable = true)
     private String email;
 
     @Email(message = "Invalid email format")
@@ -45,6 +47,8 @@ public class User extends BaseEntity {
 
     private String authProvider;
     private String providerId;
+    private Integer failedLoginAttempts = 0;
+    private LocalDateTime lockoutUntil;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeviceInfo> devices = new ArrayList<>();
@@ -145,6 +149,22 @@ public class User extends BaseEntity {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+
+    public Integer getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(Integer failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public LocalDateTime getLockoutUntil() {
+        return lockoutUntil;
+    }
+
+    public void setLockoutUntil(LocalDateTime lockoutUntil) {
+        this.lockoutUntil = lockoutUntil;
     }
 
     public List<DeviceInfo> getDevices() {

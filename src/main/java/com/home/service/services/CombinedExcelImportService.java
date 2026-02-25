@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,16 +16,19 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.home.service.Service.UserService;
 import com.home.service.dto.UserRegistrationRequest;
 import com.home.service.models.ServiceCategory;
+import com.home.service.models.ServiceCategoryTranslation;
 import com.home.service.models.Services;
+import com.home.service.models.ServiceTranslation;
 import com.home.service.models.User;
 import com.home.service.models.enums.UserRole;
+import com.home.service.models.enums.EthiopianLanguage;
 import com.home.service.models.Business;
 import com.home.service.repositories.BusinessRepository;
 import com.home.service.repositories.ServiceCategoryRepository;
@@ -61,53 +63,35 @@ public class CombinedExcelImportService {
 
     public static class CombinedImportResult {
         public int servicesCreated;
+        public int categoriesCreated;
         public int companiesCreated;
         public int rowsProcessed;
         public List<String> messages = new ArrayList<>();
     }
 
     public CombinedImportResult importAll(MultipartFile file, Long defaultCategoryId, String commonPassword, Integer sheetIndex) {
-        // defaultCategoryId is ignored per new requirements; we'll start from the first category
-        if (commonPassword == null || commonPassword.isBlank()) {
-            throw new IllegalArgumentException("commonPassword is required");
-        }
-        ServiceCategory category = categoryRepo.findAll(Sort.by(Sort.Direction.ASC, "id")).stream().findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No ServiceCategory found"));
-
-        CombinedImportResult result = new CombinedImportResult();
-        String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
-        try {
-            if (filename.endsWith(".csv")) {
-                processCsv(file, category, commonPassword, result);
-            } else {
-                // Backward compatibility: single sheetIndex if provided, else 0
-                processXlsxMulti(file, category, commonPassword, new int[] { sheetIndex != null ? sheetIndex : 0 }, result);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to import: " + e.getMessage(), e);
-        }
-        return result;
+        return importAll(file, defaultCategoryId, commonPassword, sheetIndex, null, null);
     }
 
     // New overload: supports multiple sheet indices and process-all option
     public CombinedImportResult importAll(MultipartFile file, Long defaultCategoryId, String commonPassword,
                                           Integer sheetIndex, String sheetIndicesCsv, Boolean processAllSheets) {
-        // defaultCategoryId is ignored per new requirements; we'll start from the first category
         if (commonPassword == null || commonPassword.isBlank()) {
             throw new IllegalArgumentException("commonPassword is required");
         }
-        ServiceCategory category = categoryRepo.findAll(Sort.by(Sort.Direction.ASC, "id")).stream().findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No ServiceCategory found"));
 
         CombinedImportResult result = new CombinedImportResult();
         String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
         try {
             if (filename.endsWith(".csv")) {
-                processCsv(file, category, commonPassword, result);
+                processCsv(file, commonPassword, result);
             } else {
                 int[] indices;
                 try (InputStream is = file.getInputStream(); Workbook wb = WorkbookFactory.create(is)) {
                     int sheetCount = wb.getNumberOfSheets();
+                    if (sheetCount == 0) {
+                        throw new IllegalArgumentException("No sheets found in workbook");
+                    }
                     if (processAllSheets != null && processAllSheets) {
                         indices = new int[sheetCount];
                         for (int i = 0; i < sheetCount; i++) indices[i] = i;
@@ -134,7 +118,7 @@ public class CombinedExcelImportService {
                         indices = new int[] { idx };
                     }
                 }
-                processXlsxMulti(file, category, commonPassword, indices, result);
+                processXlsxMulti(file, commonPassword, indices, result);
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to import: " + e.getMessage(), e);
@@ -142,83 +126,60 @@ public class CombinedExcelImportService {
         return result;
     }
 
-    private void processXlsxMulti(MultipartFile file, ServiceCategory category, String commonPassword, int[] sheetIndices, CombinedImportResult result) throws Exception {
+    private void processXlsxMulti(MultipartFile file, String commonPassword, int[] sheetIndices, CombinedImportResult result) throws Exception {
         try (InputStream is = file.getInputStream(); Workbook wb = WorkbookFactory.create(is)) {
-            // Pre-compute ordered leaf services for the first category
-            List<Services> leafOrder = computeLeafServicesOrdered(category);
-            if (leafOrder.isEmpty()) {
-                result.messages.add("No leaf services found for the first category; companies will not be linked.");
-            }
+            ImportState state = new ImportState();
             for (int sheetIdx : sheetIndices) {
                 if (sheetIdx < 0 || sheetIdx >= wb.getNumberOfSheets()) {
                     throw new IllegalArgumentException("Invalid sheet index: " + sheetIdx);
                 }
                 Sheet sheet = wb.getSheetAt(sheetIdx);
                 Iterator<Row> it = sheet.rowIterator();
-                if (!it.hasNext()) continue; // empty sheet
+                if (!it.hasNext()) continue;
                 Row header = it.next();
                 ColumnsMap cm = mapHeader(header);
-
-                int leafIdx = -1; // current pointer into leaf services; starts before first
-                boolean previousCategoryHasText = false;
-                String lastNonEmptySubcategory = null; // used when category column absent
-                boolean groupByCategory = cm.categoryIdx >= 0;
                 while (it.hasNext()) {
                     Row row = it.next();
-                    // Only SUBCATEGORY marker is used to advance leaf pointer
-                    String categoryText = groupByCategory ? readByIndex(row, cm.categoryIdx) : "";
-                    String subcategoryText = cm.subcategoryIdx >= 0 ? readByIndex(row, cm.subcategoryIdx) : "";
-                    String companyName = readByIndex(row, cm.companyIdx);
-                    String telephone = readByIndex(row, cm.telephoneIdx);
-                    String mobile = readByIndex(row, cm.mobileIdx);
-                    String whatsapp = readByIndex(row, cm.whatsappIdx);
-                    String telegram = readByIndex(row, cm.telegramIdx);
-                    String email = readByIndex(row, cm.emailIdx);
-                    String website = readByIndex(row, cm.websiteIdx);
-                    if (groupByCategory) {
-                        boolean hasCategoryText = !isBlank(categoryText);
-                        if (hasCategoryText && !previousCategoryHasText) {
-                            leafIdx++;
-                        }
-                        previousCategoryHasText = hasCategoryText;
-                    } else {
-                        if (!isBlank(subcategoryText)) {
-                            if (lastNonEmptySubcategory == null || !subcategoryText.equalsIgnoreCase(lastNonEmptySubcategory)) {
-                                leafIdx++;
-                                lastNonEmptySubcategory = subcategoryText;
-                            }
-                        }
-                    }
-                    if (leafIdx < 0 && !leafOrder.isEmpty()) {
-                        leafIdx = 0;
-                    }
-                    // Use current leaf index (bounded) so first category/subcategory group maps to first leaf service
-                    Services serviceForCompany = (!leafOrder.isEmpty() && leafIdx >= 0)
-                            ? leafOrder.get(Math.min(leafIdx, leafOrder.size() - 1))
-                            : null;
-                    // Company handling (no description composition per new requirement)
-                    if (!isBlank(companyName)) {
-                        createCompany(companyName, email, telephone, mobile, whatsapp, telegram, website,
-                                null, // industry not set from description anymore
-                                serviceForCompany,
-                                commonPassword, result);
-                    }
-                    result.rowsProcessed++;
+                    processStructuredRow(
+                            readByIndex(row, cm.levelIdx),
+                            readByIndex(row, cm.categoryIdx),
+                            readByIndex(row, cm.companyIdx),
+                            readByIndex(row, cm.telephoneIdx),
+                            readByIndex(row, cm.mobileIdx),
+                            readByIndex(row, cm.whatsappIdx),
+                            readByIndex(row, cm.telegramIdx),
+                            readByIndex(row, cm.emailIdx),
+                            readByIndex(row, cm.websiteIdx),
+                            state,
+                            commonPassword,
+                            result
+                    );
                 }
             }
         }
     }
 
     private static class ColumnsMap {
-        int categoryIdx = -1;
-        int subcategoryIdx = 0; // marker column, can be present or blank; default first col
-        int companyIdx = 1;
-        int telephoneIdx = 2;
-        int mobileIdx = 3;
-        int whatsappIdx = 4;
-        int telegramIdx = 5;
-        int emailIdx = 6;
-        int websiteIdx = 7;
+        int levelIdx = 0;
+        int categoryIdx = 1;
+        int companyIdx = 2;
+        int telephoneIdx = 3;
+        int mobileIdx = 4;
+        int whatsappIdx = 5;
+        int telegramIdx = 6;
+        int emailIdx = 7;
+        int websiteIdx = 8;
+    }
+
+    private static class ImportState {
+        ServiceCategory currentCategory;
+        Services currentLevel1;
+        Services currentLevel2;
+        Map<String, ServiceCategory> categoriesByKey = new HashMap<>();
+        Map<String, Services> level1ByKey = new HashMap<>();
+        Map<String, Services> level2ByKey = new HashMap<>();
+        long categoryOrderCounter = 0;
+        long serviceOrderCounter = 0;
     }
 
     private ColumnsMap mapHeader(Row header) {
@@ -244,17 +205,151 @@ public class CombinedExcelImportService {
         String key = rawHeader.trim().toLowerCase();
         if (key.isEmpty()) return;
         switch (key) {
-            case "category", "catagory" -> cm.categoryIdx = index;
-            case "subcategory", "subcatagory", "sub category", "sub catagory" -> cm.subcategoryIdx = index;
-            case "company", "companyname", "company name", "name", "business", "organization" -> cm.companyIdx = index;
+            case "level", "lvl", "lebel" -> cm.levelIdx = index;
+            case "category/subcategory", "category", "subcategory", "sub category", "category or subcategory" -> cm.categoryIdx = index;
+            case "companys name", "companys", "company", "company name", "name", "business", "organization" -> cm.companyIdx = index;
             case "telephone", "tel" -> cm.telephoneIdx = index;
-            case "mobile", "mobiletelephone", "phone", "phone number", "phonenumber" -> cm.mobileIdx = index;
-            case "whatsapp", "whats app", "whatsup no", "whatsapp no" -> cm.whatsappIdx = index;
+            case "mobiletelephone", "mobile", "phone", "phone number", "phonenumber" -> cm.mobileIdx = index;
+            case "whatsup no", "whatsapp", "whatsapp no", "whats app" -> cm.whatsappIdx = index;
             case "telegram", "telegram no" -> cm.telegramIdx = index;
             case "email", "e-mail" -> cm.emailIdx = index;
-            case "website", "site", "web", "websiteaddress", "web site address" -> cm.websiteIdx = index;
+            case "websiteaddress", "web site address", "website", "site", "web" -> cm.websiteIdx = index;
             default -> {}
         }
+    }
+
+    private void processStructuredRow(String levelRaw,
+                                      String categoryOrSub,
+                                      String companyName,
+                                      String telephone,
+                                      String mobile,
+                                      String whatsapp,
+                                      String telegram,
+                                      String email,
+                                      String website,
+                                      ImportState state,
+                                      String commonPassword,
+                                      CombinedImportResult res) {
+
+        Integer level = parseLevel(levelRaw);
+
+        if (level != null) {
+            switch (level) {
+                case 0 -> {
+                    if (isBlank(categoryOrSub)) {
+                        res.messages.add("Level 0 row missing CATEGORY/SUBCATEGORY name");
+                    } else {
+                        state.currentCategory = getOrCreateCategory(categoryOrSub, state, res);
+                        state.currentLevel1 = null;
+                        state.currentLevel2 = null;
+                    }
+                }
+                case 1 -> {
+                    if (state.currentCategory == null) {
+                        res.messages.add("Level 1 row appeared before any Level 0 category: " + categoryOrSub);
+                    } else if (isBlank(categoryOrSub)) {
+                        res.messages.add("Level 1 row missing CATEGORY/SUBCATEGORY name");
+                    } else {
+                        state.currentLevel1 = getOrCreateService(categoryOrSub, state.currentCategory, null, state, res);
+                        state.currentLevel2 = null;
+                    }
+                }
+                case 2 -> {
+                    if (state.currentCategory == null) {
+                        res.messages.add("Level 2 row appeared before any Level 0 category: " + categoryOrSub);
+                    } else if (state.currentLevel1 == null) {
+                        res.messages.add("Level 2 row appeared before any Level 1 service: " + categoryOrSub);
+                    } else if (!isBlank(categoryOrSub)) {
+                        state.currentLevel2 = getOrCreateService(categoryOrSub, state.currentCategory, state.currentLevel1, state, res);
+                    } else if (state.currentLevel2 == null) {
+                        res.messages.add("Level 2 row missing CATEGORY/SUBCATEGORY name");
+                    }
+                }
+                default -> res.messages.add("Unsupported level value: " + levelRaw);
+            }
+        }
+
+        boolean hasCompanyData = !isBlank(companyName) || !isBlank(telephone) || !isBlank(mobile)
+                || !isBlank(whatsapp) || !isBlank(telegram) || !isBlank(email) || !isBlank(website);
+
+        Services targetService = state.currentLevel2 != null ? state.currentLevel2 : state.currentLevel1;
+
+        if (hasCompanyData) {
+            if (targetService == null) {
+                res.messages.add("Company '" + companyName + "' has no service context (need Level 1/2 first)");
+            } else if (!isBlank(companyName)) {
+                createCompany(companyName, email, telephone, mobile, whatsapp, telegram, website,
+                        null, targetService, commonPassword, res);
+            }
+        }
+        res.rowsProcessed++;
+    }
+
+    private Integer parseLevel(String levelRaw) {
+        if (isBlank(levelRaw)) return null;
+        try {
+            int v = Integer.parseInt(levelRaw.trim());
+            return switch (v) { case 0, 1, 2 -> v; default -> null; };
+        } catch (NumberFormatException ignore) {
+            return null;
+        }
+    }
+
+    private ServiceCategory getOrCreateCategory(String name, ImportState state, CombinedImportResult res) {
+        String key = normalizeKey(name);
+        ServiceCategory cached = state.categoriesByKey.get(key);
+        if (cached != null) return cached;
+
+        ServiceCategory category = new ServiceCategory();
+        category.setIsMobileCategory(false);
+        category.setOrder(++state.categoryOrderCounter);
+
+        ServiceCategoryTranslation tr = new ServiceCategoryTranslation();
+        tr.setCategory(category);
+        tr.setLang(EthiopianLanguage.ENGLISH);
+        tr.setName(name.trim());
+        tr.setDescription("");
+
+        category.setTranslations(new java.util.HashSet<>());
+        category.getTranslations().add(tr);
+
+        ServiceCategory saved = categoryRepo.save(category);
+        state.categoriesByKey.put(key, saved);
+        state.currentCategory = saved;
+        res.categoriesCreated++;
+        return saved;
+    }
+
+    private Services getOrCreateService(String name, ServiceCategory category, Services parent, ImportState state, CombinedImportResult res) {
+        String key = normalizeKey(name) + "|cat:" + (category != null && category.getId() != null ? category.getId() : category.hashCode())
+                + "|parent:" + (parent != null && parent.getId() != null ? parent.getId() : (parent == null ? "root" : parent.hashCode()));
+
+        Map<String, Services> cache = parent == null ? state.level1ByKey : state.level2ByKey;
+        Services cached = cache.get(key);
+        if (cached != null) return cached;
+
+        Services svc = new Services();
+        svc.setCategory(category);
+        svc.setServiceId(parent != null ? parent.getId() : null);
+        svc.setDisplayOrder(++state.serviceOrderCounter);
+
+        ServiceTranslation tr = new ServiceTranslation();
+        tr.setService(svc);
+        tr.setLang(EthiopianLanguage.ENGLISH);
+        tr.setName(name.trim());
+        tr.setDescription("");
+
+        svc.setTranslations(new java.util.HashSet<>());
+        svc.getTranslations().add(tr);
+
+        Services saved = servicesRepo.save(svc);
+        cache.put(key, saved);
+        res.servicesCreated++;
+        return saved;
+    }
+
+    private String normalizeKey(String raw) {
+        return raw == null ? "" : raw.trim().toLowerCase().replaceAll("\\s+", " ");
     }
 
     private String readCsvByIndex(String[] row, int idx) {
@@ -267,59 +362,30 @@ public class CombinedExcelImportService {
         return readString(row, idx);
     }
 
-    private void processCsv(MultipartFile file, ServiceCategory category, String commonPassword, CombinedImportResult result) throws Exception {
+    private void processCsv(MultipartFile file, String commonPassword, CombinedImportResult result) throws Exception {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            String headerLine = br.readLine(); // header
+            String headerLine = br.readLine();
             if (headerLine == null) return;
             String[] headerCells = simpleCsvSplit(headerLine);
             ColumnsMap cm = mapHeader(headerCells);
-            // Pre-compute ordered leaf services for the first category
-            List<Services> leafOrder = computeLeafServicesOrdered(category);
-            int leafIdx = -1;
-            boolean previousCategoryHasText = false;
-            String lastNonEmptySubcategory = null;
-            boolean groupByCategory = cm.categoryIdx >= 0;
+            ImportState state = new ImportState();
             String line;
             while ((line = br.readLine()) != null) {
                 String[] cols = simpleCsvSplit(line);
-                String categoryText = readCsvByIndex(cols, cm.categoryIdx);
-                String subcategoryText = readCsvByIndex(cols, cm.subcategoryIdx);
-                String companyName = readCsvByIndex(cols, cm.companyIdx);
-                String telephone = readCsvByIndex(cols, cm.telephoneIdx);
-                String mobile = readCsvByIndex(cols, cm.mobileIdx);
-                String whatsapp = readCsvByIndex(cols, cm.whatsappIdx);
-                String telegram = readCsvByIndex(cols, cm.telegramIdx);
-                String email = readCsvByIndex(cols, cm.emailIdx);
-                String website = readCsvByIndex(cols, cm.websiteIdx);
-
-                if (groupByCategory) {
-                    boolean hasCategoryText = !isBlank(categoryText);
-                    if (hasCategoryText && !previousCategoryHasText) {
-                        leafIdx++;
-                    }
-                    previousCategoryHasText = hasCategoryText;
-                } else {
-                    if (!isBlank(subcategoryText)) {
-                        if (lastNonEmptySubcategory == null || !subcategoryText.equalsIgnoreCase(lastNonEmptySubcategory)) {
-                            leafIdx++;
-                            lastNonEmptySubcategory = subcategoryText;
-                        }
-                    }
-                }
-                if (leafIdx < 0 && !leafOrder.isEmpty()) {
-                    leafIdx = 0;
-                }
-                Services serviceForCompany = (!leafOrder.isEmpty() && leafIdx >= 0)
-                        ? leafOrder.get(Math.min(leafIdx, leafOrder.size() - 1))
-                        : null;
-
-                if (!isBlank(companyName)) {
-                    createCompany(companyName, email, telephone, mobile, whatsapp, telegram, website,
-                            null,
-                            serviceForCompany,
-                            commonPassword, result);
-                }
-                result.rowsProcessed++;
+                processStructuredRow(
+                        readCsvByIndex(cols, cm.levelIdx),
+                        readCsvByIndex(cols, cm.categoryIdx),
+                        readCsvByIndex(cols, cm.companyIdx),
+                        readCsvByIndex(cols, cm.telephoneIdx),
+                        readCsvByIndex(cols, cm.mobileIdx),
+                        readCsvByIndex(cols, cm.whatsappIdx),
+                        readCsvByIndex(cols, cm.telegramIdx),
+                        readCsvByIndex(cols, cm.emailIdx),
+                        readCsvByIndex(cols, cm.websiteIdx),
+                        state,
+                        commonPassword,
+                        result
+                );
             }
         }
     }
@@ -339,20 +405,9 @@ public class CombinedExcelImportService {
             if (existingByEmail.isPresent()) {
                 user = existingByEmail.get();
             } else {
-                String phoneCandidate = pickPrimaryPhone(mobile, telephone);
-                String uniquePhone = ensureUniquePhone(phoneCandidate);
-
-                UserRegistrationRequest reg = new UserRegistrationRequest();
-                reg.setName(companyName);
-                reg.setEmail(resolvedEmail);
-                reg.setPhoneNumber(uniquePhone);
-                reg.setPassword(commonPassword);
-                // If DTO supports role, set JOB_COMPANY; otherwise default registration may create USER and we'll update via profile
-                try {
-                    reg.getClass().getMethod("setRole", UserRole.class).invoke(reg, UserRole.JOB_COMPANY);
-                } catch (Exception ignore) { /* role not present in DTO, ignored */ }
-                user = userService.registerUser(reg);
+                user = registerWithFallbacks(companyName, resolvedEmail, mobile, telephone, commonPassword, res);
             }
+
             // Ensure a Business entity exists and attach the catalog Service
             Business business = businessRepository.findFirstByOwner(user).orElse(null);
             if (business == null) {
@@ -361,13 +416,25 @@ public class CombinedExcelImportService {
                 business.setName(companyName);
                 business.setEmail(user.getEmail());
                 business.setPhoneNumber(user.getPhoneNumber());
-                // Per requirement: do not populate description from contact fields
                 business.setDescription(null);
                 business.setWebsite(website);
                 business.setIndustry(industry);
                 business.setVerified(false);
                 business.setFeatured(false);
+                business.setTaxId(generateTaxId(companyName));
+                business.setLocalDistributionNetwork(false);
+            } else {
+                if (isBlank(business.getTaxId())) {
+                    business.setTaxId(generateTaxId(companyName));
+                }
+                if (isBlank(business.getPhoneNumber())) {
+                    business.setPhoneNumber(user.getPhoneNumber());
+                }
+                if (isBlank(business.getEmail())) {
+                    business.setEmail(user.getEmail());
+                }
             }
+
             // Update phone lists on every import (create or update)
             List<String> teleList = splitPhones(telephone);
             List<String> mobileList = splitPhones(mobile);
@@ -389,9 +456,78 @@ public class CombinedExcelImportService {
             }
         } catch (Exception ex) {
             res.messages.add("Company '" + companyName + "': " + ex.getMessage());
-            // Clear persistence context to avoid 'null id ... (don't flush the Session after an exception occurs)'
             try { if (entityManager != null) entityManager.clear(); } catch (Exception ignore) {}
         }
+    }
+
+    private User registerWithFallbacks(String companyName, String email, String mobile, String telephone, String commonPassword, CombinedImportResult res) {
+        String basePhone = pickPrimaryPhone(mobile, telephone);
+        String phoneCandidate = ensureUniquePhone(basePhone);
+        String emailCandidate = email;
+        int attempts = 0;
+        while (attempts < 5) {
+            attempts++;
+            try {
+                UserRegistrationRequest reg = new UserRegistrationRequest();
+                reg.setName(companyName);
+                reg.setEmail(emailCandidate);
+                reg.setPhoneNumber(phoneCandidate);
+                reg.setPassword(commonPassword);
+                try {
+                    reg.getClass().getMethod("setRole", UserRole.class).invoke(reg, UserRole.BUSINESS);
+                } catch (Exception ignore) { }
+                return userService.registerUser(reg);
+            } catch (DataIntegrityViolationException dive) {
+                String msg = dive.getMostSpecificCause() != null ? dive.getMostSpecificCause().getMessage() : dive.getMessage();
+                if (msg != null && msg.contains("users_pkey")) {
+                    alignUserSequence();
+                    continue;
+                }
+                if (msg != null && msg.toLowerCase().contains("phone number already in use")) {
+                    phoneCandidate = ensureUniquePhone(generateRandomPhone());
+                    continue;
+                }
+                if (msg != null && msg.toLowerCase().contains("email")) {
+                    emailCandidate = generateUniqueFallbackEmail(companyName + attempts);
+                    continue;
+                }
+                throw dive;
+            } catch (Exception ex) {
+                String lower = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+                if (lower.contains("phone number already in use")) {
+                    phoneCandidate = ensureUniquePhone(generateRandomPhone());
+                    continue;
+                }
+                if (lower.contains("email")) {
+                    emailCandidate = generateUniqueFallbackEmail(companyName + attempts);
+                    continue;
+                }
+                // Unknown; rethrow to bubble up
+                throw ex;
+            }
+        }
+        throw new RuntimeException("Failed to register user after retries for company: " + companyName + ", last email: " + emailCandidate);
+    }
+
+    private void alignUserSequence() {
+        try {
+            entityManager.createNativeQuery("select setval('users_id_seq', (select coalesce(max(id),0)+1 from users), false)").executeUpdate();
+        } catch (Exception ignore) {
+            // If sequence name differs, ignore; next attempt may still work
+        }
+    }
+
+    private String generateTaxId(String companyName) {
+        String base = companyName == null ? "TIN" : companyName.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+        if (base.length() > 12) base = base.substring(0, 12);
+        String suffix = String.valueOf(System.currentTimeMillis()).substring(8);
+        return (base.isEmpty() ? "TIN" : base) + "-" + suffix;
+    }
+
+    private String generateRandomPhone() {
+        String millis = String.valueOf(System.currentTimeMillis());
+        String last9 = millis.substring(Math.max(0, millis.length() - 9));
+        return "+2519" + String.format("%08d", Long.parseLong(last9) % 100000000L);
     }
 
     // Attempt to read a representative translation name for a service (first found) to reuse as industry label.
@@ -517,40 +653,4 @@ public class CombinedExcelImportService {
         return null;
     }
 
-    private List<Services> computeLeafServicesOrdered(ServiceCategory category) {
-        // Load all services under the category ordered by displayOrder then id
-        List<Services> all = servicesRepo.findByCategoryOrderByDisplayOrderAsc(category);
-        Map<Long, List<Services>> childrenByParent = new HashMap<>();
-        List<Services> roots = new ArrayList<>();
-        for (Services s : all) {
-            Long pid = s.getServiceId();
-            if (pid == null) {
-                roots.add(s);
-            } else {
-                childrenByParent.computeIfAbsent(pid, k -> new ArrayList<>()).add(s);
-            }
-        }
-        Comparator<Services> cmp = Comparator
-                .comparing((Services s) -> s.getDisplayOrder() == null ? Long.MAX_VALUE : s.getDisplayOrder())
-                .thenComparing(Services::getId);
-        roots.sort(cmp);
-        for (List<Services> list : childrenByParent.values()) list.sort(cmp);
-
-        List<Services> leaves = new ArrayList<>();
-        for (Services r : roots) {
-            dfsCollectLeaves(r, childrenByParent, leaves);
-        }
-        return leaves;
-    }
-
-    private void dfsCollectLeaves(Services node, Map<Long, List<Services>> childrenByParent, List<Services> acc) {
-        List<Services> kids = childrenByParent.get(node.getId());
-        if (kids == null || kids.isEmpty()) {
-            acc.add(node);
-            return;
-        }
-        for (Services c : kids) dfsCollectLeaves(c, childrenByParent, acc);
-    }
-
-    // No-op helper removed; avoid touching lazy-loaded collections during import
 }

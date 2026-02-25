@@ -92,7 +92,7 @@ public class EmailService {
         }
     }
 
-    public void sendVerifyEmail(User user) {
+    public VerificationToken createOrRefreshVerificationToken(User user) {
         String token = UUID.randomUUID().toString();
         String code = String.format("%06d", (int)(Math.random() * 1000000));
         // Upsert token for user to avoid unique constraint violation
@@ -107,15 +107,22 @@ public class EmailService {
             verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
             verificationToken.setCode(code);
         }
-        verificationTokenRepository.save(verificationToken);
+        return verificationTokenRepository.save(verificationToken);
+    }
 
+    public void sendVerifyEmail(User user) {
+        VerificationToken verificationToken = createOrRefreshVerificationToken(user);
+        sendVerifyEmail(user, verificationToken);
+    }
+
+    public void sendVerifyEmail(User user, VerificationToken verificationToken) {
         String subject = "Account Verification";
         String baseUrl = getBaseUrlForRole(user.getRole());
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
             + "<h2 style='color: #2E86C1;'>Account Verification</h2>"
             + "<p>To verify your account, click the link below or use this 6-digit code in the mobile app:</p>"
-            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>" + code + "</pre>"
-            + "<a href='" + baseUrl + "/auth/verify?token=" + token
+            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>" + verificationToken.getCode() + "</pre>"
+            + "<a href='" + baseUrl + "/auth/verify?token=" + verificationToken.getToken()
             + "' style='color: #2E86C1;'>Verify Email</a>"
             + "</body></html>";
 
@@ -137,15 +144,21 @@ public class EmailService {
     }
 
     public void sendResetPassEmail(User user) {
-        String token = UUID.randomUUID().toString();
-        PasswordResetToken passwordResetToken = new PasswordResetToken(token, LocalDateTime.now().plusMinutes(30),
-                user);
-        passwordResetTokenRepository.save(passwordResetToken);
+        PasswordResetToken passwordResetToken = createOrRefreshPasswordResetToken(user);
+        sendResetPassEmail(user, passwordResetToken);
+    }
+
+    public void sendResetPassEmail(User user, PasswordResetToken passwordResetToken) {
+        String token = passwordResetToken.getToken();
+        String code = passwordResetToken.getCode();
 
         String subject = "Password Reset Request";
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
                 + "<h2 style='color: #2E86C1;'>Password Reset Request</h2>"
-                + "<p>To reset your password, click the link below or copy the token if you are using a mobile app:</p>"
+            + "<p>To reset your password, click the link below, use this 6-digit code, or copy the token if you are using a mobile app:</p>"
+            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>"
+            + code
+            + "</pre>"
                 + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>"
                 + token
                 + "</pre>"
@@ -156,28 +169,30 @@ public class EmailService {
         sendHtmlEmail(user.getEmail(), subject, htmlContent);
     }
 
-    public void sendTechnicianVerificationEmail(User user) {
+    public PasswordResetToken createOrRefreshPasswordResetToken(User user) {
         String token = UUID.randomUUID().toString();
         String code = String.format("%06d", (int)(Math.random() * 1000000));
-        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByUser(user);
-        VerificationToken verificationToken;
-        if (optionalToken.isPresent()) {
-            verificationToken = optionalToken.get();
-            verificationToken.setToken(token);
-            verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
-        } else {
-            verificationToken = new VerificationToken(token, LocalDateTime.now().plusMinutes(30), user);
+        PasswordResetToken existingToken = passwordResetTokenRepository.findByUser(user);
+        if (existingToken != null) {
+            existingToken.setToken(token);
+            existingToken.setCode(code);
+            existingToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+            return passwordResetTokenRepository.save(existingToken);
         }
-        verificationToken.setCode(code);
-        verificationTokenRepository.save(verificationToken);
+        PasswordResetToken passwordResetToken = new PasswordResetToken(token, code,
+                LocalDateTime.now().plusMinutes(30), user);
+        return passwordResetTokenRepository.save(passwordResetToken);
+    }
 
+    public void sendTechnicianVerificationEmail(User user) {
+        VerificationToken verificationToken = createOrRefreshVerificationToken(user);
         String subject = "Technician Account Verification";
         String baseUrlTech = getBaseUrlForRole(com.home.service.models.enums.UserRole.TECHNICIAN);
         String htmlContent = "<html><body style='font-family: Arial, sans-serif;'>"
             + "<h2 style='color: #2E86C1;'>Technician Account Verification</h2>"
             + "<p>Please verify your technician account using this code in the app or the link below:</p>"
-            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>" + code + "</pre>"
-            + "<a href='" + baseUrlTech + "/auth/verify?token=" + token + "' style='color: #2E86C1;'>Verify Account</a>"
+            + "<pre style='background-color: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace;'>" + verificationToken.getCode() + "</pre>"
+            + "<a href='" + baseUrlTech + "/auth/verify?token=" + verificationToken.getToken() + "' style='color: #2E86C1;'>Verify Account</a>"
             + "</body></html>";
 
         sendHtmlEmail(user.getEmail(), subject, htmlContent);

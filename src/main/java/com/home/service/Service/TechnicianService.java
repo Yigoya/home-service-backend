@@ -88,7 +88,6 @@ public class TechnicianService {
         private final BookingService bookingService;
         private final SubscriptionService subscriptionService;
         private final TechnicianPortfolioRepository technicianPortfolioRepository;
-        private final com.home.service.services.EmailService emailService;
 
         public TechnicianService(UserService userService, FileStorageService fileStorageService,
                         TechnicianRepository technicianRepository, UserRepository userRepository,
@@ -99,8 +98,7 @@ public class TechnicianService {
                         ReviewRepository reviewRepository, BookingRepository bookingRepository,
                         OperatorRepository operatorRepository, BookingService bookingService,
                         SubscriptionService subscriptionService,
-                        TechnicianPortfolioRepository technicianPortfolioRepository,
-                        com.home.service.services.EmailService emailService) {
+                        TechnicianPortfolioRepository technicianPortfolioRepository) {
                 this.subscriptionService = subscriptionService;
                 this.operatorRepository = operatorRepository;
                 this.userService = userService;
@@ -117,7 +115,6 @@ public class TechnicianService {
                 this.operatorRepository = operatorRepository;
                 this.bookingService = bookingService;
                 this.technicianPortfolioRepository = technicianPortfolioRepository;
-                this.emailService = emailService;
 
         }
 
@@ -285,8 +282,9 @@ public class TechnicianService {
 
         @Transactional
         public AuthenticationResponse signupTechnician(TechnicianSignupRequest signupRequest) {
+                String normalizedEmail = userService.normalizeEmail(signupRequest.getEmail());
                 // Check if the email is already in use
-                if (userRepository.existsByEmail(signupRequest.getEmail())) {
+                if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
                         throw new EmailException("Email already in use");
                 }
                 System.out.println(signupRequest.getServiceIds());
@@ -295,7 +293,7 @@ public class TechnicianService {
                 // Create and save the User entity
                 User user = new User();
                 user.setName(signupRequest.getName());
-                user.setEmail(signupRequest.getEmail());
+                user.setEmail(normalizedEmail);
                 user.setPhoneNumber(signupRequest.getPhoneNumber());
                 user.setPassword(signupRequest.getPassword()); // Remember to hash the password in production
                 user.setRole(UserRole.TECHNICIAN);
@@ -372,12 +370,8 @@ public class TechnicianService {
 
                 newTechnician.getTechnicianAddresses().add(technicianAddressRepository.save(technicianAddress));
 
-                // Send verification email (token + code)
-                try {
-                        emailService.sendVerifyEmail(user);
-                } catch (Exception e) {
-                        e.printStackTrace();
-                }
+                // Send verification email + SMS (token + code)
+                userService.sendSignupVerification(user);
 
                 // Return the same payload as /auth/login
                 return userService.buildAuthenticationResponse(user);
@@ -679,7 +673,7 @@ public class TechnicianService {
                                         "Technician is already subscribed to a plan. Use update instead.");
                 }
                 SubscriptionPlan plan = subscriptionService.getPlanById(planId);
-                if (plan.getPlanType() != PlanType.TECHNICIAN) {
+                if (!isTechnicianPlan(plan.getPlanType())) {
                         throw new IllegalArgumentException("Invalid plan type for technician");
                 }
                 technician.setSubscriptionPlan(plan);
@@ -690,11 +684,16 @@ public class TechnicianService {
                 Technician technician = technicianRepository.findById(id)
                                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
                 SubscriptionPlan plan = subscriptionService.getPlanById(planId);
-                if (plan.getPlanType() != PlanType.TECHNICIAN) {
+                if (!isTechnicianPlan(plan.getPlanType())) {
                         throw new IllegalArgumentException("Invalid plan type for technician");
                 }
                 technician.setSubscriptionPlan(plan);
                 return technicianRepository.save(technician);
+        }
+
+        private boolean isTechnicianPlan(PlanType planType) {
+                return planType == PlanType.HOME_PROFESSIONAL
+                                || planType == PlanType.TECHNICIAN;
         }
 
 }

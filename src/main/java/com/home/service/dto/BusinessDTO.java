@@ -19,8 +19,10 @@ import lombok.Data;
 public class BusinessDTO {
     public Long id;
     public String name;
+    public String nameAmharic;
     public String email;
     public String phoneNumber;
+    public String alternativeContactPhone;
     public BusinessType businessType;
     public String description;
     public List<Long> categoryIds;
@@ -28,12 +30,16 @@ public class BusinessDTO {
     public String website;
     public Integer foundedYear;
     public Integer employeeCount;
+    public String registrationNumber;
     public boolean isVerified;
     public String industry;
     public String taxId;
+    public String legalRepresentativeName;
     public String certifications;
     public Integer minOrderQuantity;
     public String tradeTerms;
+    public String primaryCategory;
+    public List<String> secondaryCategories;
     public List<String> categories;
     public BusinessLocationDTO location;
     public SocialMedia socialMedia;
@@ -42,6 +48,7 @@ public class BusinessDTO {
     public List<String> images;
     public List<String> telephoneNumbers;
     public List<String> mobileNumbers;
+    public boolean localDistributionNetwork;
     public boolean isFeatured;
     public SubscriptionPlan subscriptionPlan;
 
@@ -56,20 +63,26 @@ public class BusinessDTO {
     public BusinessDTO(Business business) {
         this.id = business.getId();
         this.name = business.getName();
+        this.nameAmharic = business.getNameAmharic();
         this.email = business.getEmail();
         this.phoneNumber = business.getPhoneNumber();
+        this.alternativeContactPhone = business.getAlternativeContactPhone();
         this.businessType = business.getBusinessType();
         this.description = business.getDescription();
         this.logo = business.getLogo();
         this.website = business.getWebsite();
         this.foundedYear = business.getFoundedYear();
         this.employeeCount = business.getEmployeeCount();
+        this.registrationNumber = business.getRegistrationNumber();
         this.isVerified = business.isVerified();
         this.industry = business.getIndustry();
         this.taxId = business.getTaxId();
+        this.legalRepresentativeName = business.getLegalRepresentativeName();
         this.certifications = business.getCertifications();
         this.minOrderQuantity = business.getMinOrderQuantity();
         this.tradeTerms = business.getTradeTerms();
+        this.primaryCategory = business.getPrimaryCategory();
+        this.secondaryCategories = business.getSecondaryCategories();
 
         this.location = business.getLocation() != null ? new BusinessLocationDTO(business.getLocation()) : null;
         this.socialMedia = business.getSocialMedia();
@@ -78,6 +91,7 @@ public class BusinessDTO {
         this.images = business.getImages();
         this.telephoneNumbers = business.getTelephoneNumbers();
         this.mobileNumbers = business.getMobileNumbers();
+        this.localDistributionNetwork = business.isLocalDistributionNetwork();
         this.isFeatured = business.isFeatured();
         this.subscriptionPlan = business.getSubscriptionPlan();
         this.owner = business.getOwner() != null ? new OwnerDTO(business.getOwner()) : null;

@@ -3,6 +3,7 @@ package com.home.service.config;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,6 +14,7 @@ import com.home.service.config.exceptions.BadRequestException;
 import com.home.service.config.exceptions.EmailException;
 import com.home.service.config.exceptions.FileException;
 import com.home.service.config.exceptions.GeneralException;
+import com.home.service.config.exceptions.PasswordException;
 import com.home.service.config.exceptions.UserNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -21,9 +23,7 @@ import javax.naming.AuthenticationException;
 import jakarta.validation.ConstraintViolationException;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -91,11 +91,23 @@ public class GlobalExceptionHandler {
                         WebRequest request) {
                 ErrorResponse errorResponse = new ErrorResponse(
                                 HttpStatus.UNAUTHORIZED.value(),
-                                "Password Error",
+                                "Unauthorized",
+                                "Invalid username or password",
+                                request.getDescription(false),
+                                Collections.singletonList("Invalid username or password"));
+                return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
+
+        @ExceptionHandler(PasswordException.class)
+        public ResponseEntity<ErrorResponse> handlePasswordException(PasswordException ex, WebRequest request) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Weak Password Policy",
                                 ex.getMessage(),
                                 request.getDescription(false),
-                                Collections.singletonList("Invalid credentials provided."));
-                return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+                                Collections.singletonList(
+                                                "Use a stronger password or passphrase that meets policy requirements."));
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
         @ExceptionHandler(EmailException.class)
@@ -190,6 +202,17 @@ public class GlobalExceptionHandler {
                                 Collections.singletonList(
                                                 "The request could not be understood or was missing required parameters."));
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        @ExceptionHandler(CsrfException.class)
+        public ResponseEntity<ErrorResponse> handleCsrfException(CsrfException ex, WebRequest request) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.FORBIDDEN.value(),
+                                "CSRF Validation Failed",
+                                "Missing or invalid CSRF token",
+                                request.getDescription(false),
+                                Collections.singletonList(ex.getMessage()));
+                return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
         }
 
 }

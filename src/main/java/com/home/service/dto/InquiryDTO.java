@@ -16,4 +16,8 @@ public class InquiryDTO {
     private Long productId;
     private InquiryStatus status;
     private LocalDateTime respondedAt;
+    // Fallback contact info when senderId is not provided
+    private String name;
+    private String email;
+    private String phone;
 }

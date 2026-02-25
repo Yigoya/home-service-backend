@@ -3,6 +3,8 @@ package com.home.service.dto;
 import java.util.List;
 import java.util.Set;
 
+import com.home.service.models.enums.ProductCondition;
+
 import lombok.Data;
 
 @Data
@@ -19,6 +21,12 @@ public class ProductDTO {
     private String sku;
     private boolean isActive;
     private Long businessId;
+    private String businessName;
+    private String businessEmail;
+    private String businessPhoneNumber;
+    private String businessWebsite;
+    private String businessLogo;
     private String specifications;
     private Set<Long> serviceIds;
+    private ProductCondition condition;
 }

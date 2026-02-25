@@ -47,14 +47,23 @@ server:
   #   key-store: keystore.p12
   #   key-store-password: Ya+371240
   #   key-store-type: PKCS12
-chapa:
-  api:
-    key: "CHASECK_TEST-cR8ncgOLLPA53khMS88AqHQU3jPtBRO4" # Replace with your Chapa API key
-    url: "https://api.chapa.co/v1" # Chapa API base URL
-  callback:
-    url: "https://home-service-managment.vercel.app/" # Callback URL for payment status updates
-  return:
-    url: "https://home-service-managment.vercel.app/" # Return URL after payment completion
+telebirr:
+  base-url: "https://developerportal.ethiotelebirr.et:38443/apiaccess/payment/gateway" # Telebirr API base URL
+  web-base-url: "https://developerportal.ethiotelebirr.et:38443/payment/web/paygate?" # Telebirr checkout base URL (ends with ?)
+  fabric-app-id: "c4182ef8-9249-458a-985e-06d191f4d505"
+  app-secret: "fad0f06383c6297f545876694b974599"
+  merchant-app-id: "1580346212684802"
+  merchant-code: "395856"
+  notify-url: "https://www.hulumoya.com/payment/telebirr/notify"
+  redirect-url: "https://www.hulumoya.com/telebirr/return"
+  private-key-path: "classpath:telebirr/private_key.pem" # Update to your private key path
+  public-key-path: "classpath:telebirr/telebirr_public_key.pem" # Update to Telebirr public key path
+  sign-type: "SHA256WithRSA"
+
+sms:
+  geez:
+    token: "vtBVh6rYJxvmVsdljgMyF28K4MmdfsP1" # GeezSMS API token
+    shortcodeId: "" # Optional GeezSMS shortcode ID
 
 # Role-based application base URLs used in verification links
 app:
@@ -69,3 +78,30 @@ app:
       agency: "https://tender-agency-dashboard.vercel.app"
       job_company: "https://www.hulumoya.com"
       job_seeker: "https://www.hulumoya.com"
+  version:
+    min-supported: 5
+    latest: 5
+    force-update: true
+    update-message: "Please update the app to continue using our services."
+
+security:
+  jwt:
+    # Use a strong 32+ character secret from env in production
+    secret: ${JWT_SECRET:change-this-jwt-secret-to-a-strong-32plus-char-key}
+    # 15 minutes
+    access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}
+    # 14 days
+    refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:1209600000}
+  cookies:
+    # Must be true in production (HTTPS)
+    secure: ${AUTH_COOKIE_SECURE:true}
+    same-site: ${AUTH_COOKIE_SAMESITE:None}
+    domain: ${AUTH_COOKIE_DOMAIN:}
+    path: ${AUTH_COOKIE_PATH:/}
+  auth:
+    rate-limit:
+      max-attempts: 15
+      window-seconds: 60
+    lockout:
+      max-failed-attempts: 5
+      duration-minutes: 15

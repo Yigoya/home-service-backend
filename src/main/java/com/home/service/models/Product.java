@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.firebase.database.annotations.NotNull;
+import com.home.service.models.enums.ProductCondition;
 
 @Entity
 @Table(name = "products")
@@ -21,7 +22,7 @@ public class Product extends BaseEntity {
     @NotBlank
     private String name;
 
-    @Column(length = 5000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @NotNull
@@ -45,10 +46,15 @@ public class Product extends BaseEntity {
     @NotNull
     private Boolean inStock = true; // Added field
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "product_condition")
+    private ProductCondition condition = ProductCondition.NEW;
+
     @ManyToOne
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
 
+    @Column(columnDefinition = "TEXT")
     private String specifications;
 
     @ManyToMany

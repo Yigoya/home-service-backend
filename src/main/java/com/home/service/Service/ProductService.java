@@ -430,6 +430,9 @@ public class ProductService {
         entity.setSku(dto.getSku());
         entity.setActive(true);
         entity.setSpecifications(dto.getSpecifications());
+        if (dto.getCondition() != null) {
+            entity.setCondition(dto.getCondition());
+        }
     }
 
     // Get new products (recently added)
@@ -462,8 +465,14 @@ public class ProductService {
         dto.setSku(entity.getSku());
         dto.setActive(entity.isActive());
         dto.setBusinessId(entity.getBusiness().getId());
+        dto.setBusinessName(entity.getBusiness().getName());
+        dto.setBusinessEmail(entity.getBusiness().getEmail());
+        dto.setBusinessPhoneNumber(entity.getBusiness().getPhoneNumber());
+        dto.setBusinessWebsite(entity.getBusiness().getWebsite());
+        dto.setBusinessLogo(entity.getBusiness().getLogo());
         dto.setSpecifications(entity.getSpecifications());
         dto.setServiceIds(entity.getServices().stream().map(Services::getId).collect(Collectors.toSet()));
+        dto.setCondition(entity.getCondition());
         return dto;
     }
 }
