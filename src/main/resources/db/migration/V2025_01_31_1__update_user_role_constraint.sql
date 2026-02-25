@@ -1,4 +1,33 @@
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
 
+UPDATE users
+SET role = 'USER'
+WHERE role IS NOT NULL
+	AND role NOT IN (
+		'CUSTOMER',
+		'TECHNICIAN',
+		'OPERATOR',
+		'ADMIN',
+		'USER',
+		'BUSINESS',
+		'BUSINESS_MARKET',
+		'AGENCY',
+		'JOB_COMPANY',
+		'JOB_SEEKER'
+	);
+
 ALTER TABLE users ADD CONSTRAINT users_role_check 
-CHECK (role IN ('CUSTOMER', 'TECHNICIAN', 'OPERATOR', 'ADMIN', 'USER', 'AGENCY', 'JOB_COMPANY', 'JOB_SEEKER'));
+CHECK (
+	role IN (
+		'CUSTOMER',
+		'TECHNICIAN',
+		'OPERATOR',
+		'ADMIN',
+		'USER',
+		'BUSINESS',
+		'BUSINESS_MARKET',
+		'AGENCY',
+		'JOB_COMPANY',
+		'JOB_SEEKER'
+	)
+);
