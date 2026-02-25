@@ -57,8 +57,9 @@ telebirr:
   merchant-code: "395856"
   notify-url: "https://www.hulumoya.com/payment/telebirr/notify"
   redirect-url: "https://www.hulumoya.com/telebirr/return"
-  private-key-path: "classpath:telebirr/private_key.pem" # Update to your private key path
-  public-key-path: "classpath:telebirr/telebirr_public_key.pem" # Update to Telebirr public key path
+  private-key-path: ${TELEBIRR_PRIVATE_KEY_PATH:classpath:telebirr/private_key.pem}
+  public-key-path: ${TELEBIRR_PUBLIC_KEY_PATH:classpath:telebirr/telebirr_public_key.pem}
+  verify-callback-signature: ${TELEBIRR_VERIFY_CALLBACK_SIGNATURE:true}
   sign-type: "SHA256WithRSA"
 
 sms:

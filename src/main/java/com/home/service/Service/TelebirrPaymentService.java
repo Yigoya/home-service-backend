@@ -94,7 +94,8 @@ public class TelebirrPaymentService {
         payload.remove("sign");
         payload.remove("sign_type");
 
-        if (signature != null && telebirrProperties.getPublicKeyPath() != null
+        if (telebirrProperties.isVerifyCallbackSignature()
+            && signature != null && telebirrProperties.getPublicKeyPath() != null
                 && !telebirrProperties.getPublicKeyPath().isBlank()) {
             boolean verified = signatureUtils.verify(payload, signature, telebirrProperties.getPublicKeyPath());
             if (!verified) {
