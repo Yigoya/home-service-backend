@@ -135,7 +135,8 @@ public class UserService {
                 throw new IllegalStateException("Invalid token");
             }
 
-            User user = userRepository.findByEmail(email)
+                User user = userRepository.findByEmail(email)
+                    .or(() -> userRepository.findByPhoneNumber(email))
                     .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             return buildAuthenticationResponse(user, token);
@@ -579,9 +580,10 @@ public class UserService {
     }
 
     public AuthenticationResponse buildAuthenticationResponse(User user, String existingToken) {
+        String tokenSubject = resolveTokenSubject(user);
         final String jwtToken = (existingToken != null && !existingToken.isBlank())
                 ? existingToken
-                : jwtUtil.generateToken(user.getEmail());
+            : jwtUtil.generateToken(tokenSubject);
 
         UserResponse userResponse = new UserResponse(
                 user.getId(),
@@ -634,6 +636,16 @@ public class UserService {
         }
 
         return authenticationResponse;
+    }
+
+    private String resolveTokenSubject(User user) {
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            return user.getEmail();
+        }
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+            return user.getPhoneNumber();
+        }
+        throw new IllegalStateException("User has no login identifier");
     }
 
     public String suspendUser(Long userId) {

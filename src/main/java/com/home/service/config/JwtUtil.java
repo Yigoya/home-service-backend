@@ -11,6 +11,7 @@ import com.home.service.models.CustomDetails;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Component
@@ -63,6 +64,6 @@ public class JwtUtil {
     public Boolean validateToken(String token, CustomDetails userDetails) {
         final String username = extractUsername(token);
         System.out.println(username + " " + userDetails.getUsername());
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (Objects.equals(username, userDetails.getUsername()) && !isTokenExpired(token));
     }
 }

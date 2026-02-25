@@ -18,6 +18,7 @@ public class CustomDetails implements UserDetails {
     private Long id;
     private String name;
     private String email;
+    private String phoneNumber;
     private UserRole role;
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
@@ -26,6 +27,7 @@ public class CustomDetails implements UserDetails {
         this.id = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
+        this.phoneNumber = user.getPhoneNumber();
         this.role = user.getRole();
         this.password = user.getPassword();
 
@@ -38,7 +40,10 @@ public class CustomDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        if (email != null && !email.isBlank()) {
+            return email;
+        }
+        return phoneNumber;
     }
 
     @Override
