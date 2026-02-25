@@ -104,7 +104,7 @@ public class TelebirrService {
         request.put("version", "1.0");
         request.put("biz_content", bizContent);
 
-        String sign = signatureUtils.sign(request, properties.getPrivateKeyPath());
+        String sign = signatureUtils.sign(request, properties.getPrivateKeyPath(), properties.getSignType());
         request.put("sign", sign);
         request.put("sign_type", properties.getSignType());
 
@@ -148,7 +148,7 @@ public class TelebirrService {
         map.put("prepay_id", prepayId);
         map.put("timestamp", String.valueOf(Instant.now().getEpochSecond()));
 
-        String sign = signatureUtils.sign(map, properties.getPrivateKeyPath());
+        String sign = signatureUtils.sign(map, properties.getPrivateKeyPath(), properties.getSignType());
 
         String rawRequest = String.join("&",
                 "appid=" + map.get("appid"),

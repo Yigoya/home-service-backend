@@ -22,5 +22,4 @@ public class TelebirrProperties {
     private String privateKeyPath;
     private String publicKeyPath;
     private String signType = "SHA256WithRSA";
-    private boolean verifyCallbackSignature = true;
 }
