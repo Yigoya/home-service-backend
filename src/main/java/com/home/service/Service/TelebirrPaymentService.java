@@ -49,7 +49,8 @@ public class TelebirrPaymentService {
 
     @Transactional
     public TelebirrCheckoutResponse createCheckout(TelebirrCheckoutRequest request) {
-        System.out.println("Creating Telebirr checkout for planId: " + request.getPlanId() + ", subscriberType: " + request.getSubscriberType() + ", subscriberId: " + request.getSubscriberId());
+        System.out.println("Creating Telebirr checkout for planId: " + request.getPlanId() + ", subscriberType: "
+            + request.getSubscriberType() + ", subscriberId: " + request.getSubscriberId());
         SubscriptionPlan plan = subscriptionService.getPlanById(request.getPlanId());
         validateSubscriberPlan(plan.getPlanType(), request.getSubscriberType());
 
@@ -175,17 +176,23 @@ public class TelebirrPaymentService {
             case BUSINESS -> {
                 if (!(planType == PlanType.MARKETPLACE || planType == PlanType.YELLOW_PAGES
                         || planType == PlanType.JOBS || planType == PlanType.BUSINESS)) {
-                    throw new IllegalArgumentException("Plan type does not match business subscriber");
+                    throw new IllegalArgumentException(
+                            "Plan type does not match business subscriber. planType=" + planType
+                                    + ", expected one of: MARKETPLACE,YELLOW_PAGES,JOBS,BUSINESS");
                 }
             }
             case TECHNICIAN -> {
                 if (!(planType == PlanType.HOME_PROFESSIONAL || planType == PlanType.TECHNICIAN)) {
-                    throw new IllegalArgumentException("Plan type does not match technician subscriber");
+                    throw new IllegalArgumentException(
+                            "Plan type does not match technician subscriber. planType=" + planType
+                                    + ", expected one of: HOME_PROFESSIONAL,TECHNICIAN");
                 }
             }
             case CUSTOMER -> {
                 if (!(planType == PlanType.TENDER || planType == PlanType.CUSTOMER_TENDER)) {
-                    throw new IllegalArgumentException("Plan type does not match customer subscriber");
+                    throw new IllegalArgumentException(
+                            "Plan type does not match customer subscriber. planType=" + planType
+                                    + ", expected one of: TENDER,CUSTOMER_TENDER");
                 }
             }
             default -> throw new IllegalArgumentException("Unknown subscriber type");
