@@ -146,27 +146,14 @@ public class TelebirrService {
         bizContent.put("redirect_url", properties.getRedirectUrl());
 
         String normalizedToken = normalizeFabricToken(fabricToken);
-        String configuredSignType = properties.getSignType();
-        String alternateAllowedSignType = configuredSignType.equals("SHA256WithRSA")
-            ? "SHA256withRSA"
-            : "SHA256WithRSA";
-
-        String[] signTypesToTry = new String[] { configuredSignType, alternateAllowedSignType };
-
-        String[] authHeadersToTry = new String[] { "Bearer " + normalizedToken, normalizedToken };
-
-        for (String signType : signTypesToTry) {
-            String payload = buildPreOrderPayload(bizContent, signType);
-            for (String authHeader : authHeadersToTry) {
-                PreOrderResult attempt = callPreOrderWithAuthHeader(payload, authHeader, signType);
-                if (attempt != null) {
-                    return attempt;
-                }
-            }
+        String signType = properties.getSignType();
+        String payload = buildPreOrderPayload(bizContent, signType);
+        PreOrderResult attempt = callPreOrderWithAuthHeader(payload, "Bearer " + normalizedToken, signType);
+        if (attempt != null) {
+            return attempt;
         }
 
-        throw new IllegalStateException(
-                "Telebirr preOrder failed after trying token formats and sign types. See logs above.");
+        throw new IllegalStateException("Telebirr preOrder failed. See logs above.");
     }
 
     private String normalizeFabricToken(String fabricToken) {
