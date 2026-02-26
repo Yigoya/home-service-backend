@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 public class TelebirrSignatureUtils {
 
     private static final Set<String> EXCLUDED_FIELDS = new HashSet<>(Set.of(
-            "sign", "sign_type", "header", "refund_info", "openType", "raw_request", "biz_content",
+            "sign", "sign_type", "header", "refund_info", "openType", "raw_request",
             "wallet_reference_data"));
 
     private final ObjectMapper objectMapper;
@@ -78,13 +78,6 @@ public class TelebirrSignatureUtils {
         for (Map.Entry<String, ?> entry : data.entrySet()) {
             String key = entry.getKey();
 
-            // Per Telebirr guide: top-level biz_content key is excluded, but its inner fields
-            // must participate in signature.
-            if ("biz_content".equals(key)) {
-                flattenBizContent(entry.getValue(), sorted);
-                continue;
-            }
-
             if (EXCLUDED_FIELDS.contains(key)) {
                 continue;
             }
@@ -99,41 +92,12 @@ public class TelebirrSignatureUtils {
                 .collect(Collectors.joining("&"));
     }
 
-    @SuppressWarnings("unchecked")
-    private void flattenBizContent(Object value, Map<String, Object> target) {
-        if (value == null) {
-            return;
-        }
-
-        Map<String, Object> bizMap = null;
-        if (value instanceof Map<?, ?> rawMap) {
-            bizMap = (Map<String, Object>) rawMap;
-        } else if (value instanceof String str && str.trim().startsWith("{")) {
-            try {
-                bizMap = objectMapper.readValue(str, Map.class);
-            } catch (Exception ignored) {
-                return;
-            }
-        }
-
-        if (bizMap == null) {
-            return;
-        }
-
-        for (Map.Entry<String, Object> bizEntry : bizMap.entrySet()) {
-            if (EXCLUDED_FIELDS.contains(bizEntry.getKey())) {
-                continue;
-            }
-            if (bizEntry.getValue() == null) {
-                continue;
-            }
-            target.put(bizEntry.getKey(), bizEntry.getValue());
-        }
-    }
-
     private String normalizeValue(Object value) {
         if (value instanceof Map<?, ?> mapValue) {
             return toJson(mapValue);
+        }
+        if (value instanceof Iterable<?> || value.getClass().isArray()) {
+            return toJson(value);
         }
         return String.valueOf(value);
     }
