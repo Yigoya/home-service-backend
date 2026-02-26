@@ -62,7 +62,7 @@ public class TelebirrPaymentService {
         payment.setSubscriberId(request.getSubscriberId());
         payment.setAmount(amount);
         payment.setCurrency("ETB");
-        payment.setMerchantOrderId("SUB-" + System.currentTimeMillis());
+        payment.setMerchantOrderId("SUB" + System.currentTimeMillis());
         payment.setStatus(TelebirrPaymentStatus.PENDING);
         paymentRepository.save(payment);
 

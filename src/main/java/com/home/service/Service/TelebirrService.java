@@ -128,11 +128,16 @@ public class TelebirrService {
 
     public PreOrderResult createPreOrder(String fabricToken, String title, BigDecimal amount,
             String merchantOrderId) {
+        String safeMerchantOrderId = merchantOrderId == null ? "" : merchantOrderId.replaceAll("[^A-Za-z0-9]", "");
+        if (safeMerchantOrderId.isBlank()) {
+            throw new IllegalStateException("Invalid merchantOrderId for Telebirr. It must match ^[A-Za-z0-9]+$.");
+        }
+
         Map<String, Object> bizContent = new HashMap<>();
         bizContent.put("notify_url", properties.getNotifyUrl());
         bizContent.put("appid", properties.getMerchantAppId());
         bizContent.put("merch_code", properties.getMerchantCode());
-        bizContent.put("merch_order_id", merchantOrderId);
+        bizContent.put("merch_order_id", safeMerchantOrderId);
         bizContent.put("trade_type", "Checkout");
         bizContent.put("title", title);
         bizContent.put("total_amount", amount.toPlainString());
