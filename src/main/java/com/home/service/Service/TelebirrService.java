@@ -143,22 +143,17 @@ public class TelebirrService {
         bizContent.put("total_amount", amount.toPlainString());
         bizContent.put("trans_currency", "ETB");
         bizContent.put("timeout_express", "120m");
-        bizContent.put("business_type", "BuyGoods");
-        bizContent.put("payee_identifier", properties.getMerchantCode());
-        bizContent.put("payee_identifier_type", "04");
-        bizContent.put("payee_type", "5000");
         bizContent.put("redirect_url", properties.getRedirectUrl());
-        bizContent.put("callback_info", "subscription");
 
         String normalizedToken = normalizeFabricToken(fabricToken);
         String configuredSignType = properties.getSignType();
-        String fallbackSignType = "SHA256withRSAandMGF1";
+        String alternateAllowedSignType = configuredSignType.equals("SHA256WithRSA")
+            ? "SHA256withRSA"
+            : "SHA256WithRSA";
 
-        String[] signTypesToTry = configuredSignType.equalsIgnoreCase(fallbackSignType)
-                ? new String[] { configuredSignType }
-                : new String[] { configuredSignType, fallbackSignType };
+        String[] signTypesToTry = new String[] { configuredSignType, alternateAllowedSignType };
 
-        String[] authHeadersToTry = new String[] { normalizedToken, "Bearer " + normalizedToken };
+        String[] authHeadersToTry = new String[] { "Bearer " + normalizedToken, normalizedToken };
 
         for (String signType : signTypesToTry) {
             String payload = buildPreOrderPayload(bizContent, signType);
