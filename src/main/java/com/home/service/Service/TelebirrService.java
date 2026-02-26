@@ -150,6 +150,42 @@ public class TelebirrService {
         bizContent.put("redirect_url", properties.getRedirectUrl());
         bizContent.put("callback_info", "subscription");
 
+        String normalizedToken = normalizeFabricToken(fabricToken);
+        String configuredSignType = properties.getSignType();
+        String fallbackSignType = "SHA256withRSAandMGF1";
+
+        String[] signTypesToTry = configuredSignType.equalsIgnoreCase(fallbackSignType)
+                ? new String[] { configuredSignType }
+                : new String[] { configuredSignType, fallbackSignType };
+
+        String[] authHeadersToTry = new String[] { normalizedToken, "Bearer " + normalizedToken };
+
+        for (String signType : signTypesToTry) {
+            String payload = buildPreOrderPayload(bizContent, signType);
+            for (String authHeader : authHeadersToTry) {
+                PreOrderResult attempt = callPreOrderWithAuthHeader(payload, authHeader, signType);
+                if (attempt != null) {
+                    return attempt;
+                }
+            }
+        }
+
+        throw new IllegalStateException(
+                "Telebirr preOrder failed after trying token formats and sign types. See logs above.");
+    }
+
+    private String normalizeFabricToken(String fabricToken) {
+        if (fabricToken == null) {
+            return "";
+        }
+        String trimmed = fabricToken.trim();
+        if (trimmed.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return trimmed.substring(7).trim();
+        }
+        return trimmed;
+    }
+
+    private String buildPreOrderPayload(Map<String, Object> bizContent, String signType) {
         Map<String, Object> request = new HashMap<>();
         request.put("timestamp", String.valueOf(Instant.now().getEpochSecond()));
         request.put("nonce_str", UUID.randomUUID().toString().replace("-", ""));
@@ -157,31 +193,18 @@ public class TelebirrService {
         request.put("version", "1.0");
         request.put("biz_content", bizContent);
 
-        String sign = signatureUtils.sign(request, properties.getPrivateKeyPath(), properties.getSignType());
+        String sign = signatureUtils.sign(request, properties.getPrivateKeyPath(), signType);
         request.put("sign", sign);
-        request.put("sign_type", properties.getSignType());
+        request.put("sign_type", signType);
 
-        String payload;
         try {
-            payload = objectMapper.writeValueAsString(request);
+            return objectMapper.writeValueAsString(request);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to serialize preOrder payload", e);
         }
-
-        PreOrderResult bearerAttempt = callPreOrderWithAuthHeader(payload, "Bearer " + fabricToken);
-        if (bearerAttempt != null) {
-            return bearerAttempt;
-        }
-
-        PreOrderResult rawTokenAttempt = callPreOrderWithAuthHeader(payload, fabricToken);
-        if (rawTokenAttempt != null) {
-            return rawTokenAttempt;
-        }
-
-        throw new IllegalStateException("Telebirr preOrder failed after both Authorization formats. See logs above.");
     }
 
-    private PreOrderResult callPreOrderWithAuthHeader(String payload, String authorizationHeaderValue) {
+    private PreOrderResult callPreOrderWithAuthHeader(String payload, String authorizationHeaderValue, String signType) {
         Request httpRequest = new Request.Builder()
                 .url(properties.getBaseUrl() + "/payment/v1/merchant/preOrder")
                 .addHeader("Content-Type", "application/json")
@@ -196,6 +219,7 @@ public class TelebirrService {
                 System.out.println("Telebirr preOrder failed: status=" + response.code()
                         + ", authHeaderPrefix="
                         + (authorizationHeaderValue.startsWith("Bearer ") ? "Bearer" : "RawToken")
+                    + ", signType=" + signType
                         + ", response=" + responseBody);
                 return null;
             }
