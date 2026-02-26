@@ -59,6 +59,7 @@ telebirr:
   redirect-url: "https://www.hulumoya.com/telebirr/return"
   private-key-path: "classpath:telebirr/private_key.pem" # Update to your private key path
   public-key-path: "classpath:telebirr/telebirr_public_key.pem" # Update to Telebirr public key path
+  disable-ssl-verification: ${TELEBIRR_DISABLE_SSL_VERIFICATION:true}
   sign-type: "SHA256WithRSA"
 
 sms:

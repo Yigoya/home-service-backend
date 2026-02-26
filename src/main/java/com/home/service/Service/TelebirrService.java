@@ -19,6 +19,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 
 @Service
 public class TelebirrService {
@@ -33,13 +40,54 @@ public class TelebirrService {
     public TelebirrService(TelebirrProperties properties, ObjectMapper objectMapper,
             TelebirrSignatureUtils signatureUtils) {
         this.properties = properties;
-        this.client = new OkHttpClient.Builder()
-            .connectTimeout(50, TimeUnit.SECONDS)
-            .readTimeout(50, TimeUnit.SECONDS)
-            .writeTimeout(50, TimeUnit.SECONDS)
-            .build();
+        this.client = createHttpClient(properties.isDisableSslVerification());
         this.objectMapper = objectMapper;
         this.signatureUtils = signatureUtils;
+    }
+
+    private OkHttpClient createHttpClient(boolean disableSslVerification) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(50, TimeUnit.SECONDS)
+                .readTimeout(50, TimeUnit.SECONDS)
+                .writeTimeout(50, TimeUnit.SECONDS);
+
+        if (!disableSslVerification) {
+            return builder.build();
+        }
+
+        try {
+            final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+            } };
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            X509TrustManager trustManager = (X509TrustManager) trustAllCerts[0];
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            System.out.println("WARNING: Telebirr SSL verification is DISABLED. Use development only.");
+            return builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager)
+                    .hostnameVerifier(allHostsValid)
+                    .build();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to initialize insecure SSL client", e);
+        }
     }
 
     public String applyFabricToken() {
