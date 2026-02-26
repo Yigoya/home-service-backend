@@ -163,24 +163,42 @@ public class TelebirrService {
             throw new IllegalStateException("Failed to serialize preOrder payload", e);
         }
 
+        PreOrderResult bearerAttempt = callPreOrderWithAuthHeader(payload, "Bearer " + fabricToken);
+        if (bearerAttempt != null) {
+            return bearerAttempt;
+        }
+
+        PreOrderResult rawTokenAttempt = callPreOrderWithAuthHeader(payload, fabricToken);
+        if (rawTokenAttempt != null) {
+            return rawTokenAttempt;
+        }
+
+        throw new IllegalStateException("Telebirr preOrder failed after both Authorization formats. See logs above.");
+    }
+
+    private PreOrderResult callPreOrderWithAuthHeader(String payload, String authorizationHeaderValue) {
         Request httpRequest = new Request.Builder()
                 .url(properties.getBaseUrl() + "/payment/v1/merchant/preOrder")
                 .addHeader("Content-Type", "application/json")
                 .addHeader("X-APP-Key", properties.getFabricAppId())
-                .addHeader("Authorization", fabricToken)
+                .addHeader("Authorization", authorizationHeaderValue)
                 .post(RequestBody.create(payload, JSON))
                 .build();
 
         try (Response response = client.newCall(httpRequest).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IllegalStateException("Telebirr preOrder failed: " + response.code());
-            }
             String responseBody = response.body() != null ? response.body().string() : "{}";
+            if (!response.isSuccessful()) {
+                System.out.println("Telebirr preOrder failed: status=" + response.code()
+                        + ", authHeaderPrefix="
+                        + (authorizationHeaderValue.startsWith("Bearer ") ? "Bearer" : "RawToken")
+                        + ", response=" + responseBody);
+                return null;
+            }
             Map<?, ?> result = objectMapper.readValue(responseBody, Map.class);
             Map<?, ?> biz = (Map<?, ?>) result.get("biz_content");
             String prepayId = biz != null && biz.get("prepay_id") != null ? biz.get("prepay_id").toString() : null;
             if (prepayId == null) {
-                throw new IllegalStateException("Telebirr prepay_id missing in response");
+                throw new IllegalStateException("Telebirr prepay_id missing in response: " + responseBody);
             }
             return new PreOrderResult(prepayId, payload, responseBody);
         } catch (IOException e) {

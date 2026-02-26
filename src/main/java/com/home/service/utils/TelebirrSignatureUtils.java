@@ -77,15 +77,18 @@ public class TelebirrSignatureUtils {
         Map<String, Object> sorted = new TreeMap<>();
         for (Map.Entry<String, ?> entry : data.entrySet()) {
             String key = entry.getKey();
+
+            // Per Telebirr guide: top-level biz_content key is excluded, but its inner fields
+            // must participate in signature.
+            if ("biz_content".equals(key)) {
+                flattenBizContent(entry.getValue(), sorted);
+                continue;
+            }
+
             if (EXCLUDED_FIELDS.contains(key)) {
                 continue;
             }
             if (entry.getValue() == null) {
-                continue;
-            }
-
-            if ("biz_content".equals(key)) {
-                flattenBizContent(entry.getValue(), sorted);
                 continue;
             }
 
