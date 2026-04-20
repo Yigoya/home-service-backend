@@ -21,6 +21,7 @@ import com.home.service.dto.admin.TechnicianAddressDTO;
 import com.home.service.dto.admin.TechnicianDetailDTO;
 import com.home.service.dto.TechnicianWeeklyScheduleDTO;
 import com.home.service.dto.records.SingleTechnician;
+import com.home.service.config.FaydaProperties;
 import com.home.service.config.JwtUtil;
 import com.home.service.config.exceptions.BadRequestException;
 import com.home.service.config.exceptions.EmailException;
@@ -88,6 +89,8 @@ public class TechnicianService {
         private final BookingService bookingService;
         private final SubscriptionService subscriptionService;
         private final TechnicianPortfolioRepository technicianPortfolioRepository;
+        private final FaydaService faydaService;
+        private final FaydaProperties faydaProperties;
 
         public TechnicianService(UserService userService, FileStorageService fileStorageService,
                         TechnicianRepository technicianRepository, UserRepository userRepository,
@@ -98,7 +101,9 @@ public class TechnicianService {
                         ReviewRepository reviewRepository, BookingRepository bookingRepository,
                         OperatorRepository operatorRepository, BookingService bookingService,
                         SubscriptionService subscriptionService,
-                        TechnicianPortfolioRepository technicianPortfolioRepository) {
+                        TechnicianPortfolioRepository technicianPortfolioRepository,
+                        FaydaService faydaService,
+                        FaydaProperties faydaProperties) {
                 this.subscriptionService = subscriptionService;
                 this.operatorRepository = operatorRepository;
                 this.userService = userService;
@@ -115,6 +120,8 @@ public class TechnicianService {
                 this.operatorRepository = operatorRepository;
                 this.bookingService = bookingService;
                 this.technicianPortfolioRepository = technicianPortfolioRepository;
+                this.faydaService = faydaService;
+                this.faydaProperties = faydaProperties;
 
         }
 
@@ -287,6 +294,14 @@ public class TechnicianService {
                 if (normalizedEmail != null && userRepository.existsByEmail(normalizedEmail)) {
                         throw new EmailException("Email already in use");
                 }
+
+                FaydaService.VerifiedIdentity verifiedIdentity = null;
+                if (faydaProperties.isTechnicianRegistrationVerificationRequired()) {
+                        verifiedIdentity = faydaService.consumeTechnicianVerification(
+                                        signupRequest.getFaydaVerificationToken(),
+                                        signupRequest.getFaydaNationalId());
+                }
+
                 System.out.println(signupRequest.getServiceIds());
                 List<Services> services = serviceRepository.findAllById(signupRequest.getServiceIds());
 
@@ -319,6 +334,13 @@ public class TechnicianService {
                 technician.setInstagram(signupRequest.getInstagram());
                 technician.setLinkedin(signupRequest.getLinkedin());
                 technician.setWhatsapp(signupRequest.getWhatsapp());
+                if (verifiedIdentity != null) {
+                        technician.setFaydaNationalId(verifiedIdentity.nationalId());
+                        technician.setFaydaVerified(true);
+                } else if (signupRequest.getFaydaNationalId() != null && !signupRequest.getFaydaNationalId().isBlank()) {
+                        technician.setFaydaNationalId(signupRequest.getFaydaNationalId());
+                        technician.setFaydaVerified(false);
+                }
 
                 // Retrieve and associate services with Technician
                 technician.setServices(new HashSet<>(services));

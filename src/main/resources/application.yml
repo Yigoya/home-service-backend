@@ -62,6 +62,33 @@ telebirr:
   disable-ssl-verification: ${TELEBIRR_DISABLE_SSL_VERIFICATION:true}
   sign-type: "SHA256WithRSA"
 
+chapa:
+  secret-key: ${CHAPA_SECRET_KEY:CHASECK_TEST-bMq02lyvmzLc3cTgZE99di9dMoI2cFv6}
+  callback-url: ${CHAPA_CALLBACK_URL:https://www.hulumoya.com/payment/chapa/callback}
+  return-url: ${CHAPA_RETURN_URL:https://www.hulumoya.com/chapa/return}
+  currency: ${CHAPA_CURRENCY:ETB}
+  default-email: ${CHAPA_DEFAULT_EMAIL:yigoya7@gmail.com}
+  customization-title: ${CHAPA_CUSTOMIZATION_TITLE:Hulumoya Subscription}
+  customization-description: ${CHAPA_CUSTOMIZATION_DESCRIPTION:Subscription payment}
+  customization-logo: ${CHAPA_CUSTOMIZATION_LOGO:}
+
+fayda:
+  authorization-endpoint: ${FAYDA_AUTHORIZATION_ENDPOINT:}
+  token-endpoint: ${FAYDA_TOKEN_ENDPOINT:}
+  userinfo-endpoint: ${FAYDA_USERINFO_ENDPOINT:}
+  client-id: ${FAYDA_CLIENT_ID:}
+  redirect-uri: ${FAYDA_REDIRECT_URI:}
+  scope: ${FAYDA_SCOPE:openid profile email}
+  acr-values: ${FAYDA_ACR_VALUES:mosip:idp:acr:generated-code:biometrics}
+  claims-locales: ${FAYDA_CLAIMS_LOCALES:en}
+  # Either provide base64 JWK/JWK-set (preferred by VeriFayda docs) or private-key-path PEM.
+  private-key-base64-jwk: ${FAYDA_PRIVATE_KEY_BASE64_JWK:}
+  private-key-path: ${FAYDA_PRIVATE_KEY_PATH:}
+  client-assertion-type: ${FAYDA_CLIENT_ASSERTION_TYPE:urn:ietf:params:oauth:client-assertion-type:jwt-bearer}
+  auth-state-ttl-seconds: ${FAYDA_AUTH_STATE_TTL_SECONDS:600}
+  verification-ttl-seconds: ${FAYDA_VERIFICATION_TTL_SECONDS:900}
+  technician-registration-verification-required: ${FAYDA_TECHNICIAN_REGISTRATION_VERIFICATION_REQUIRED:false}
+
 sms:
   geez:
     token: "vtBVh6rYJxvmVsdljgMyF28K4MmdfsP1" # GeezSMS API token

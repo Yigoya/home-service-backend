@@ -1,6 +1,5 @@
 package com.home.service.dto;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -10,8 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.home.service.models.enums.ProductCondition;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,10 +33,16 @@ public class ProductRequest {
     private String description;
 
     @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.01", message = "Price must be greater than 0")
     private Double price;
 
+    @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must be a valid 3-letter code (e.g., ETB, USD)")
     private String currency;
+
+    @PositiveOrZero(message = "Stock quantity cannot be negative")
     private Integer stockQuantity;
+
+    @PositiveOrZero(message = "Minimum order quantity cannot be negative")
     private Integer minOrderQuantity;
     private MultipartFile[] images;
     private String category;
@@ -90,5 +98,13 @@ public class ProductRequest {
             dto.setCondition(ProductCondition.valueOf(this.condition.trim().toUpperCase()));
         }
         return dto;
+    }
+
+    @jakarta.validation.constraints.AssertTrue(message = "Minimum order quantity cannot exceed stock quantity")
+    public boolean isMinOrderWithinStock() {
+        if (minOrderQuantity == null || stockQuantity == null) {
+            return true;
+        }
+        return minOrderQuantity <= stockQuantity;
     }
 }

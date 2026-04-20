@@ -136,17 +136,17 @@ public class ProfileController {
         return ResponseEntity.ok(addresses);
     }
 
-    @PostMapping("/uploadProfileImage/{userId}")
+    @PostMapping(value = "/uploadProfileImage/{userId}", consumes = { "multipart/form-data" })
     public ResponseEntity<Map<String, String>> uploadProfileImage(
             @PathVariable Long userId,
-            @RequestBody MultipartFile file) {
+            @RequestParam("file") MultipartFile file) {
         // Check if the file is empty
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", "File is empty"));
         }
 
         // Store the file
-        String fileName = fileStorageService.storeFile(file);
+        String fileName = fileStorageService.storeImageFile(file);
 
         // Update the user's profile image URL
         userService.updateProfileImage(userId, fileName);

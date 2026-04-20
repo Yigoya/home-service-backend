@@ -4,18 +4,26 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.home.service.models.Technician;
 import com.home.service.models.User;
 import com.home.service.models.Services;
+import com.home.service.models.SubscriptionPlan;
 
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface TechnicianRepository extends JpaRepository<Technician, Long>, JpaSpecificationExecutor<Technician> {
+        @Modifying
+        @Transactional
+        @Query("UPDATE Technician t SET t.subscriptionPlan = :plan WHERE t.id = :technicianId")
+        int updateSubscriptionPlanById(@Param("technicianId") Long technicianId, @Param("plan") SubscriptionPlan plan);
+
         Optional<Technician> findByUser(User user);
 
         Optional<Technician> findByUserId(Long userId);

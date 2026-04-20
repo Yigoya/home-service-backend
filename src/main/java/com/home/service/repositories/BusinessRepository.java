@@ -5,7 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -16,8 +19,14 @@ import java.util.Optional;
 import com.home.service.models.Business;
 import com.home.service.models.User;
 import com.home.service.models.Services;
+import com.home.service.models.SubscriptionPlan;
 
 public interface BusinessRepository extends JpaRepository<Business, Long>, JpaSpecificationExecutor<Business> {
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Business b SET b.subscriptionPlan = :plan WHERE b.id = :businessId")
+    int updateSubscriptionPlanById(@Param("businessId") Long businessId, @Param("plan") SubscriptionPlan plan);
 
     @Query("SELECT b FROM Business b WHERE b.location.id = :locationId")
     Page<Business> findByLocationId(Long locationId, Pageable pageable);

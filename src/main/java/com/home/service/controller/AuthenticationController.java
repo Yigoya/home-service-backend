@@ -143,8 +143,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> refresh(@RequestBody(required = false) Map<String, String> body,
+            HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractCookie(request, AuthCookieService.REFRESH_TOKEN_COOKIE);
+        if ((refreshToken == null || refreshToken.isBlank()) && body != null) {
+            refreshToken = body.get("refreshToken");
+        }
         if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing refresh token");
         }

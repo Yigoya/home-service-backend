@@ -14,6 +14,7 @@ import com.home.service.models.enums.SocialMedia;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,7 +40,11 @@ public class BusinessRequest {
     public List<Long> categoryIds;
 
     public String locationJson;
+
+    @Pattern(regexp = "^\\+?[0-9]{10,13}$", message = "Invalid phone number format")
     public String phoneNumber;
+
+    @Pattern(regexp = "^\\+?[0-9]{10,13}$", message = "Invalid alternative phone number format")
     public String alternativeContactPhone;
     public String email;
     public String website;

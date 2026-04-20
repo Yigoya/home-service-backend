@@ -72,12 +72,6 @@
 			<version>2.3.3</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.hibernate.orm</groupId>
-			<artifactId>hibernate-ant</artifactId>
-			<version>6.1.4.Final</version>
-		</dependency>
-
 		
 
 		<!-- <dependency>
@@ -128,6 +122,12 @@
 			<groupId>com.google.firebase</groupId>
 			<artifactId>firebase-admin</artifactId>
 			<version>9.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.yaphet17</groupId>
+			<artifactId>Chapa</artifactId>
+			<version>1.2.2</version>
 		</dependency>
 
 		<dependency>
@@ -192,10 +192,6 @@
 						</exclude>
 					</excludes>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

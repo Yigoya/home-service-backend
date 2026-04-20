@@ -1,6 +1,10 @@
 package com.home.service.controller;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.home.service.Service.BusinessService;
@@ -8,13 +12,23 @@ import com.home.service.Service.CustomerService;
 import com.home.service.Service.SubscriptionService;
 import com.home.service.Service.TechnicianService;
 import com.home.service.models.Business;
+import com.home.service.models.CustomDetails;
 import com.home.service.models.Customer;
 import com.home.service.models.SubscriptionPlan;
 import com.home.service.models.Technician;
 import com.home.service.models.enums.PlanType;
+import com.home.service.models.enums.UserRole;
+import com.home.service.repositories.BusinessRepository;
+import com.home.service.repositories.CustomerRepository;
+import com.home.service.repositories.TechnicianRepository;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,13 +39,21 @@ public class SubscriptionController {
     private final TechnicianService technicianService;
     private final BusinessService businessService;
     private final CustomerService customerService;
+    private final TechnicianRepository technicianRepository;
+    private final BusinessRepository businessRepository;
+    private final CustomerRepository customerRepository;
 
     public SubscriptionController(SubscriptionService subscriptionService, TechnicianService technicianService,
-            BusinessService businessService, CustomerService customerService) {
+            BusinessService businessService, CustomerService customerService,
+            TechnicianRepository technicianRepository, BusinessRepository businessRepository,
+            CustomerRepository customerRepository) {
         this.subscriptionService = subscriptionService;
         this.technicianService = technicianService;
         this.businessService = businessService;
         this.customerService = customerService;
+        this.technicianRepository = technicianRepository;
+        this.businessRepository = businessRepository;
+        this.customerRepository = customerRepository;
     }
 
     // Get all plans by type with language support
@@ -61,7 +83,10 @@ public class SubscriptionController {
 
     @PostMapping("/technician/{id}")
     public ResponseEntity<String> createTechnicianSubscription(
-            @PathVariable Long id, @RequestBody SubscriptionPlanRequest request) {
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanRequest request,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        enforceTechnicianSubscriptionAccess(currentUser, id);
         Technician subscribedTechnician = technicianService.createSubscription(id, request.getPlanId());
         return ResponseEntity.status(201)
                 .body("Technician subscription created successfully with ID: " + subscribedTechnician.getId());
@@ -71,7 +96,10 @@ public class SubscriptionController {
     @CrossOrigin(originPatterns = "*")
     @PutMapping("/technician/{id}")
     public ResponseEntity<String> updateTechnicianSubscription(
-            @PathVariable Long id, @RequestBody SubscriptionPlanRequest request) {
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanRequest request,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        enforceTechnicianSubscriptionAccess(currentUser, id);
         Technician updatedTechnician = technicianService.updateSubscription(id, request.getPlanId());
         return ResponseEntity.ok("Technician subscription updated successfully with ID: " + updatedTechnician.getId());
     }
@@ -85,7 +113,10 @@ public class SubscriptionController {
 
     @PostMapping("/business/{id}")
     public ResponseEntity<String> createBusinessSubscription(
-            @PathVariable Long id, @RequestBody SubscriptionPlanRequest request) {
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanRequest request,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        enforceBusinessSubscriptionAccess(currentUser, id);
         Business subscribedBusiness = businessService.createSubscription(id, request.getPlanId());
         return ResponseEntity.status(201)
                 .body("Business subscription created successfully with ID: " + subscribedBusiness.getId());
@@ -95,7 +126,10 @@ public class SubscriptionController {
     @CrossOrigin(originPatterns = "*")
     @PutMapping("/business/{id}")
     public ResponseEntity<String> updateBusinessSubscription(
-            @PathVariable Long id, @RequestBody SubscriptionPlanRequest request) {
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanRequest request,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        enforceBusinessSubscriptionAccess(currentUser, id);
         Business updatedBusiness = businessService.updateSubscription(id, request.getPlanId());
         return ResponseEntity.ok("Business subscription updated successfully with ID: " + updatedBusiness.getId());
     }
@@ -109,7 +143,10 @@ public class SubscriptionController {
 
     @PostMapping("/customer/{id}")
     public ResponseEntity<String> createCustomerSubscription(
-            @PathVariable Long id, @RequestBody SubscriptionPlanRequest request) {
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanRequest request,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        enforceCustomerSubscriptionAccess(currentUser, id);
         Customer subscribedCustomer = customerService.createSubscription(id, request.getPlanId());
         return ResponseEntity.status(201)
                 .body("Customer subscription created successfully with ID: " + subscribedCustomer.getId());
@@ -119,14 +156,86 @@ public class SubscriptionController {
     @CrossOrigin(originPatterns = "*")
     @PutMapping("/customer/{id}")
     public ResponseEntity<String> updateCustomerSubscription(
-            @PathVariable Long id, @RequestBody SubscriptionPlanRequest request) {
+            @PathVariable Long id,
+            @Valid @RequestBody SubscriptionPlanRequest request,
+            @AuthenticationPrincipal CustomDetails currentUser) {
+        enforceCustomerSubscriptionAccess(currentUser, id);
         Customer updatedCustomer = customerService.updateSubscription(id, request.getPlanId());
         return ResponseEntity.ok("Customer subscription updated successfully with ID: " + updatedCustomer.getId());
+    }
+
+    private void enforceTechnicianSubscriptionAccess(CustomDetails currentUser, Long technicianId) {
+        if (isPrivileged(currentUser)) {
+            return;
+        }
+
+        if (currentUser == null || currentUser.getId() == null || currentUser.getRole() != UserRole.TECHNICIAN) {
+            throw new AccessDeniedException("You are not authorized to modify this technician subscription");
+        }
+
+        Technician technician = technicianRepository.findById(technicianId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Technician not found"));
+
+        if (technician.getUser() == null || !currentUser.getId().equals(technician.getUser().getId())) {
+            throw new AccessDeniedException("You are not authorized to modify this technician subscription");
+        }
+    }
+
+    private void enforceBusinessSubscriptionAccess(CustomDetails currentUser, Long businessId) {
+        if (isPrivileged(currentUser)) {
+            return;
+        }
+
+        if (currentUser == null || currentUser.getId() == null || currentUser.getRole() != UserRole.BUSINESS) {
+            throw new AccessDeniedException("You are not authorized to modify this business subscription");
+        }
+
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Business not found"));
+
+        if (business.getOwner() == null || !currentUser.getId().equals(business.getOwner().getId())) {
+            throw new AccessDeniedException("You are not authorized to modify this business subscription");
+        }
+    }
+
+    private void enforceCustomerSubscriptionAccess(CustomDetails currentUser, Long customerId) {
+        if (isPrivileged(currentUser)) {
+            return;
+        }
+
+        if (currentUser == null || currentUser.getId() == null || currentUser.getRole() != UserRole.CUSTOMER) {
+            throw new AccessDeniedException("You are not authorized to modify this customer subscription");
+        }
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Customer not found"));
+
+        if (customer.getUser() == null || !currentUser.getId().equals(customer.getUser().getId())) {
+            throw new AccessDeniedException("You are not authorized to modify this customer subscription");
+        }
+    }
+
+    private boolean isPrivileged(CustomDetails currentUser) {
+        if (currentUser == null || currentUser.getRole() == null) {
+            return false;
+        }
+        return currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.OPERATOR;
     }
 }
 
 class SubscriptionPlanRequest {
+    @NotNull(message = "planId is required")
     private Long planId;
+
+    @JsonIgnore
+    private final Map<String, Object> unexpectedFields = new HashMap<>();
+
+    @JsonAnySetter
+    public void captureUnexpectedField(String key, Object value) {
+        if (!"planId".equals(key)) {
+            unexpectedFields.put(key, value);
+        }
+    }
 
     public Long getPlanId() {
         return planId;
@@ -134,6 +243,11 @@ class SubscriptionPlanRequest {
 
     public void setPlanId(Long planId) {
         this.planId = planId;
+    }
+
+    @jakarta.validation.constraints.AssertTrue(message = "Only planId is allowed in request body")
+    public boolean hasNoUnexpectedFields() {
+        return unexpectedFields.isEmpty();
     }
 }
 

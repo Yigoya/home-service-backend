@@ -52,6 +52,8 @@ public class ProductService {
     @Transactional
     public ProductDTO createProduct(ProductDTO productDTO) {
         logger.info("Creating product: {}", productDTO.getName());
+        validateProductBusinessRules(productDTO);
+
         Business business = businessRepository.findById(productDTO.getBusinessId())
                 .orElseThrow(
                         () -> new EntityNotFoundException("Business not found with ID: " + productDTO.getBusinessId()));
@@ -82,6 +84,8 @@ public class ProductService {
     @Transactional
     public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
         logger.info("Updating product with ID: {}", id);
+        validateProductBusinessRules(productDTO);
+
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
 
@@ -168,6 +172,8 @@ public class ProductService {
         List<ProductDTO> createdProducts = new ArrayList<>();
         for (ProductDTO productDTO : bulkProductUploadDTO.getProducts()) {
             productDTO.setBusinessId(businessId);
+            validateProductBusinessRules(productDTO);
+
             Product product = new Product();
             mapProductDTOToEntity(productDTO, product);
             product.setBusiness(business);
@@ -185,6 +191,36 @@ public class ProductService {
         }
         logger.info("Bulk uploaded {} products for business ID: {}", createdProducts.size(), businessId);
         return createdProducts;
+    }
+
+    private void validateProductBusinessRules(ProductDTO productDTO) {
+        if (productDTO == null) {
+            throw new ValidationException("Invalid product payload");
+        }
+
+        Double price = productDTO.getPrice();
+        if (price == null || !Double.isFinite(price) || price <= 0) {
+            throw new ValidationException("Price must be a positive number greater than 0");
+        }
+
+        Integer stockQuantity = productDTO.getStockQuantity();
+        if (stockQuantity != null && stockQuantity < 0) {
+            throw new ValidationException("Stock quantity cannot be negative");
+        }
+
+        Integer minOrderQuantity = productDTO.getMinOrderQuantity();
+        if (minOrderQuantity != null && minOrderQuantity < 0) {
+            throw new ValidationException("Minimum order quantity cannot be negative");
+        }
+
+        if (stockQuantity != null && minOrderQuantity != null && minOrderQuantity > stockQuantity) {
+            throw new ValidationException("Minimum order quantity cannot exceed stock quantity");
+        }
+
+        String currency = productDTO.getCurrency();
+        if (currency != null && !currency.isBlank() && !currency.matches("^[A-Z]{3}$")) {
+            throw new ValidationException("Currency must be a valid 3-letter code");
+        }
     }
 
     // Created: Get Products by Service

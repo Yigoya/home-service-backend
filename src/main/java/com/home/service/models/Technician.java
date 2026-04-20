@@ -45,6 +45,11 @@ public class Technician extends BaseEntity {
 
     private String idCardImage;
 
+    @Column(length = 64)
+    private String faydaNationalId;
+
+    private Boolean faydaVerified = false;
+
     @OneToOne(mappedBy = "technician", cascade = CascadeType.ALL, orphanRemoval = true)
     private TechnicianWeeklySchedule weeklySchedule;
 

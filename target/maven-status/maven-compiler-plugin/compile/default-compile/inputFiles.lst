@@ -14,6 +14,8 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/BusinessReviewService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/BusinessService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/BusinessServiceService.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/ChapaGatewayService.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/ChapaPaymentService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/ChapaService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/ContactUsService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/ContractService.java
@@ -22,6 +24,7 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/DisputeService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/DisputeSpecification.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/EnquiryService.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/FaydaService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/InquiryService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/JobApplicationService.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/Service/JobService.java
@@ -58,14 +61,17 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/AppConfig.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/AuthRateLimitFilter.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/CORSFilter.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/ChapaProperties.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/CorsFilter.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/DataInitializer.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/ErrorResponse.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/FaydaProperties.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/FirebaseInitialization.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/GlobalExceptionHandler.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/JwtRequestFilter.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/JwtUtil.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/MyUserDetailsService.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/ObjectOwnershipInterceptor.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/SecurityConfig.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/TelebirrProperties.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/config/WebConfig.java
@@ -84,8 +90,10 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/B2BController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/BookingController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/BusinessController.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/ChapaPaymentController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/CompanyProfileController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/CustomerController.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/FaydaAuthController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/ImportController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/JobApplicationController.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/controller/JobController.java
@@ -134,6 +142,8 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/BusinessRequest.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/BusinessServiceRequest.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/ChangeContactRequest.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/ChapaCheckoutRequest.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/ChapaCheckoutResponse.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/CompanyDataDto.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/CompanyDetailDto.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/CompanyJobDto.java
@@ -183,6 +193,7 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/ProfileUpdateDTO.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/ProfileViewsDTO.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/PromotionRequest.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/PublicTechnicianDTO.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/PurchaseCoinsRequest.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/QuestionDTO.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/QuestionOptionDTO.java
@@ -255,6 +266,9 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/admin/TechnicianAddressDTO.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/admin/TechnicianDTO.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/admin/TechnicianDetailDTO.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/fayda/FaydaAuthorizationUrlResponse.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/fayda/FaydaVerifyTechnicianRequest.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/fayda/FaydaVerifyTechnicianResponse.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/dto/records/SingleTechnician.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/Address.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/AgencyBooking.java
@@ -272,6 +286,7 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/BusinessPromotion.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/BusinessReview.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/BusinessServices.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/ChapaPayment.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/CompanyProfile.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/ContactUs.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/Contract.java
@@ -338,6 +353,7 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/B2BPartnerType.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/BookingStatus.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/BusinessType.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/ChapaPaymentStatus.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/ClaimStatus.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/CompanySize.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/models/enums/ContractStatus.java
@@ -390,6 +406,7 @@
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/BusinessRepository.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/BusinessReviewRepository.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/BusinessServiceRepository.java
+/home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/ChapaPaymentRepository.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/CompanyProfileRepository.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/ContactUsRepository.java
 /home/yigo/dev/projects/hulumoya/home-service-backend/src/main/java/com/home/service/repositories/ContractRepository.java

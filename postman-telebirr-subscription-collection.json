@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "HuluMoya Telebirr Subscription",
+    "name": "HuluMoya Chapa Subscription",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -27,6 +27,10 @@
     {
       "key": "subscriberId",
       "value": "1"
+    },
+    {
+      "key": "txRef",
+      "value": "SUB_EXAMPLE_TX_REF"
     }
   ],
   "item": [
@@ -47,7 +51,7 @@
       }
     },
     {
-      "name": "2) Create Telebirr checkout",
+      "name": "2) Create Chapa checkout",
       "request": {
         "method": "POST",
         "header": [
@@ -58,14 +62,14 @@
           "raw": "{\n  \"planId\": {{planId}},\n  \"subscriberType\": \"{{subscriberType}}\",\n  \"subscriberId\": {{subscriberId}}\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/payment/telebirr/checkout",
+          "raw": "{{baseUrl}}/payment/chapa/checkout",
           "host": ["{{baseUrl}}"],
-          "path": ["payment", "telebirr", "checkout"]
+          "path": ["payment", "chapa", "checkout"]
         }
       }
     },
     {
-      "name": "3) Telebirr notify callback (simulate)",
+      "name": "3) Chapa callback (simulate)",
       "request": {
         "method": "POST",
         "header": [
@@ -73,17 +77,29 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"merch_order_id\": \"SUB-EXAMPLE\",\n  \"prepay_id\": \"PREPAY_EXAMPLE\",\n  \"trade_status\": \"Completed\",\n  \"sign\": \"REPLACE_WITH_SIGNATURE\",\n  \"sign_type\": \"SHA256WithRSA\"\n}"
+          "raw": "{\n  \"tx_ref\": \"{{txRef}}\",\n  \"status\": \"success\"\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/payment/telebirr/notify",
+          "raw": "{{baseUrl}}/payment/chapa/callback",
           "host": ["{{baseUrl}}"],
-          "path": ["payment", "telebirr", "notify"]
+          "path": ["payment", "chapa", "callback"]
         }
       }
     },
     {
-      "name": "4) Get business subscription",
+      "name": "4) Verify Chapa by txRef",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/payment/chapa/verify/{{txRef}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["payment", "chapa", "verify", "{{txRef}}"]
+        }
+      }
+    },
+    {
+      "name": "5) Get business subscription",
       "request": {
         "method": "GET",
         "header": [],
@@ -95,7 +111,7 @@
       }
     },
     {
-      "name": "5) Get technician subscription",
+      "name": "6) Get technician subscription",
       "request": {
         "method": "GET",
         "header": [],
@@ -107,7 +123,7 @@
       }
     },
     {
-      "name": "6) Get customer subscription",
+      "name": "7) Get customer subscription",
       "request": {
         "method": "GET",
         "header": [],
@@ -119,7 +135,7 @@
       }
     },
     {
-      "name": "7) Create business subscription (manual)",
+      "name": "8) Create business subscription (manual)",
       "request": {
         "method": "POST",
         "header": [
@@ -137,7 +153,7 @@
       }
     },
     {
-      "name": "8) Update business subscription (manual)",
+      "name": "9) Update business subscription (manual)",
       "request": {
         "method": "PUT",
         "header": [
@@ -155,7 +171,7 @@
       }
     },
     {
-      "name": "9) Create technician subscription (manual)",
+      "name": "10) Create technician subscription (manual)",
       "request": {
         "method": "POST",
         "header": [
@@ -173,7 +189,7 @@
       }
     },
     {
-      "name": "10) Update technician subscription (manual)",
+      "name": "11) Update technician subscription (manual)",
       "request": {
         "method": "PUT",
         "header": [
@@ -191,7 +207,7 @@
       }
     },
     {
-      "name": "11) Create customer subscription (manual)",
+      "name": "12) Create customer subscription (manual)",
       "request": {
         "method": "POST",
         "header": [
@@ -209,7 +225,7 @@
       }
     },
     {
-      "name": "12) Update customer subscription (manual)",
+      "name": "13) Update customer subscription (manual)",
       "request": {
         "method": "PUT",
         "header": [

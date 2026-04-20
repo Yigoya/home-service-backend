@@ -60,18 +60,10 @@ import com.home.service.Service.OperatorService;
 import com.home.service.Service.PaymentProofService;
 import com.home.service.Service.QuestionService;
 import com.home.service.Service.ServiceCategoryService;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.schema.TargetType;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.util.EnumSet;
-import jakarta.persistence.EntityManagerFactory;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -132,8 +124,8 @@ public class AdminController {
         @Autowired
         private JdbcTemplate jdbcTemplate;
 
-        @Autowired
-        private EntityManagerFactory entityManagerFactory;
+        @Autowired(required = false)
+        private Flyway flyway;
 
         private List<ServiceCategoryWithServicesDTO> categoriesEnglish;
         private List<ServiceCategoryWithServicesDTO> categoriesAmharic;
@@ -632,27 +624,11 @@ public class AdminController {
         }
 
         private void recreateSchema() {
-                // Create Hibernate StandardServiceRegistry
-                StandardServiceRegistry standardRegistry = new StandardServiceRegistryBuilder()
-                                .applySettings(entityManagerFactory.getProperties()) // Apply JPA properties
-                                .build();
-
-                // Add entity classes manually if MetadataSources is empty
-                MetadataSources metadataSources = new MetadataSources(standardRegistry);
-
-                // Automatically scan for all entity classes
-                entityManagerFactory.getMetamodel().getEntities().forEach(entityType -> {
-                        metadataSources.addAnnotatedClass(entityType.getJavaType());
-                });
-
-                // Build Metadata
-                Metadata metadata = metadataSources.buildMetadata();
-
-                // Drop and recreate schema
-                new SchemaExport()
-                                .setHaltOnError(true)
-                                .setFormat(true)
-                                .create(EnumSet.of(TargetType.DATABASE), metadata);
+                // Recreate schema using Flyway migrations after tables are dropped.
+                if (flyway == null) {
+                        throw new IllegalStateException("Flyway is not available in the current profile/configuration.");
+                }
+                flyway.migrate();
         }
 
 }

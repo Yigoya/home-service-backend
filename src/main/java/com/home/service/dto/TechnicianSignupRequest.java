@@ -68,6 +68,10 @@ public class TechnicianSignupRequest {
     private Double latitude;
     private Double longitude;
 
+    private String faydaNationalId;
+
+    private String faydaVerificationToken;
+
     // List of service IDs to associate with this technician
     @NotEmpty(message = "Service IDs must not be empty")
     private List<Long> serviceIds;

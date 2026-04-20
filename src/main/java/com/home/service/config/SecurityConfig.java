@@ -58,12 +58,16 @@ public class SecurityConfig {
                     "/auth/register",
                     "/auth/customer/signup",
                     "/auth/technician/signup",
+                    "/auth/fayda/verify-technician",
                     "/auth/operator/signup",
                     "/auth/admin/login",
                     "/auth/password-reset-request",
                     "/auth/reset-password",
                     "/auth/resend-verification",
-                    "/payment/telebirr/notify"))
+                    "/admin/service-icons",
+                    "/admin/category-icons",
+                    "/payment/telebirr/notify",
+                    "/payment/chapa/callback"))
                 .authorizeHttpRequests(auth -> auth
                 // CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -78,12 +82,16 @@ public class SecurityConfig {
                     "/auth/register",
                     "/auth/customer/signup",
                     "/auth/technician/signup",
+                    "/auth/fayda/verify-technician",
                     "/auth/operator/signup",
-                    "/auth/admin/login")
+                    "/auth/admin/login",
+                    "/admin/service-icons",
+                    "/admin/category-icons")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/auth/token-login",
                     "/auth/verify",
+                    "/auth/fayda/authorize",
                     "/auth/csrf")
                 .permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
@@ -106,20 +114,27 @@ public class SecurityConfig {
                     "/jobs/**",
                     "/profiles/company/search",
                     "/profiles/company/detail/**",
+                    "/businesses/search",
+                    "/businesses/*/details",
+                    "/business-details/**",
+                    "/tenders/service/**",
+                    "/tenders/location",
+                    "/tenders/search",
+                    "/tenders/tenders/search",
                     "/marketplace/businesses",
                     "/marketplace/businesses/*",
                     "/marketplace/businesses/*/products",
                     "/marketplace/products/**",
                     "/marketplace/services/**",
+                    "/subscriptions/plans",
                     "/promotions/public/**")
                 .permitAll()
 
                 // Public webhook/callback endpoint
-                .requestMatchers(HttpMethod.POST, "/payment/telebirr/notify").permitAll()
+                .requestMatchers(HttpMethod.POST, "/payment/telebirr/notify", "/payment/chapa/callback").permitAll()
 
                 // Public static/websocket assets
                 .requestMatchers(
-                    "/uploads/**",
                     "/static/**",
                     "/public/**",
                     "/ws/**",

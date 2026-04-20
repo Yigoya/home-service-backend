@@ -15,6 +15,7 @@ import com.home.service.Service.TechnicianService;
 import com.home.service.dto.SetServicePriceDTO;
 import com.home.service.dto.SingleBookingResponseDTO;
 import com.home.service.dto.TechnicianDTO;
+import com.home.service.dto.PublicTechnicianDTO;
 import com.home.service.dto.records.SingleTechnician;
 import com.home.service.models.Booking;
 import com.home.service.models.ContactUs;
@@ -90,8 +91,11 @@ public class ServiceManagementController {
 
     // Technician Endpoints
     @GetMapping("/technicians")
-    public List<Technician> getAllTechnicians() {
-        return technicianService.getAllTechnicians();
+    public List<PublicTechnicianDTO> getAllTechnicians(
+            @RequestParam(defaultValue = "ENGLISH") EthiopianLanguage lang) {
+        return technicianService.getAllTechnicians().stream()
+                .map(technician -> new PublicTechnicianDTO(technician, lang))
+                .toList();
     }
 
     @PostMapping("/set-service-price")
